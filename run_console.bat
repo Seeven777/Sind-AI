@@ -8,5 +8,5 @@ if not exist ".venv\Scripts\python.exe" (
 )
 
 call ".venv\Scripts\activate.bat"
-python app.py
+python jarvis_desktop.py
 pause

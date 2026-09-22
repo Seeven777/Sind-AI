@@ -40,6 +40,8 @@ from document_intelligence.engine import DocumentIntelligence
 from supervisor.engine import RuntimeSupervisor
 from workspace_intelligence.engine import WorkspaceIntelligence
 from institutional.store import InstitutionalStore
+from institutional.services import InstitutionalServices
+from institutional.service_runtime import InstitutionalServiceRuntime
 from institutional_knowledge.engine import InstitutionalKnowledge
 from training.engine import TrainingEngine
 from content_ops.engine import ContentOps
@@ -55,6 +57,13 @@ from cognitive.learning import LearningJournal
 from cognitive.semantic_memory import SemanticMemory
 from cognitive.model_router import AdaptiveModelRouter
 from cognitive.answer_engine import ConversationalAnswerEngine
+from cognitive.project_store import ProjectStore
+from cognitive.reflection import ReflectionEngine
+from cognitive.context_orchestrator import ContextOrchestrator
+from cognitive.self_awareness import SelfAwareness
+from attachments.manager import AttachmentManager
+from self_improvement.queue import ImprovementQueue
+from hardware.profiler import HardwareProfiler
 from public_data.engine import PublicDataEngine
 
 from tools.apps import open_app, open_folder
@@ -165,6 +174,7 @@ class JarvisAgent:
 
         institutional_db = persistent_path("institutional_db", "institutional/institutional.db")
         self.institutional = InstitutionalStore(institutional_db)
+        self.services = InstitutionalServices(self.base_dir / "data" / "institutional_services.json")
         institutional_knowledge_db = persistent_path("institutional_knowledge_db", "knowledge/institutional.db")
         self.institutional_knowledge = InstitutionalKnowledge(
             institutional_knowledge_db, self.knowledge, self.documents, self.workspace
@@ -206,6 +216,21 @@ class JarvisAgent:
         self.public_data = PublicDataEngine(
             self.base_dir / "public_data" / "registry.json", public_proposals,
             user_agent="JarvisLocal/1.0 (+personal-gpt)",
+        )
+
+        # Personal GPT layer: projetos, anexos, reflexão e autoevolução supervisionada.
+        projects_db = persistent_path("projects_db", "cognitive/projects.db")
+        reflections_db = persistent_path("reflections_db", "cognitive/reflections.db")
+        improvements_db = persistent_path("improvements_db", "cognitive/improvements.db")
+        attachments_db = persistent_path("attachments_db", "cognitive/attachments.db")
+        self.projects = ProjectStore(projects_db)
+        self.reflections = ReflectionEngine(reflections_db)
+        self.improvements = ImprovementQueue(improvements_db)
+        self.attachments = AttachmentManager(attachments_db, self.knowledge, self.projects)
+        self.hardware = HardwareProfiler()
+        self.context_orchestrator = ContextOrchestrator(
+            self.conversations, self.learning, self.memory, self.semantic,
+            self.projects, self.attachments, services=self.services
         )
 
         actions_catalog = self.base_dir / self.config.get("action_catalog", "actions/catalog.json")
@@ -253,6 +278,13 @@ class JarvisAgent:
             reasoning_timeout=config.get("agent_llm_timeout_seconds", 40),
             fallback_timeout=config.get("fast_model_fallback_timeout_seconds", 22),
         )
+        self.self_awareness = SelfAwareness(
+            self.services, self.actions, self.workflows, self.capabilities,
+            self.models, self.hardware, self.knowledge, connectors=self.connectors
+        )
+        self.service_runtime = InstitutionalServiceRuntime(
+            self.services, self.browser_agent, self.models
+        )
         self.conversation_answer = ConversationalAnswerEngine(
             self.models,
             self.conversations,
@@ -260,6 +292,8 @@ class JarvisAgent:
             self.institutional,
             self.institutional_knowledge,
             self.web_search,
+            context_orchestrator=self.context_orchestrator,
+            public_data=self.public_data,
         )
 
         self.supervisor = RuntimeSupervisor(
@@ -286,6 +320,7 @@ class JarvisAgent:
             self.automations.start_worker()
 
         self.history = []
+        self._last_response_metadata = {}
         self._executing_skill = False
         self._active_task_id = None
         self._cancel_event = threading.Event()
@@ -325,6 +360,8 @@ class JarvisAgent:
             {"type":"function","function":{"name":"find_public_sources","description":"Encontra fontes públicas/abertas adequadas ao assunto, priorizando fontes oficiais e informando operações disponíveis.","parameters":{"type":"object","properties":{"query":{"type":"string"},"limit":{"type":"integer"}},"required":["query"]}}},
             {"type":"function","function":{"name":"query_public_data","description":"Consulta uma fonte estruturada encontrada por find_public_sources. Use somente uma operação listada pela fonte.","parameters":{"type":"object","properties":{"source_id":{"type":"string"},"operation":{"type":"string"},"params":{"type":"object"}},"required":["source_id","operation"]}}},
             {"type":"function","function":{"name":"discover_public_interfaces","description":"Inspeciona um site público HTTPS procurando OpenAPI/Swagger, RSS/Atom e sitemap.","parameters":{"type":"object","properties":{"url":{"type":"string"}},"required":["url"]}}},
+            {"type":"function","function":{"name":"institutional_service","description":"Localiza ou abre um serviço cotidiano autorizado do SindPetshop-SP (site, Instagram, dashboard, agenda, Slack etc.) sem expor credenciais.","parameters":{"type":"object","properties":{"operation":{"type":"string","enum":["resolve","open","list"]},"query":{"type":"string"}},"required":["operation"]}}},
+            {"type":"function","function":{"name":"project_context","description":"Gerencia contexto persistente de projetos pessoais/de trabalho. Operações: list, create, select, current, add_note.","parameters":{"type":"object","properties":{"operation":{"type":"string","enum":["list","create","select","current","add_note"]},"name":{"type":"string"},"description":{"type":"string"},"project_id":{"type":"integer"},"title":{"type":"string"},"body":{"type":"string"}},"required":["operation"]}}},
             {"type":"function","function":{"name":"list_knowledge_collections","description":"Lista bases de conhecimento internas disponíveis para treinamento e respostas institucionais.","parameters":{"type":"object","properties":{}}}},
             {"type":"function","function":{"name":"search_knowledge","description":"Pesquisa informações em uma base de conhecimento local. Use para procedimentos internos, documentos e treinamento da equipe.","parameters":{"type":"object","properties":{"collection":{"type":"string"},"query":{"type":"string"},"limit":{"type":"integer"}},"required":["collection","query"]}}},
             {"type":"function","function":{"name":"institutional_context","description":"Lê contexto institucional compacto: perfil, glossário, políticas, regras editoriais e funções.","parameters":{"type":"object","properties":{}}}},
@@ -361,11 +398,15 @@ class JarvisAgent:
         if any(k in text for k in ["clipboard","área de transferência","area de transferencia"]): names.update({"get_clipboard","set_clipboard"})
         if any(k in text for k in ["screenshot","captura","tela"]): names.add("take_screenshot")
         if any(k in text for k in ["sindpetshop","cct","convenção","convencao","procedimento interno","política interna","politica interna","treinamento","onboarding","base de conhecimento","documentos internos"]): names.update({"list_knowledge_collections","search_knowledge","institutional_evidence","institutional_context"})
+        if any(k in text for k in ["instagram","facebook","linkedin","tiktok","slack","dashboard","insights","agenda sind","sindapp","site do sindicato","sistema interno"]):
+            names.add("institutional_service")
+        if any(k in text for k in ["projeto","campanha","contexto do projeto","nova campanha","retome o projeto","retomar projeto"]):
+            names.add("project_context")
         if any(k in text for k in ["automação","automacao","agende","rotina","monitor","acompanhe","me avise","notifique","aprovação","aprovacao","integração","integracao","wordpress","portal","equipe","connector","workflow"]): names.update({"search_actions","execute_action","search_workflows","execute_workflow"})
         if any(k in text for k in ["skill","aprenda esta rotina","aprenda essa rotina"]): names.update({"run_skill","suggest_learned_skills"})
         if any(k in text for k in ["api","openapi","swagger","capability","capacidade pública","capacidade publica"]): names.update({"search_capabilities","execute_capability","discover_public_apis","discover_public_interfaces"})
         if not names and any(k in text for k in complex_verbs): names.update({"search_actions","execute_action"})
-        priority=["set_task_plan","find_public_sources","query_public_data","discover_public_interfaces","search_web","fetch_public_url","list_knowledge_collections","search_knowledge","institutional_evidence","institutional_context","search_actions","execute_action","search_workflows","execute_workflow","search_capabilities","execute_capability","discover_public_apis","open_url","open_app","create_file","read_file","list_files","open_folder","list_windows","select_window","inspect_selected_window","click_control","type_text","press_key","get_clipboard","set_clipboard","take_screenshot","run_skill","suggest_learned_skills"]
+        priority=["set_task_plan","find_public_sources","query_public_data","discover_public_interfaces","search_web","fetch_public_url","institutional_service","project_context","list_knowledge_collections","search_knowledge","institutional_evidence","institutional_context","search_actions","execute_action","search_workflows","execute_workflow","search_capabilities","execute_capability","discover_public_apis","open_url","open_app","create_file","read_file","list_files","open_folder","list_windows","select_window","inspect_selected_window","click_control","type_text","press_key","get_clipboard","set_clipboard","take_screenshot","run_skill","suggest_learned_skills"]
         ordered=[n for n in priority if n in names and n in self.tool_schema_by_name]
         return [self.tool_schema_by_name[n] for n in ordered[:10]]
 
@@ -390,9 +431,13 @@ class JarvisAgent:
     def system_prompt(self, user_text=""):
         mem = self._memory_context(user_text)
         public_stats = self.public_data.stats()
+        service_stats = self.services.stats()
         conversation_stats = self.conversations.stats()
         lessons = self.learning.relevant(user_text, limit=4)
+        reflections = self.reflections.relevant(user_text, limit=3)
         lesson_text = "\n".join(f"- {x.get('lesson')}" for x in lessons) if lessons else "- nenhuma"
+        reflection_text = "\n".join(f"- {x.get('insight')}" for x in reflections) if reflections else "- nenhuma"
+        project_context = self.projects.context(user_text, max_chars=1200).get("text","")
         return f"""Você é Jarvis, um GPT pessoal local.
 Converse naturalmente em português e mantenha continuidade. Entenda o objetivo e decida sozinho se deve responder, pesquisar, consultar conhecimento ou agir.
 
@@ -411,11 +456,18 @@ PRINCÍPIOS
 CONTEXTO
 - Conversas persistentes: {conversation_stats.get('sessions',0)}; mensagens: {conversation_stats.get('messages',0)}.
 - Fontes públicas catalogadas: {public_stats.get('sources',0)}; oficiais: {public_stats.get('official',0)}.
+- Serviços cotidianos SindPetshop-SP mapeados: {service_stats.get('services',0)}.
 - Workspace: {self.workspace}
 - Janela selecionada: {self.deep_access.snapshot().get('title') or 'nenhuma'}
 
 LIÇÕES RELEVANTES
 {lesson_text}
+
+REFLEXÕES RELEVANTES
+{reflection_text}
+
+PROJETO ATUAL
+{project_context or "- nenhum projeto ativo"}
 {mem}
 """
 
@@ -1031,6 +1083,41 @@ LIÇÕES RELEVANTES
 
         if name == "discover_public_interfaces":
             return self.public_data.discover_interfaces(args.get("url", ""), save=True)
+
+        if name == "institutional_service":
+            operation = args.get("operation", "resolve")
+            query = args.get("query", "")
+            if operation == "list":
+                return self.services.list(daily=True)
+            if operation == "open":
+                return self.services.open(query)
+            return self.services.resolve(query)
+
+        if name == "project_context":
+            operation = args.get("operation", "current")
+            if operation == "list":
+                return self.projects.list(status="active", limit=50)
+            if operation == "create":
+                result = self.projects.create(args.get("name",""), args.get("description",""))
+                if result.get("ok"):
+                    try:
+                        self.projects.link_session(result["data"]["id"], self.conversations.current_session_id)
+                    except Exception:
+                        pass
+                return result
+            if operation == "select":
+                pid = int(args.get("project_id") or 0)
+                result = self.projects.set_current(pid or None)
+                if pid:
+                    try:self.projects.link_session(pid, self.conversations.current_session_id)
+                    except Exception:pass
+                return result
+            if operation == "add_note":
+                pid = int(args.get("project_id") or self.projects.current_id() or 0)
+                if not pid:
+                    return {"ok": False, "error": "Nenhum projeto ativo."}
+                return self.projects.add_note(pid, args.get("title","Nota"), args.get("body",""))
+            return self.projects.current()
 
         if name == "list_knowledge_collections":
             return self.knowledge.list_collections()
@@ -1708,7 +1795,15 @@ LIÇÕES RELEVANTES
 
     def new_conversation(self):
         self.history = []
-        return self.conversations.new_session()
+        result = self.conversations.new_session()
+        try:
+            pid = self.projects.current_id()
+            sid = result.get("session_id")
+            if pid and sid:
+                self.projects.link_session(pid, sid)
+        except Exception:
+            pass
+        return result
 
     def run(self, user_text, status=None, confirm_callback=None):
         """Entrada pública: persiste conversa e aprendizado explícito."""
@@ -1716,11 +1811,21 @@ LIÇÕES RELEVANTES
         if not user_text:
             return "Escreva uma mensagem para continuar."
         try:
+            self._last_response_metadata = {}
             answer = self._run_internal(user_text, status=status, confirm_callback=confirm_callback)
             self.conversations.append("user", user_text)
-            self.conversations.append("assistant", str(answer))
+            self.conversations.append("assistant", str(answer), metadata=self._last_response_metadata)
             lesson = self.learning.learn_from_user(user_text)
             self.learning.record_episode(user_text, str(answer), status="completed", metadata={"lesson": lesson})
+            reflection = self.reflections.reflect(user_text, str(answer), status="completed", metadata={"lesson": lesson})
+            try:
+                pid = self.projects.current_id()
+                if pid:
+                    self.projects.link_session(pid, self.conversations.current_session_id)
+            except Exception:
+                pass
+            if reflection.get("reflection_ids"):
+                self.diagnostics.event("reflection_created", reflection_ids=reflection.get("reflection_ids"), prompt=user_text)
             if self.semantic.enabled:
                 def _index_episode():
                     try:
@@ -1736,6 +1841,15 @@ LIÇÕES RELEVANTES
                 self.conversations.append("user", user_text)
                 self.conversations.append("assistant", f"[falha] {exc}", metadata={"error": True})
                 self.learning.record_episode(user_text, str(exc), status="failed")
+                reflection = self.reflections.reflect(user_text, str(exc), status="failed")
+                if reflection.get("reflection_ids"):
+                    self.improvements.propose(
+                        "runtime_failure",
+                        "Falha recorrente detectada pelo Jarvis",
+                        f"A solicitação falhou e gerou reflexão: {user_text[:300]}",
+                        evidence={"error": str(exc), "reflection_ids": reflection.get("reflection_ids")},
+                        priority=70,
+                    )
             except Exception:
                 pass
             raise
@@ -1752,7 +1866,7 @@ LIÇÕES RELEVANTES
             self.diagnostics.event("fast_intent", prompt=user_text, intent=fast_intent)
             kind = fast_intent.get("kind")
             if kind == "greeting":
-                return "Olá. Estou pronto. Você pode me pedir uma tarefa, pesquisa, automação, monitoramento ou consulta aos recursos do Jarvis."
+                return "Olá. Em que posso ajudar?"
             if kind in {"open_search", "open_url"}:
                 result = open_url(fast_intent.get("url", ""))
                 if kind == "open_search" and result.get("ok"):
@@ -1776,6 +1890,32 @@ LIÇÕES RELEVANTES
                 if last_error:
                     return "Não encontrei tarefa marcada como FAILED, mas o último erro técnico foi: " + str(last_error.get("error") or last_error)
                 return "Não encontrei uma falha registrada. Abra Diagnóstico se quiser verificar os eventos recentes."
+
+        # Self-awareness vem do estado real do runtime, nunca da imaginação do modelo.
+        if self.self_awareness.matches(user_text):
+            self._last_response_metadata = {"grounded": True, "runtime_grounded": True}
+            return self.self_awareness.answer(user_text)
+
+        # Consultas/análises de serviços cotidianos usam Browser Agent + FAST model,
+        # evitando mandar um pedido simples para o reasoning model de 4B.
+        if self.service_runtime.matches(user_text):
+            result = self.service_runtime.run(user_text, status=status)
+            source = result.get("source")
+            self._last_response_metadata = {
+                "model": result.get("model"),
+                "grounded": bool(result.get("grounded")),
+                "fallback": bool(result.get("fallback")),
+                "sources": [{"title": result.get("service",{}).get("name","Serviço institucional"), "url": source}] if source else [],
+            }
+            return result.get("answer") or result.get("error") or "Não consegui consultar o serviço."
+
+        # Serviços cotidianos conhecidos do SindPetshop-SP têm Fast Path próprio.
+        service_cmd = self.services.parse_open_command(user_text)
+        if service_cmd:
+            result = self.services.open(service_cmd.get("query",""))
+            if result.get("ok"):
+                return f"Abrindo {result.get('name')}: {result.get('url')}"
+            return result.get("error") or "Não consegui abrir o serviço."
 
         # Comandos explícitos continuam rápidos e não chamam o modelo.
         task_cmd = parse_task_command(user_text)
@@ -1859,6 +1999,12 @@ LIÇÕES RELEVANTES
             if status:
                 status("Conversando")
             result = self.conversation_answer.answer(user_text)
+            self._last_response_metadata = {
+                "model": result.get("model"),
+                "grounded": bool(result.get("grounded")),
+                "fallback": bool(result.get("fallback")),
+                "sources": result.get("sources") or [],
+            }
             self.diagnostics.event(
                 "conversation_answer",
                 prompt=user_text,
@@ -1914,7 +2060,7 @@ LIÇÕES RELEVANTES
                     messages=messages,
                     tools=self._tools_for_prompt(user_text),
                     timeout=remaining,
-                    model=self.config.get("reasoning_model", self.config.get("model", "qwen3:4b")),
+                    model=self.models.reason_model_name(),
                 )
                 msg = resp.get("message", {})
                 calls = msg.get("tool_calls") or []

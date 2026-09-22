@@ -492,6 +492,43 @@ class BrowserAgent:
                 break
         return {"ok": True, "query": q, "items": out, "count": len(out), "provider": "Google via Browser Agent", "url": self.page.url}
 
+    def inspect_page(self, url=None, wait_ms=1400, max_chars=14000):
+        """Open a page and collect visible text/structure without asking the LLM to navigate."""
+        self._ensure()
+        if url:
+            target=str(url).strip()
+            if not re.match(r"^https?://", target, re.I):
+                target="https://"+target
+            self.page.goto(target, wait_until="domcontentloaded", timeout=30000)
+        try:
+            self.page.wait_for_timeout(int(wait_ms))
+        except Exception:
+            pass
+        try:
+            text=self.page.locator("body").inner_text(timeout=10000)
+        except Exception:
+            text=""
+        try:
+            headings=self.page.locator("h1,h2,h3,h4").evaluate_all(
+                """els => els.map(e => ({level:e.tagName,text:(e.innerText||'').trim()})).filter(x=>x.text)"""
+            )
+        except Exception:
+            headings=[]
+        try:
+            tables=self.page.locator("table").evaluate_all(
+                """els => els.map(t => ({rows:t.rows.length,preview:(t.innerText||'').trim().slice(0,2200)}))"""
+            )
+        except Exception:
+            tables=[]
+        return {
+            "ok": True,
+            "url": self.page.url,
+            "title": self._safe_title(),
+            "text": text[:int(max_chars)],
+            "headings": headings[:50],
+            "tables": tables[:20],
+        }
+
     def session_summary(self):
         self._ensure()
         return {

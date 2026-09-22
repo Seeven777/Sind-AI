@@ -1,0 +1,204 @@
+{
+  "version": "1.0",
+  "services": [
+    {
+      "id": "insights_dashboard",
+      "name": "Insights SindPetshop-SP",
+      "url": "https://dashbord-de-ensigths-49n3.vercel.app/?view=overview&mode=analytical&since=2026-06-25&until=2026-09-22",
+      "kind": "analytics_dashboard",
+      "access": "public_web",
+      "daily": true,
+      "capabilities": [
+        "open",
+        "read_public",
+        "monitor_page",
+        "browser_automation",
+        "research_context"
+      ],
+      "aliases": [
+        "dashboard",
+        "insights",
+        "painel de insights",
+        "analytics",
+        "métricas",
+        "metricas"
+      ],
+      "notes": "Painel de inteligência de marketing. Pode ser aberto/consultado pelo navegador; quando conectado, concentra métricas Meta/Instagram.",
+      "when_to_use": "Quando a tarefa envolve desempenho das redes, escolha de pauta, formatos, alcance, engajamento ou comparação de períodos.",
+      "analysis_hints": [
+        "alcance e visualizações",
+        "interações e taxa de engajamento",
+        "salvamentos e compartilhamentos",
+        "crescimento de seguidores",
+        "desempenho por formato",
+        "cidades e composição do público",
+        "comparação entre períodos e publicações"
+      ]
+    },
+    {
+      "id": "agenda_sind",
+      "name": "Agenda Sind",
+      "url": "https://sindapp-8sdt.vercel.app",
+      "kind": "work_app",
+      "access": "browser_session",
+      "daily": true,
+      "capabilities": [
+        "open",
+        "browser_automation",
+        "monitor_page"
+      ],
+      "aliases": [
+        "agenda",
+        "sindapp",
+        "agenda sind",
+        "aplicativo agenda"
+      ],
+      "notes": "Aplicação cotidiana. Jarvis deve reutilizar sessão autorizada do navegador e nunca armazenar credenciais em texto.",
+      "when_to_use": "Quando a tarefa envolve compromissos, agenda operacional, organização de rotina ou acompanhamento de atividades."
+    },
+    {
+      "id": "facebook",
+      "name": "Facebook SindPetshop-SP",
+      "url": "https://www.facebook.com/sindpetshop.org.br",
+      "kind": "social",
+      "access": "browser_session",
+      "daily": true,
+      "capabilities": [
+        "open",
+        "read_public",
+        "browser_automation",
+        "content_review"
+      ],
+      "aliases": [
+        "facebook",
+        "face"
+      ],
+      "notes": "Leitura pública quando disponível. Publicação/gestão somente em sessão autenticada ou API oficial autorizada.",
+      "when_to_use": "Quando a tarefa envolve presença no Facebook, revisão de publicação, consulta da página ou ação autorizada nesse canal."
+    },
+    {
+      "id": "linkedin",
+      "name": "LinkedIn SindPetshop-SP",
+      "url": "https://www.linkedin.com/company/sindpetshop-sp/",
+      "kind": "social",
+      "access": "browser_session",
+      "daily": true,
+      "capabilities": [
+        "open",
+        "read_public",
+        "browser_automation",
+        "content_review"
+      ],
+      "aliases": [
+        "linkedin"
+      ],
+      "notes": "Usar navegador/sessão autorizada. Não depender de scraping agressivo.",
+      "when_to_use": "Quando a tarefa envolve comunicação institucional/profissional, presença da entidade no LinkedIn ou publicação autorizada."
+    },
+    {
+      "id": "instagram",
+      "name": "Instagram SindPetshop-SP",
+      "url": "https://www.instagram.com/sindpetshop_sp/",
+      "kind": "social",
+      "access": "browser_session",
+      "daily": true,
+      "capabilities": [
+        "open",
+        "read_public",
+        "browser_automation",
+        "content_review",
+        "analytics_context"
+      ],
+      "aliases": [
+        "instagram",
+        "insta",
+        "ig"
+      ],
+      "notes": "Canal central de conteúdo. Métricas podem ser cruzadas com o dashboard interno quando disponível.",
+      "when_to_use": "Quando a tarefa envolve conteúdo do Instagram, publicações, perfil, formatos, referência visual ou desempenho combinado com o dashboard."
+    },
+    {
+      "id": "tiktok",
+      "name": "TikTok SindPetshop-SP",
+      "url": "https://www.tiktok.com/@sindpetshopsp",
+      "kind": "social",
+      "access": "browser_session",
+      "daily": true,
+      "capabilities": [
+        "open",
+        "read_public",
+        "browser_automation",
+        "content_review"
+      ],
+      "aliases": [
+        "tiktok",
+        "tik tok"
+      ],
+      "notes": "Leitura pública e navegação. Escrita depende de sessão/API autorizada.",
+      "when_to_use": "Quando a tarefa envolve vídeos curtos, presença no TikTok, referências de conteúdo ou publicação autorizada."
+    },
+    {
+      "id": "internal_system",
+      "name": "Sistema interno SindPetshop-SP",
+      "url": "http://186.227.199.107:8086/Home/Index",
+      "kind": "internal_system",
+      "access": "private_browser_session",
+      "daily": true,
+      "capabilities": [
+        "open",
+        "browser_automation"
+      ],
+      "aliases": [
+        "sistema interno",
+        "sistema",
+        "sistema do sindicato"
+      ],
+      "notes": "Endpoint interno/privado. Nunca fazer varredura automática; usar apenas quando o usuário autorizar e estiver autenticado.",
+      "when_to_use": "Quando a tarefa depende do sistema interno do sindicato e existe sessão autenticada/autorização. Nunca para varredura automática."
+    },
+    {
+      "id": "slack",
+      "name": "Slack SindPetshop-SP",
+      "url": "https://app.slack.com/client/T08THS3UKB5/C08THS48XQT",
+      "kind": "collaboration",
+      "access": "browser_session",
+      "daily": true,
+      "capabilities": [
+        "open",
+        "browser_automation",
+        "read_authorized",
+        "message_authorized"
+      ],
+      "aliases": [
+        "slack",
+        "canal slack"
+      ],
+      "notes": "Usar sessão autorizada no navegador. Futuramente pode receber um connector Slack Web API com OAuth e escopos mínimos.",
+      "when_to_use": "Quando a tarefa envolve comunicação interna, acompanhamento de canal, avisos ou mensagens autorizadas."
+    },
+    {
+      "id": "website",
+      "name": "Site SindPetshop-SP",
+      "url": "https://sindpetshop.org.br/",
+      "kind": "website",
+      "access": "public_web+authorized_wordpress",
+      "daily": true,
+      "capabilities": [
+        "open",
+        "read_public",
+        "research_context",
+        "monitor_page",
+        "wordpress_draft",
+        "seo_review"
+      ],
+      "aliases": [
+        "site",
+        "site do sindicato",
+        "sindpetshop.org.br",
+        "wordpress"
+      ],
+      "notes": "Fonte pública institucional. Edição deve usar WordPress autorizado e preferir rascunho antes de publicação.",
+      "when_to_use": "Quando a tarefa envolve informações institucionais públicas, notícias, SEO, matérias, CCTs ou WordPress autorizado."
+    }
+  ]
+}

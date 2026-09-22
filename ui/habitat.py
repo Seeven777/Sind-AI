@@ -3,7 +3,7 @@ import threading
 from pathlib import Path
 
 from PySide6.QtCore import QObject, QThread, Qt, Signal, Slot, QUrl
-from PySide6.QtWidgets import QMainWindow, QMessageBox
+from PySide6.QtWidgets import QMainWindow, QMessageBox, QFileDialog
 from PySide6.QtWebChannel import QWebChannel
 from PySide6.QtWebEngineWidgets import QWebEngineView
 
@@ -52,7 +52,7 @@ class JarvisBridge(QObject):
     newChatRequested = Signal()
 
     statusChanged = Signal(str, str)
-    commandFinished = Signal(str, str, bool)
+    commandFinished = Signal(str, str, bool, str)
     snapshotChanged = Signal(str)
 
     def __init__(self, window):
@@ -127,6 +127,64 @@ class JarvisBridge(QObject):
         try:
             result = self.window.agent.research.search(query, limit=8, official_first=True)
             return json.dumps(result, ensure_ascii=False)
+        except Exception as exc:
+            return json.dumps({"ok": False, "error": str(exc)}, ensure_ascii=False)
+
+    @Slot(result=str)
+    def pickAttachments(self):
+        try:
+            files, _ = QFileDialog.getOpenFileNames(
+                self.window,
+                "Anexar arquivos ao Jarvis",
+                str(Path.home()),
+                "Documentos suportados (*.pdf *.docx *.txt *.md *.csv *.json *.log *.html *.htm);;Todos os arquivos (*.*)",
+            )
+            if not files:
+                return json.dumps({"ok": True, "items": [], "count": 0}, ensure_ascii=False)
+            result = self.window.agent.attachments.add_files(
+                files,
+                session_id=self.window.agent.conversations.current_session_id,
+                project_id=self.window.agent.projects.current_id(),
+            )
+            return json.dumps(result, ensure_ascii=False, default=str)
+        except Exception as exc:
+            return json.dumps({"ok": False, "error": str(exc)}, ensure_ascii=False)
+
+    @Slot(str, str, result=str)
+    def createProject(self, name, description):
+        try:
+            result = self.window.agent.projects.create(name, description)
+            if result.get("ok"):
+                pid = result["data"]["id"]
+                self.window.agent.projects.link_session(
+                    pid, self.window.agent.conversations.current_session_id
+                )
+            return json.dumps(result, ensure_ascii=False, default=str)
+        except Exception as exc:
+            return json.dumps({"ok": False, "error": str(exc)}, ensure_ascii=False)
+
+    @Slot(int, result=str)
+    def setCurrentProject(self, project_id):
+        try:
+            result = self.window.agent.projects.set_current(project_id if project_id > 0 else None)
+            if project_id > 0:
+                self.window.agent.projects.link_session(
+                    project_id, self.window.agent.conversations.current_session_id
+                )
+            return json.dumps(result, ensure_ascii=False, default=str)
+        except Exception as exc:
+            return json.dumps({"ok": False, "error": str(exc)}, ensure_ascii=False)
+
+    @Slot(str, str, result=str)
+    def addProjectNote(self, title, body):
+        try:
+            pid = self.window.agent.projects.current_id()
+            if not pid:
+                return json.dumps({"ok": False, "error": "Nenhum projeto ativo."}, ensure_ascii=False)
+            return json.dumps(
+                self.window.agent.projects.add_note(pid, title, body),
+                ensure_ascii=False, default=str
+            )
         except Exception as exc:
             return json.dumps({"ok": False, "error": str(exc)}, ensure_ascii=False)
 
@@ -246,7 +304,7 @@ class HabitatWindow(QMainWindow):
             skills = []
 
         return {
-            "model": f"{self.config.get('fast_model','qwen3:1.7b')} ↔ {self.config.get('reasoning_model', self.config.get('model','qwen3:4b'))}",
+            "model": f"{self.agent.models.fast_model_name()} ↔ {self.agent.models.reason_model_name()}",
             "context": self.config.get("num_ctx", 4096),
             "workspace": str(self.agent.workspace),
             "persistent_root": str(self.agent.persistent_root),
@@ -311,11 +369,37 @@ class HabitatWindow(QMainWindow):
                 "learning": self.agent.learning.stats(),
                 "semantic": self.agent.semantic.stats(),
                 "lessons": self.agent.learning.list_lessons(limit=12).get("items", []),
+                "reflections": self.agent.reflections.stats(),
+                "reflection_items": self.agent.reflections.list(limit=10).get("items", []),
             },
+            "projects": {
+                "stats": self.agent.projects.stats(),
+                "current": self.agent.projects.current().get("data"),
+                "items": self.agent.projects.list(status="active", limit=30).get("items", []),
+                "notes": self.agent.projects.notes(self.agent.projects.current_id(), limit=10).get("items", [])
+                    if self.agent.projects.current_id() else [],
+            },
+            "attachments": {
+                "stats": self.agent.attachments.stats(),
+                "items": self.agent.attachments.list(
+                    session_id=self.agent.conversations.current_session_id,
+                    project_id=self.agent.projects.current_id(),
+                    limit=20,
+                ).get("items", []),
+            },
+            "improvements": {
+                "stats": self.agent.improvements.stats(),
+                "items": self.agent.improvements.list(status="proposed", limit=10).get("items", []),
+            },
+            "hardware": self.agent.hardware.profile(),
             "public_data": {
                 "stats": self.agent.public_data.stats(),
                 "sources": self.agent.public_data.list_sources(limit=50).get("items", []),
                 "proposals": self.agent.public_data.proposals(limit=10).get("items", []),
+            },
+            "institutional_services": {
+                "stats": self.agent.services.stats(),
+                "items": self.agent.services.list(daily=True).get("items", []),
             },
             "health": self.agent.supervisor.quick_health(),
             "diagnostics": {
@@ -410,6 +494,7 @@ class HabitatWindow(QMainWindow):
                 prompt,
                 "Já existe uma tarefa em execução.",
                 False,
+                "{}",
             )
             return
 
@@ -489,10 +574,15 @@ class HabitatWindow(QMainWindow):
             self.worker.resolve_confirmation(approved)
 
     def _on_finished(self, result, ok):
+        try:
+            metadata = json.dumps(self.agent._last_response_metadata or {}, ensure_ascii=False, default=str)
+        except Exception:
+            metadata = "{}"
         self.bridge.commandFinished.emit(
             self.current_prompt,
             result,
             ok,
+            metadata,
         )
 
         self.bridge.snapshotChanged.emit(

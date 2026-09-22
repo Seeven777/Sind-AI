@@ -22,7 +22,7 @@
   "agent_max_rounds": 4,
   "agent_max_tool_calls": 10,
   "agent_tool_result_chars": 3000,
-  "release_name": "Jarvis Cognitive Runtime 1.0b",
+  "release_name": "Jarvis Personal GPT 1.1 — Local Portal",
   "persistent_root_name": "JarvisData",
   "action_catalog": "actions/catalog.json",
   "browser_profile_dir": "browser/profile",
@@ -69,5 +69,14 @@
   "fast_model": "qwen3:1.7b",
   "reasoning_model": "qwen3:4b",
   "fast_model_timeout_seconds": 18,
-  "fast_model_fallback_timeout_seconds": 22
+  "fast_model_fallback_timeout_seconds": 22,
+  "projects_db": "cognitive/projects.db",
+  "reflections_db": "cognitive/reflections.db",
+  "improvements_db": "cognitive/improvements.db",
+  "attachments_db": "cognitive/attachments.db",
+  "ui_inspector_default_open": false,
+  "ui_markdown": true,
+  "ui_message_actions": true,
+  "auto_reflection_enabled": true,
+  "release_version": "1.1"
 }

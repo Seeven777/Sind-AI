@@ -1,0 +1,97 @@
+{
+  "version": "1.0",
+  "templates": [
+    {
+      "id": "wordpress_sindpetshop",
+      "service_id": "website",
+      "name": "WordPress REST — SindPetshop-SP",
+      "base_url": "https://sindpetshop.org.br/wp-json/",
+      "auth": "application_password",
+      "status": "template_only",
+      "read": [
+        "posts",
+        "pages",
+        "media",
+        "categories",
+        "users_when_permitted"
+      ],
+      "write": [
+        "draft_posts",
+        "media_upload",
+        "post_update"
+      ],
+      "governance": "draft_by_default",
+      "notes": "Usar Application Password dedicado ao Jarvis, nunca a senha principal."
+    },
+    {
+      "id": "slack_sindpetshop",
+      "service_id": "slack",
+      "name": "Slack Web API / Incoming Webhook",
+      "base_url": "https://slack.com/api/",
+      "auth": "oauth_or_webhook",
+      "status": "template_only",
+      "read": [
+        "authorized_channels",
+        "authorized_messages",
+        "files_when_scoped"
+      ],
+      "write": [
+        "post_message",
+        "schedule_message_when_scoped"
+      ],
+      "governance": "least_privilege",
+      "notes": "Criar app interno com apenas os scopes necessários. Webhook é opção simples para envio; leitura exige scopes/API."
+    },
+    {
+      "id": "linkedin_sindpetshop",
+      "service_id": "linkedin",
+      "name": "LinkedIn Posts API",
+      "base_url": "https://api.linkedin.com/rest/",
+      "auth": "oauth",
+      "status": "template_only",
+      "read": [
+        "organization_posts_when_approved"
+      ],
+      "write": [
+        "organization_posts_when_approved"
+      ],
+      "governance": "approval_required",
+      "notes": "Permissões de organização dependem de função na página e acesso aprovado. Browser autorizado permanece fallback."
+    },
+    {
+      "id": "tiktok_sindpetshop",
+      "service_id": "tiktok",
+      "name": "TikTok Content Posting API",
+      "base_url": "https://open.tiktokapis.com/",
+      "auth": "oauth",
+      "status": "template_only",
+      "read": [
+        "creator_info_when_scoped",
+        "post_status"
+      ],
+      "write": [
+        "upload_draft",
+        "direct_post_when_audited"
+      ],
+      "governance": "approval_required",
+      "notes": "Direct Post exige autorização do usuário e clientes não auditados podem ficar restritos; browser autorizado é fallback."
+    },
+    {
+      "id": "meta_sindpetshop",
+      "service_id": "instagram",
+      "name": "Meta / Instagram Professional API",
+      "base_url": "https://graph.facebook.com/",
+      "auth": "oauth",
+      "status": "template_only",
+      "read": [
+        "insights_when_authorized",
+        "account_media_when_authorized"
+      ],
+      "write": [
+        "publishing_when_authorized"
+      ],
+      "governance": "approval_required",
+      "notes": "Priorizar a integração oficial já usada pelo dashboard de insights quando credenciais/escopos forem disponibilizados."
+    }
+  ]
+}

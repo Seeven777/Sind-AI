@@ -1,0 +1,8 @@
+{
+  "name": "Sind AI — Jarvis Local Launcher",
+  "short_name": "Sind AI",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#07080d",
+  "theme_color": "#08090e"
+}
