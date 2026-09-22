@@ -123,7 +123,7 @@ function renderSnapshot(data){
   snapshot=data||{};
   $('footerModel').textContent=snapshot.model||'adaptive local';
   const hw=snapshot.hardware||{};$('hardwareLabel').textContent=hw.tier?`${hw.tier} • ${hw.ram_gb||'?'} GB • ${hw.cpu_threads||'?'} threads`:'local • CPU';
-  renderSessions();renderContext();renderSources();renderActivity();renderProjects();renderAttachments();renderControlCenter();
+  renderSessions();renderContext();renderSources();renderActivity();renderProjects();renderAttachments();renderMobile();renderControlCenter();
 }
 function renderSessions(){
   const info=snapshot?.cognitive?.sessions||{};const items=info.items||[];const current=info.current;
@@ -204,6 +204,36 @@ function pickAttachments(){
   bridge.pickAttachments(raw=>{let d={};try{d=JSON.parse(raw)}catch{};if(!d.ok&&d.error)alert(d.error);fetchSnapshot()})
 }
 
+function renderMobile(){
+  const m=snapshot?.mobile||{};
+  const running=!!m.running;
+  const side=$('mobileSideStatus');if(side)side.textContent=running?'ativo • mesma rede':'desligado';
+  const dot=$('mobileStateDot');if(dot)dot.classList.toggle('on',running);
+  const label=$('mobileStateLabel');if(label)label.textContent=running?'Acesso mobile ativo':'Acesso mobile desligado';
+  const hint=$('mobileStateHint');if(hint)hint.textContent=running?'Use o endereço abaixo no celular.':'Ative para usar na mesma rede Wi‑Fi.';
+  const url=$('mobileUrl');if(url)url.textContent=running?(m.url||'—'):'—';
+  const pin=$('mobilePin');if(pin)pin.textContent=running?(m.pin||'———'):'———';
+  const toggle=$('mobileToggleBtn');if(toggle)toggle.textContent=running?'Desativar acesso mobile':'Ativar acesso mobile';
+}
+function toggleMobile(){
+  if(!bridge)return;
+  const btn=$('mobileToggleBtn');if(btn)btn.disabled=true;
+  bridge.mobileToggle(raw=>{
+    let d={};try{d=JSON.parse(raw)}catch{}
+    if(!d.ok&&d.error)alert(d.error);
+    if(btn)btn.disabled=false;
+    fetchSnapshot();
+  });
+}
+function resetMobilePin(){
+  if(!bridge)return;
+  bridge.mobileResetPin(raw=>{
+    let d={};try{d=JSON.parse(raw)}catch{}
+    if(!d.ok&&d.error)alert(d.error);
+    fetchSnapshot();
+  });
+}
+
 function renderControlCenter(){
   if(!snapshot)return;
   const a=snapshot.actions||{},w=snapshot.workflows||{},c=snapshot.capabilities||{},p=snapshot.public_data?.stats||{},k=snapshot.knowledge||{},auto=snapshot.automations?.stats||{},con=snapshot.connectors?.stats||{},r=snapshot.cognitive?.reflections||{},proj=snapshot.projects?.stats||{};
@@ -273,6 +303,9 @@ $('newChatBtn').onclick=()=>{if(bridge)bridge.newChat();showWelcome();fetchSnaps
 $('conversationSearch').addEventListener('input',renderSessions);
 $('projectBtn').onclick=()=>openOverlay('projectOverlay');$('projectChip').onclick=()=>openOverlay('projectOverlay');
 $('createProjectBtn').onclick=createProject;
+$('mobileBtn').onclick=()=>{openOverlay('mobileOverlay');renderMobile()};
+$('mobileToggleBtn').onclick=toggleMobile;
+$('mobileResetBtn').onclick=resetMobilePin;
 $('controlBtn').onclick=()=>{openOverlay('controlOverlay');renderControlCenter()};
 document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>closeOverlay(b.dataset.close));
 document.querySelectorAll('.overlay').forEach(x=>x.onclick=e=>{if(e.target===x)x.classList.add('hidden')});

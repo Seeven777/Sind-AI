@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#07090f">
+  <title>Jarvis Mobile</title>
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="aurora a1"></div><div class="aurora a2"></div>
+  <section class="pair-screen" id="pairScreen">
+    <div class="pair-card">
+      <div class="orb"><span>✦</span></div>
+      <div class="kicker">JARVIS MOBILE COMPANION</div>
+      <h1>Conecte ao seu Jarvis.</h1>
+      <p>O celular vira a interface. Modelo, memória, arquivos e ferramentas continuam rodando no computador.</p>
+      <label>PIN exibido no Jarvis do computador</label>
+      <div class="pin-row">
+        <input id="pinInput" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="000000">
+        <button id="pairBtn">Conectar</button>
+      </div>
+      <div class="pair-error" id="pairError"></div>
+      <div class="privacy-note"><i></i><span>Conexão local • mesma rede Wi‑Fi • nada é processado neste servidor móvel</span></div>
+    </div>
+  </section>
+
+  <div class="app hidden" id="app">
+    <header class="topbar">
+      <button class="round" id="historyBtn" aria-label="Conversas">☰</button>
+      <div class="identity"><div class="mini-orb">✦</div><div><b>Jarvis</b><span id="statusLabel">local • pronto</span></div></div>
+      <button class="round" id="contextBtn" aria-label="Contexto">◇</button>
+    </header>
+
+    <main class="chat" id="chat">
+      <section class="welcome" id="welcome">
+        <div class="hero-orb"><span>✦</span></div>
+        <h2>Olá. O que vamos fazer?</h2>
+        <p>Você está usando o mesmo Jarvis do computador, com o mesmo contexto e memória.</p>
+        <div class="quick">
+          <button data-prompt="O que temos em andamento hoje?">Em andamento</button>
+          <button data-prompt="Me ajude a planejar uma publicação.">Planejar conteúdo</button>
+          <button data-prompt="Pesquise fontes oficiais sobre um assunto que eu indicar.">Pesquisar</button>
+        </div>
+      </section>
+    </main>
+
+    <section class="composer-shell">
+      <div class="upload-strip" id="uploadStrip"></div>
+      <div class="composer">
+        <button class="attach" id="attachBtn">＋</button>
+        <textarea id="messageInput" rows="1" placeholder="Fale com o Jarvis..."></textarea>
+        <button class="send" id="sendBtn">↑</button>
+      </div>
+      <input id="fileInput" type="file" hidden accept=".pdf,.docx,.txt,.md,.csv,.json,.html,.htm,.log">
+      <div class="safe-area"></div>
+    </section>
+
+    <aside class="sheet hidden" id="historySheet">
+      <div class="sheet-backdrop" data-close-sheet></div>
+      <div class="sheet-panel left">
+        <div class="sheet-head"><div><small>CONVERSAS</small><h3>Histórico</h3></div><button data-close-sheet>×</button></div>
+        <button class="new-chat" id="newChatBtn">＋ Nova conversa</button>
+        <div class="conversation-list" id="conversationList"></div>
+      </div>
+    </aside>
+
+    <aside class="sheet hidden" id="contextSheet">
+      <div class="sheet-backdrop" data-close-sheet></div>
+      <div class="sheet-panel right">
+        <div class="sheet-head"><div><small>CONTEXTO</small><h3>Este Jarvis</h3></div><button data-close-sheet>×</button></div>
+        <div class="context-card" id="projectCard"></div>
+        <div class="metric-grid" id="metricGrid"></div>
+        <div class="note-card"><b>Mobile Companion</b><p>Este celular controla o runtime local no computador. Fechar esta tela não encerra o Jarvis.</p></div>
+      </div>
+    </aside>
+  </div>
+<script src="/app.js"></script>
+</body>
+</html>

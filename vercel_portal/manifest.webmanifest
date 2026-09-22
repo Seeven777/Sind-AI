@@ -1,8 +1,20 @@
 {
-  "name": "Sind AI — Jarvis Local Launcher",
+  "name": "Sind AI — Jarvis Local",
   "short_name": "Sind AI",
-  "start_url": "/",
+  "description": "Launcher instalável do Jarvis Personal GPT. O processamento de IA continua no computador local.",
+  "start_url": "/?source=pwa",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#07080d",
-  "theme_color": "#08090e"
+  "orientation": "any",
+  "background_color": "#07090f",
+  "theme_color": "#07090f",
+  "prefer_related_applications": false,
+  "icons": [
+    {"src":"/icons/icon-192.png","sizes":"192x192","type":"image/png","purpose":"any maskable"},
+    {"src":"/icons/icon-512.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}
+  ],
+  "shortcuts": [
+    {"name":"Abrir Jarvis local","short_name":"Abrir Jarvis","url":"/?action=open"},
+    {"name":"Conectar celular ao PC","short_name":"Mobile","url":"/#mobile"}
+  ]
 }

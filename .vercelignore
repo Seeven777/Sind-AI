@@ -1,0 +1,7 @@
+# Vercel recebe somente o launcher/PWA estático.
+/*
+!vercel.json
+!package.json
+!vercel_build.cjs
+!vercel_portal
+!vercel_portal/**

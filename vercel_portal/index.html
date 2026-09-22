@@ -1,5 +1,94 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#08090e"><title>Sind AI • Jarvis Local</title><link rel="manifest" href="/manifest.webmanifest"><link rel="stylesheet" href="/styles.css"></head><body><div class="shell"><aside class="side"><div class="brand"><div class="mark">✦</div><div><strong>Sind AI</strong><span>Jarvis Personal GPT</span></div></div><div class="privacy"><span class="dot"></span><div><b>Execução local</b><small>Vercel não executa sua IA</small></div></div><nav><button class="nav active" data-view="start">Início</button><button class="nav" data-view="install">Instalação</button><button class="nav" data-view="architecture">Como funciona</button><button class="nav" data-view="help">Diagnóstico</button></nav><div class="side-foot"><a href="https://github.com/Seeven777/Sind-AI" target="_blank" rel="noreferrer">GitHub do projeto</a><small>Portal estático • sem processamento de prompts</small></div></aside><main><header><div><span class="eyebrow">LOCAL-FIRST</span><h1>Jarvis no seu computador.</h1></div><div class="top-status"><span class="status-pill">Vercel = launcher</span><span class="status-pill local">IA = local</span></div></header>
-<section class="view active" id="view-start"><div class="hero"><div class="hero-copy"><h2>Uma interface compartilhável sem mandar o cérebro para a nuvem.</h2><p>Esta página só distribui e inicia o Jarvis. Conversas, modelos, memória, arquivos, automações e ferramentas continuam executando no computador de cada usuário.</p><div class="hero-actions"><button class="primary" id="launchBtn">Abrir Jarvis local</button><button class="secondary" data-open-view="install">Configurar este computador</button></div><div class="launch-note" id="launchNote">Se o Jarvis ainda não estiver instalado, use “Configurar este computador”.</div></div><div class="diagram-card"><div class="diagram-row"><div class="node cloud">Vercel<div>launcher estático</div></div><span>→</span><div class="node pc">Seu PC<div>Jarvis + Ollama + memória</div></div></div><div class="mini-rule"></div><ul><li>Nenhum modelo roda na Vercel.</li><li>Nenhum prompt é processado na Vercel.</li><li>Cada funcionário mantém seu runtime e dados locais.</li><li>Integrações externas continuam sob permissões autorizadas.</li></ul></div></div><div class="cards"><article><span>01</span><h3>Instale uma vez</h3><p>Python, dependências, Ollama, modelos e o protocolo <code>jarvis://</code> são preparados localmente.</p></article><article><span>02</span><h3>Acesse pelo portal</h3><p>A equipe usa a mesma URL da Vercel como ponto de entrada e atualização.</p></article><article><span>03</span><h3>Continue local</h3><p>O aplicativo real abre no Windows e usa o hardware daquela máquina.</p></article></div></section>
-<section class="view" id="view-install"><div class="section-head"><span class="eyebrow">SETUP</span><h2>Configurar este computador</h2><p>O instalador verifica o ambiente e prepara o necessário localmente.</p></div><div class="requirements"><div class="requirement"><b>Windows 10/11</b><span>Ambiente principal desta release.</span></div><div class="requirement"><b>Python 3.12+</b><span>Instalado via winget quando necessário.</span></div><div class="requirement"><b>Ollama</b><span>Executa os modelos localmente.</span></div><div class="requirement"><b>8 GB+ RAM</b><span>O instalador escolhe modelos conforme a memória.</span></div></div><div class="installer-box"><div><h3>Instalação assistida</h3><p>Baixe o script e execute com PowerShell. Ele baixa a versão atual do GitHub para seu perfil local, prepara o ambiente e registra <code>jarvis://</code>.</p></div><a class="primary link-button" href="/Install-Jarvis.ps1" download>Baixar instalador</a></div><div class="steps"><div><span>1</span><p>Baixe <b>Install-Jarvis.ps1</b>.</p></div><div><span>2</span><p>Abra PowerShell na pasta do arquivo.</p></div><div><span>3</span><p>Execute:</p></div></div><div class="command"><code id="installCommand">powershell -ExecutionPolicy Bypass -File .\Install-Jarvis.ps1</code><button id="copyInstall">Copiar</button></div><div class="warning">O instalador não contém senhas do sindicato. Sessões, tokens e logins continuam configurados individualmente e armazenados localmente quando aplicável.</div></section>
-<section class="view" id="view-architecture"><div class="section-head"><span class="eyebrow">ARQUITETURA</span><h2>Deploy híbrido, processamento local</h2></div><div class="architecture"><div class="arch-column"><b>Na Vercel</b><ul><li>HTML/CSS/JS do launcher</li><li>guia e instalador</li><li>nenhum Python do Jarvis</li><li>nenhum Ollama</li><li>nenhuma memória pessoal</li></ul></div><div class="arch-arrow">→</div><div class="arch-column emphasis"><b>No computador</b><ul><li>Cognitive Core</li><li>Ollama/modelos</li><li>SQLite + memória</li><li>desktop/arquivos</li><li>Browser Agent</li><li>integrações autorizadas</li></ul></div></div><div class="callout"><b>Por que não rodar o Jarvis dentro da Vercel?</b><p>O projeto usa automação do Windows, arquivos locais, Ollama, sessões do navegador e memória persistente. Colocar o backend em serverless deixaria de ser local-first.</p></div></section>
-<section class="view" id="view-help"><div class="section-head"><span class="eyebrow">DIAGNÓSTICO</span><h2>Se algo não abrir</h2></div><div class="diagnostic-grid"><article><h3>Portal abre, Jarvis não</h3><p>Rode o instalador novamente ou <code>run_doctor.bat</code>.</p></article><article><h3>Modelo não responde</h3><p>Abra o Ollama e rode <code>run_model_router_test.bat</code>.</p></article><article><h3>Navegador/Windows falha</h3><p>Use <code>run_routing_test.bat</code> e <code>run_browser_test.bat</code>.</p></article><article><h3>Precisa atualizar</h3><p>Rode o instalador novamente. <code>~/JarvisData</code> é preservado.</p></article></div><div class="help-actions"><a class="secondary link-button" href="https://github.com/Seeven777/Sind-AI" target="_blank" rel="noreferrer">Abrir repositório</a><button class="primary" id="launchBtn2">Tentar abrir Jarvis</button></div></section></main></div><script src="/app.js"></script></body></html>
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#07090f">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="/icons/icon-192.png">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="stylesheet" href="/styles.css">
+  <title>Sind AI • Jarvis Local</title>
+</head>
+<body>
+<div class="bg bg-a"></div><div class="bg bg-b"></div>
+<div class="shell">
+  <aside class="side">
+    <div class="brand"><div class="mark">✦</div><div><strong>Sind AI</strong><span>Jarvis Personal GPT</span></div></div>
+    <div class="local-badge"><i></i><div><b>Local-first</b><small>Vercel não processa suas conversas</small></div></div>
+    <nav>
+      <button class="nav active" data-view="start"><span>⌂</span>Início</button>
+      <button class="nav" data-view="mobile"><span>▱</span>Celular</button>
+      <button class="nav" data-view="install"><span>↓</span>Instalação PC</button>
+      <button class="nav" data-view="architecture"><span>◇</span>Como funciona</button>
+      <button class="nav" data-view="help"><span>?</span>Diagnóstico</button>
+    </nav>
+    <div class="side-foot"><a href="https://github.com/Seeven777/Sind-AI" target="_blank" rel="noreferrer">GitHub do projeto ↗</a><small>Interface hospedada • inteligência local</small></div>
+  </aside>
+
+  <main>
+    <header>
+      <div class="header-copy"><span class="eyebrow">SIND AI / DISTRIBUIÇÃO</span><h1>Seu Jarvis, onde você estiver.</h1></div>
+      <div class="header-actions"><button class="install-pwa" id="installPwaBtn">Instalar app</button><span class="status-pill">Vercel = interface</span><span class="status-pill local">IA = local</span></div>
+    </header>
+
+    <section class="view active" id="view-start">
+      <div class="hero">
+        <div class="hero-copy">
+          <div class="hero-kicker"><i></i> PERSONAL GPT LOCAL</div>
+          <h2>Uma porta de entrada única para cada computador e celular.</h2>
+          <p>Instale o Jarvis em cada PC da equipe. No celular, use este app como launcher e conecte ao Jarvis de um computador na mesma rede quando quiser acessar a IA móvel.</p>
+          <div class="hero-actions"><button class="primary" id="launchBtn">Abrir Jarvis no PC</button><button class="secondary" data-open-view="mobile">Usar no celular</button><button class="tertiary" data-open-view="install">Configurar outro PC</button></div>
+          <div class="microcopy" id="launchNote">Modelos, memória, arquivos e ferramentas continuam no dispositivo que executa o Jarvis.</div>
+        </div>
+        <div class="system-card">
+          <div class="orb-wrap"><div class="ring r1"></div><div class="ring r2"></div><div class="system-orb">✦</div></div>
+          <div class="flow"><div><small>VERCEL</small><b>Interface</b><span>instalação • atualização • mobile launcher</span></div><em>→</em><div class="active"><small>SEU DISPOSITIVO</small><b>Jarvis</b><span>Ollama • memória • ferramentas • dados</span></div></div>
+        </div>
+      </div>
+      <div class="cards"><article><span>01</span><h3>Mesmo projeto</h3><p>GitHub distribui uma única versão para todos os computadores.</p></article><article><span>02</span><h3>Dados locais</h3><p>Cada usuário mantém modelos, memória e documentos em seu próprio runtime.</p></article><article><span>03</span><h3>Companion mobile</h3><p>O celular pode controlar o Jarvis do PC pela rede local, com PIN de pareamento.</p></article></div>
+    </section>
+
+    <section class="view" id="view-mobile">
+      <div class="section-head"><span class="eyebrow">MOBILE COMPANION</span><h2>Use o Jarvis pelo celular.</h2><p>O smartphone vira a interface. O processamento continua no computador conectado, sem mover o cérebro do Jarvis para a nuvem.</p></div>
+      <div class="mobile-layout">
+        <div class="phone-preview"><div class="notch"></div><div class="phone-orb">✦</div><b>Jarvis Mobile</b><span>mesma memória • mesmo contexto</span><div class="phone-composer">Fale com o Jarvis… <i>↑</i></div></div>
+        <div class="mobile-setup">
+          <div class="setup-card"><span>1</span><div><b>Ative o Mobile Companion no PC</b><p>No Jarvis do computador, abra <strong>Jarvis Mobile</strong> ou use o ícone da bandeja e escolha <strong>Ativar acesso mobile</strong>.</p></div></div>
+          <div class="setup-card"><span>2</span><div><b>Copie o endereço e o PIN</b><p>O Jarvis mostrará algo como <code>http://192.168.0.20:8770</code> e um PIN de 6 dígitos.</p></div></div>
+          <div class="setup-card"><span>3</span><div><b>Abra no celular</b><p>Conecte o telefone à mesma rede Wi‑Fi e abra o endereço. O pareamento fica válido por até 24 horas.</p></div></div>
+          <div class="connect-box"><label>Endereço do seu PC</label><div><input id="mobileAddress" placeholder="http://192.168.0.20:8770"><button id="openMobileBtn">Conectar</button></div><small>Este app apenas abre o endereço local. Ele não envia seu PIN ou conversa para a Vercel.</small></div>
+          <div class="pwa-box"><div><b>Instale este launcher no celular</b><p>Use o botão <strong>Instalar app</strong>. No iPhone, use o menu Compartilhar → Adicionar à Tela de Início.</p></div><button class="secondary" id="installPwaBtn2">Instalar app</button></div>
+        </div>
+      </div>
+      <div class="mobile-note"><b>Importante:</b> o modo móvel completo requer um computador com Jarvis ligado. Esta versão não tenta executar Ollama ou automação de Windows dentro do celular.</div>
+    </section>
+
+    <section class="view" id="view-install">
+      <div class="section-head"><span class="eyebrow">SETUP WINDOWS</span><h2>Instalar o Jarvis em outro computador</h2><p>O script prepara Python, dependências, Ollama, modelos adequados ao hardware e registra <code>jarvis://</code>.</p></div>
+      <div class="requirements"><div class="requirement"><b>Windows 10/11</b><span>Ambiente principal.</span></div><div class="requirement"><b>Python 3.12+</b><span>Instalado quando necessário.</span></div><div class="requirement"><b>Ollama</b><span>Modelos locais.</span></div><div class="requirement"><b>8 GB+ RAM</b><span>Perfil adaptativo.</span></div></div>
+      <div class="installer-box"><div><h3>Instalação assistida</h3><p>Baixe o script e execute com PowerShell. O código é baixado diretamente do GitHub e seus dados persistentes ficam fora da pasta da versão.</p></div><a class="primary link-button" href="/Install-Jarvis.ps1" download>Baixar instalador</a></div>
+      <div class="steps"><div><span>1</span><p>Baixe <b>Install-Jarvis.ps1</b>.</p></div><div><span>2</span><p>Abra PowerShell na pasta.</p></div><div><span>3</span><p>Execute:</p></div></div>
+      <div class="command"><code id="installCommand">powershell -ExecutionPolicy Bypass -File .\Install-Jarvis.ps1</code><button id="copyInstall">Copiar</button></div>
+      <div class="warning">O instalador não contém senhas do sindicato. Sessões, tokens e logins continuam individuais.</div>
+    </section>
+
+    <section class="view" id="view-architecture">
+      <div class="section-head"><span class="eyebrow">ARQUITETURA</span><h2>Cloud para distribuir. Local para pensar e agir.</h2></div>
+      <div class="architecture"><div class="arch-column"><b>Na Vercel</b><ul><li>PWA/launcher</li><li>guia e instalador</li><li>atalho mobile</li><li>nenhum Python do Jarvis</li><li>nenhum Ollama</li><li>nenhuma memória pessoal</li></ul></div><div class="arch-arrow">→</div><div class="arch-column emphasis"><b>No computador</b><ul><li>Cognitive Core</li><li>Ollama/modelos</li><li>SQLite + memória</li><li>desktop e arquivos</li><li>Browser Agent</li><li>Mobile Companion LAN</li></ul></div></div>
+      <div class="callout"><b>Por que o celular usa o PC como cérebro?</b><p>O Jarvis depende de modelos locais, dados persistentes, sessões do navegador e automação do Windows. O celular fornece uma interface leve sem duplicar esse ambiente.</p></div>
+    </section>
+
+    <section class="view" id="view-help">
+      <div class="section-head"><span class="eyebrow">DIAGNÓSTICO</span><h2>Se algo não abrir</h2></div>
+      <div class="diagnostic-grid"><article><h3>Portal abre, Jarvis não</h3><p>Rode o instalador novamente ou <code>run_doctor.bat</code>.</p></article><article><h3>Celular não conecta</h3><p>Confirme mesma rede Wi‑Fi, Mobile Companion ativo e firewall permitindo a porta 8770.</p></article><article><h3>Modelo não responde</h3><p>Abra o Ollama e rode <code>run_model_router_test.bat</code>.</p></article><article><h3>Precisa atualizar</h3><p>Rode o instalador novamente. <code>~/JarvisData</code> é preservado.</p></article></div>
+      <div class="help-actions"><a class="secondary link-button" href="https://github.com/Seeven777/Sind-AI" target="_blank" rel="noreferrer">Abrir repositório</a><button class="primary" id="launchBtn2">Tentar abrir Jarvis</button></div>
+    </section>
+  </main>
+</div>
+
+<div class="ios-sheet hidden" id="iosSheet"><div class="ios-backdrop" id="iosClose"></div><div class="ios-card"><div class="drag"></div><h3>Instalar no iPhone</h3><p>Abra este site no Safari, toque em <b>Compartilhar</b>, escolha <b>Adicionar à Tela de Início</b> e ative <b>Abrir como App</b> quando essa opção aparecer.</p><button id="iosOk">Entendi</button></div></div>
+<script src="/app.js"></script>
+</body>
+</html>

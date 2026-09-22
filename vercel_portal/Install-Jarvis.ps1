@@ -64,7 +64,7 @@ $source = Get-ChildItem $tempRoot -Directory | Where-Object { Test-Path (Join-Pa
 if (-not $source) {
   $source = Get-ChildItem $tempRoot -Directory -Recurse | Where-Object { Test-Path (Join-Path $_.FullName "jarvis_desktop.py") } | Select-Object -First 1
 }
-if (-not $source) { throw "O pacote baixado nao contem jarvis_desktop.py. Confirme se a branch '$Branch' ja recebeu a versao 1.1." }
+if (-not $source) { throw "O pacote baixado nao contem jarvis_desktop.py. Confirme se a branch '$Branch' ja recebeu a versao 1.2." }
 
 Write-Step "Atualizando runtime local"
 New-Item -ItemType Directory -Path $InstallDir -Force | Out-Null

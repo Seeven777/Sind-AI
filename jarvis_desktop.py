@@ -9,6 +9,7 @@ from core.agent import JarvisAgent
 from ui.habitat import HabitatWindow
 from ui.hotkey import GlobalHotkey, HotkeyBridge
 from ui.popup import make_icon
+from mobile.companion import MobileCompanion
 
 
 BASE = Path(__file__).resolve().parent
@@ -38,6 +39,14 @@ def main():
         base_dir=BASE,
     )
 
+    mobile = MobileCompanion(agent, config, BASE)
+    window.mobile_companion = mobile
+    if config.get("mobile_companion_enabled", True) and config.get("mobile_companion_autostart", False):
+        try:
+            mobile.start()
+        except Exception:
+            pass
+
     tray = QSystemTrayIcon(make_icon(), app)
     menu = QMenu()
 
@@ -52,6 +61,25 @@ def main():
         lambda: window.set_mode("compact")
     )
     menu.addAction(open_compact)
+
+    menu.addSeparator()
+
+    mobile_toggle = QAction("Ativar acesso mobile", app)
+    def toggle_mobile():
+        try:
+            state = mobile.toggle()
+            mobile_toggle.setText("Desativar acesso mobile" if state.get("running") else "Ativar acesso mobile")
+            if state.get("running"):
+                window.show_mobile_pairing()
+        except Exception as exc:
+            from PySide6.QtWidgets import QMessageBox
+            QMessageBox.warning(window, "Acesso mobile", str(exc))
+    mobile_toggle.triggered.connect(toggle_mobile)
+    menu.addAction(mobile_toggle)
+
+    mobile_info = QAction("Mostrar acesso mobile", app)
+    mobile_info.triggered.connect(window.show_mobile_pairing)
+    menu.addAction(mobile_info)
 
     menu.addSeparator()
 
@@ -76,6 +104,10 @@ def main():
 
     def quit_app():
         hotkey.stop()
+        try:
+            mobile.stop()
+        except Exception:
+            pass
         try:
             agent.shutdown()
         except Exception:

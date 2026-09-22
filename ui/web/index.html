@@ -3,62 +3,76 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Jarvis Personal GPT</title>
+  <title>Jarvis • Sind AI</title>
   <link rel="stylesheet" href="styles.css">
   <script src="qrc:///qtwebchannel/qwebchannel.js"></script>
 </head>
 <body>
+<div class="ambient ambient-a"></div><div class="ambient ambient-b"></div>
 <div class="app no-inspector" id="app">
   <aside class="sidebar">
     <div class="brand drag-zone">
-      <div class="brand-mark">✦</div>
-      <div><strong>Sind</strong><span>Personal GPT local</span></div>
+      <div class="brand-orb"><span>✦</span></div>
+      <div class="brand-copy"><strong>Sind AI</strong><span>Personal GPT local</span></div>
     </div>
 
-    <button class="new-chat" id="newChatBtn"><span>＋</span> Nova conversa</button>
-    <input class="conversation-search" id="conversationSearch" placeholder="Buscar conversas">
+    <button class="new-chat" id="newChatBtn"><span>＋</span><b>Nova conversa</b><kbd>Ctrl N</kbd></button>
+    <div class="search-wrap"><span>⌕</span><input id="conversationSearch" placeholder="Buscar conversas"></div>
 
     <div class="sidebar-section">
-      <div class="section-label">CONVERSAS</div>
+      <div class="section-label"><span>CONVERSAS</span><i></i></div>
       <div class="conversation-list" id="conversationList"></div>
     </div>
 
     <div class="sidebar-bottom">
-      <button class="control-btn" id="projectBtn">
-        <span>◇</span><div><b id="projectLabel">Sem projeto</b><small>contexto de trabalho</small></div>
+      <button class="nav-card" id="projectBtn">
+        <span class="nav-icon">◇</span><div><b id="projectLabel">Sem projeto</b><small>contexto de trabalho</small></div><em>›</em>
       </button>
-      <button class="control-btn" id="controlBtn">
-        <span>⌘</span><div><b>Centro de controle</b><small>sistema, memória e integrações</small></div>
+      <button class="nav-card" id="mobileBtn">
+        <span class="nav-icon">▱</span><div><b>Jarvis Mobile</b><small id="mobileSideStatus">desligado</small></div><em>›</em>
       </button>
-      <div class="local-state"><i id="footerDot"></i><div><b id="footerModel">adaptive local</b><small id="hardwareLabel">local • CPU</small></div></div>
+      <button class="nav-card" id="controlBtn">
+        <span class="nav-icon">⌘</span><div><b>Centro de controle</b><small>memória, dados e sistema</small></div><em>›</em>
+      </button>
+      <div class="runtime-card">
+        <span class="runtime-dot" id="footerDot"></span>
+        <div><b id="footerModel">adaptive local</b><small id="hardwareLabel">local • CPU</small></div>
+      </div>
     </div>
   </aside>
 
   <main class="main">
     <header class="topbar drag-zone">
       <div class="top-title">
-        <strong id="chatTitle">Jarvis</strong>
-        <span><i id="statusDot"></i><em id="statusText">pronto</em></span>
+        <div class="top-orb"><span>✦</span></div>
+        <div><strong id="chatTitle">Jarvis</strong><span><i id="statusDot"></i><em id="statusText">pronto</em></span></div>
       </div>
       <div class="top-actions no-drag">
-        <button class="ghost project-chip" id="projectChip">Sem projeto</button>
-        <button class="ghost" id="contextToggle">Contexto</button>
+        <button class="project-chip" id="projectChip">Sem projeto</button>
+        <button class="soft-btn" id="contextToggle"><span>◫</span> Contexto</button>
         <button class="icon-btn" id="compactBtn" title="Modo compacto">◱</button>
-        <button class="icon-btn" data-window="minimize">—</button>
-        <button class="icon-btn" data-window="hide">×</button>
+        <div class="window-divider"></div>
+        <button class="icon-btn window" data-window="minimize">—</button>
+        <button class="icon-btn window" data-window="hide">×</button>
       </div>
     </header>
 
     <section class="chat-scroll" id="chatScroll">
       <div class="conversation" id="conversation">
         <div class="welcome" id="welcome">
-          <div class="welcome-orb">✦</div>
-          <h1>O que você precisa?</h1>
-          <p>Converse normalmente. O Jarvis lembra contexto, consulta dados, pesquisa e usa ferramentas quando isso realmente ajuda.</p>
+          <div class="welcome-visual">
+            <div class="halo h1"></div><div class="halo h2"></div><div class="halo h3"></div>
+            <div class="core-orb"><span>✦</span></div>
+          </div>
+          <div class="welcome-copy">
+            <div class="welcome-kicker"><i></i> COGNITIVE CORE ONLINE</div>
+            <h1>O que vamos construir hoje?</h1>
+            <p>Converse normalmente. Eu uso memória, documentos, web, dados públicos e ferramentas somente quando forem úteis.</p>
+          </div>
           <div class="welcome-hints">
-            <button data-prompt="Quero começar um novo projeto. Me ajude a organizar o contexto.">Novo projeto</button>
-            <button data-prompt="Pesquise fontes oficiais sobre um assunto que eu indicar.">Pesquisar</button>
-            <button data-prompt="O que você lembra das nossas conversas recentes?">Lembrar</button>
+            <button data-prompt="Quero começar um novo projeto. Me ajude a organizar o contexto."><span>◇</span><b>Novo projeto</b><small>Organizar contexto e decisões</small></button>
+            <button data-prompt="Pesquise fontes oficiais sobre um assunto que eu indicar."><span>⌕</span><b>Pesquisar</b><small>Web e dados públicos</small></button>
+            <button data-prompt="O que você lembra das nossas conversas recentes?"><span>◌</span><b>Lembrar</b><small>Recuperar contexto anterior</small></button>
           </div>
         </div>
       </div>
@@ -66,12 +80,13 @@
 
     <section class="composer-wrap">
       <div class="attachment-strip" id="attachmentStrip"></div>
+      <div class="composer-glow"></div>
       <div class="composer">
         <textarea id="promptInput" rows="1" placeholder="Converse com o Jarvis..."></textarea>
         <div class="composer-row">
           <div class="composer-left">
-            <button class="tool-btn" id="attachBtn" title="Anexar documento">⌕</button>
-            <div class="mode-note"><span>AUTO</span><b id="modeText">conversa + contexto + ferramentas sob demanda</b></div>
+            <button class="tool-btn" id="attachBtn" title="Anexar documento">＋</button>
+            <div class="mode-note"><span>AUTO</span><b id="modeText">contexto + ferramentas sob demanda</b></div>
           </div>
           <div class="composer-actions">
             <button class="cancel" id="cancelBtn">Parar</button>
@@ -79,73 +94,75 @@
           </div>
         </div>
       </div>
-      <div class="footnote">Local-first • Ctrl+K centro de controle • Ctrl+N nova conversa</div>
+      <div class="footnote">Local-first • <kbd>Ctrl K</kbd> controle • <kbd>Ctrl N</kbd> nova conversa</div>
     </section>
   </main>
 
   <aside class="inspector hidden" id="inspector">
     <div class="inspector-head">
-      <div class="inspector-tabs">
-        <button class="inspector-tab active" data-tab="context">Contexto</button>
-        <button class="inspector-tab" data-tab="sources">Fontes</button>
-        <button class="inspector-tab" data-tab="activity">Atividade</button>
-      </div>
+      <div><small>COGNITIVE VIEW</small><b>Contexto vivo</b></div>
       <button class="close-inspector" id="closeInspector">×</button>
+    </div>
+    <div class="inspector-tabs">
+      <button class="inspector-tab active" data-tab="context">Contexto</button>
+      <button class="inspector-tab" data-tab="sources">Fontes</button>
+      <button class="inspector-tab" data-tab="activity">Atividade</button>
     </div>
     <div class="inspector-body">
       <section class="panel active" id="panel-context">
-        <div class="eyebrow">COGNITIVE CONTEXT</div><h2>O que o Jarvis está usando</h2>
         <div class="context-card" id="taskCard"></div>
         <div class="project-context" id="projectContext"></div>
         <div class="mini-grid" id="cognitiveStats"></div>
-        <div class="panel-block"><h3>Aprendizado</h3><div id="lessonList" class="simple-list"></div></div>
-        <div class="panel-block"><h3>Reflexões</h3><div id="reflectionList" class="simple-list"></div></div>
-        <div class="panel-block"><h3>Anexos</h3><div id="attachmentList" class="simple-list"></div></div>
+        <div class="panel-block"><div class="block-title">Aprendizado <span>memória ativa</span></div><div id="lessonList" class="simple-list"></div></div>
+        <div class="panel-block"><div class="block-title">Reflexões <span>melhoria contínua</span></div><div id="reflectionList" class="simple-list"></div></div>
+        <div class="panel-block"><div class="block-title">Anexos <span>contexto documental</span></div><div id="attachmentList" class="simple-list"></div></div>
       </section>
       <section class="panel" id="panel-sources">
-        <div class="eyebrow">PUBLIC DATA</div><h2>Fontes disponíveis</h2>
-        <p class="panel-copy">O Jarvis escolhe fontes oficiais e dados estruturados sem exigir que você navegue por conectores.</p>
+        <div class="panel-intro"><small>PUBLIC DATA</small><h2>Fontes disponíveis</h2><p>O Jarvis escolhe fontes oficiais e dados estruturados conforme a tarefa.</p></div>
         <div id="sourceStats" class="source-stats"></div>
         <div id="sourceList" class="simple-list"></div>
       </section>
       <section class="panel" id="panel-activity">
-        <div class="eyebrow">BACKGROUND</div><h2>Atividade</h2>
+        <div class="panel-intro"><small>BACKGROUND</small><h2>Atividade</h2><p>O que está acontecendo por trás da conversa.</p></div>
         <div id="activityList" class="simple-list"></div>
-        <div class="panel-block"><h3>Alertas</h3><div id="alertList" class="simple-list"></div></div>
-        <div class="panel-block"><h3>Evolução sugerida</h3><div id="improvementList" class="simple-list"></div></div>
+        <div class="panel-block"><div class="block-title">Alertas</div><div id="alertList" class="simple-list"></div></div>
+        <div class="panel-block"><div class="block-title">Evolução sugerida</div><div id="improvementList" class="simple-list"></div></div>
       </section>
     </div>
   </aside>
 </div>
 
 <div class="overlay hidden" id="projectOverlay">
-  <div class="project-modal">
-    <div class="control-head"><div><span>PROJECT CONTEXT</span><h2>Projetos</h2><p>Agrupe conversas, documentos, decisões e contexto de trabalho.</p></div><button data-close="projectOverlay">×</button></div>
-    <div class="project-create">
-      <input id="projectName" placeholder="Nome do projeto">
-      <input id="projectDescription" placeholder="Descrição curta">
-      <button id="createProjectBtn">Criar</button>
-    </div>
+  <div class="modal project-modal">
+    <div class="modal-head"><div><small>PROJECT CONTEXT</small><h2>Projetos</h2><p>Agrupe conversas, documentos, decisões e contexto de trabalho.</p></div><button data-close="projectOverlay">×</button></div>
+    <div class="project-create"><input id="projectName" placeholder="Nome do projeto"><input id="projectDescription" placeholder="Descrição curta"><button id="createProjectBtn">Criar</button></div>
     <div class="project-list" id="projectList"></div>
   </div>
 </div>
 
-<div class="overlay hidden" id="controlOverlay">
-  <div class="control-modal">
-    <div class="control-head"><div><span>INTERNAL SYSTEM</span><h2>Centro de controle</h2><p>A infraestrutura fica disponível sem ocupar a experiência principal.</p></div><button data-close="controlOverlay">×</button></div>
-    <div class="control-grid" id="controlGrid"></div>
-    <div class="control-section">
-      <div class="control-section-head"><div><span>PUBLIC DATA SCOUT</span><h3>Explorar fontes públicas</h3></div></div>
-      <div class="source-search"><input id="sourceQuery" placeholder="Ex.: emprego em São Paulo, CNPJ, processos judiciais"><button id="sourceSearchBtn">Buscar</button></div>
-      <div class="control-results" id="sourceSearchResults"></div>
-    </div>
-    <div class="control-section">
-      <div class="control-section-head"><div><span>INTERNAL BROKERS</span><h3>Diagnóstico técnico</h3></div></div>
-      <p class="advanced-note">Actions, Workflows, automações, monitores e conectores continuam ativos por baixo. O Jarvis deve escolhê-los sozinho; use esta área apenas para inspeção.</p>
+<div class="overlay hidden" id="mobileOverlay">
+  <div class="modal mobile-modal">
+    <div class="modal-head"><div><small>MOBILE COMPANION</small><h2>Leve o Jarvis para o celular</h2><p>O telefone vira uma interface; o cérebro continua neste computador.</p></div><button data-close="mobileOverlay">×</button></div>
+    <div class="mobile-hero">
+      <div class="phone-mock"><div class="phone-notch"></div><div class="phone-orb">✦</div><b>Jarvis Mobile</b><span>mesma memória • mesmo contexto</span></div>
+      <div class="mobile-info">
+        <div class="mobile-state"><i id="mobileStateDot"></i><div><b id="mobileStateLabel">Desligado</b><span id="mobileStateHint">Ative para usar na mesma rede Wi‑Fi.</span></div></div>
+        <div class="pair-grid"><div><small>ENDEREÇO</small><code id="mobileUrl">—</code></div><div><small>PIN</small><code id="mobilePin">———</code></div></div>
+        <div class="mobile-actions"><button class="primary-action" id="mobileToggleBtn">Ativar acesso mobile</button><button class="secondary-action" id="mobileResetBtn">Novo PIN</button></div>
+        <div class="mobile-note">Abra o endereço no navegador do celular e informe o PIN. O acesso fica restrito à sua rede local por padrão.</div>
+      </div>
     </div>
   </div>
 </div>
 
+<div class="overlay hidden" id="controlOverlay">
+  <div class="modal control-modal">
+    <div class="modal-head"><div><small>INTERNAL SYSTEM</small><h2>Centro de controle</h2><p>A infraestrutura fica acessível sem dominar a experiência principal.</p></div><button data-close="controlOverlay">×</button></div>
+    <div class="control-grid" id="controlGrid"></div>
+    <div class="control-section"><div class="section-heading"><div><small>PUBLIC DATA SCOUT</small><h3>Explorar fontes públicas</h3></div></div><div class="source-search"><input id="sourceQuery" placeholder="Ex.: emprego em São Paulo, CNPJ, processos judiciais"><button id="sourceSearchBtn">Buscar</button></div><div class="control-results" id="sourceSearchResults"></div></div>
+    <div class="control-section"><div class="section-heading"><div><small>INTERNAL BROKERS</small><h3>Diagnóstico técnico</h3></div></div><p class="advanced-note">Actions, Workflows, automações, monitores e conectores continuam ativos por baixo. O Jarvis deve escolhê-los sozinho; use esta área apenas para inspeção.</p></div>
+  </div>
+</div>
 <script src="app.js"></script>
 </body>
 </html>

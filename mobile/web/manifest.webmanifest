@@ -1,0 +1,9 @@
+{
+  "name": "Jarvis Mobile Companion",
+  "short_name": "Jarvis",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#07090f",
+  "theme_color": "#07090f",
+  "description": "Interface móvel do Jarvis executado no seu computador."
+}

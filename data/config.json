@@ -22,7 +22,7 @@
   "agent_max_rounds": 4,
   "agent_max_tool_calls": 10,
   "agent_tool_result_chars": 3000,
-  "release_name": "Jarvis Personal GPT 1.1 — Local Portal",
+  "release_name": "Jarvis Personal GPT 1.2 — Experience + Mobile",
   "persistent_root_name": "JarvisData",
   "action_catalog": "actions/catalog.json",
   "browser_profile_dir": "browser/profile",
@@ -78,5 +78,9 @@
   "ui_markdown": true,
   "ui_message_actions": true,
   "auto_reflection_enabled": true,
-  "release_version": "1.1"
+  "release_version": "1.2",
+  "mobile_companion_enabled": true,
+  "mobile_companion_autostart": false,
+  "mobile_companion_host": "0.0.0.0",
+  "mobile_companion_port": 8770
 }

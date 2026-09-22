@@ -242,6 +242,40 @@ class JarvisBridge(QObject):
             return json.dumps({"ok": False, "error": str(exc)}, ensure_ascii=False)
 
     @Slot(result=str)
+    def mobileStatus(self):
+        try:
+            mobile = getattr(self.window, "mobile_companion", None)
+            if not mobile:
+                return json.dumps({"ok": False, "error": "Mobile Companion indisponível."}, ensure_ascii=False)
+            return json.dumps(mobile.status(), ensure_ascii=False, default=str)
+        except Exception as exc:
+            return json.dumps({"ok": False, "error": str(exc)}, ensure_ascii=False)
+
+    @Slot(result=str)
+    def mobileToggle(self):
+        try:
+            mobile = getattr(self.window, "mobile_companion", None)
+            if not mobile:
+                return json.dumps({"ok": False, "error": "Mobile Companion indisponível."}, ensure_ascii=False)
+            result = mobile.toggle()
+            self.snapshotChanged.emit(json.dumps(self.window.build_snapshot(), ensure_ascii=False))
+            return json.dumps(result, ensure_ascii=False, default=str)
+        except Exception as exc:
+            return json.dumps({"ok": False, "error": str(exc)}, ensure_ascii=False)
+
+    @Slot(result=str)
+    def mobileResetPin(self):
+        try:
+            mobile = getattr(self.window, "mobile_companion", None)
+            if not mobile:
+                return json.dumps({"ok": False, "error": "Mobile Companion indisponível."}, ensure_ascii=False)
+            result = mobile.reset_pin()
+            self.snapshotChanged.emit(json.dumps(self.window.build_snapshot(), ensure_ascii=False))
+            return json.dumps(result, ensure_ascii=False, default=str)
+        except Exception as exc:
+            return json.dumps({"ok": False, "error": str(exc)}, ensure_ascii=False)
+
+    @Slot(result=str)
     def getSnapshot(self):
         return json.dumps(
             self.window.build_snapshot(),
@@ -401,6 +435,7 @@ class HabitatWindow(QMainWindow):
                 "stats": self.agent.services.stats(),
                 "items": self.agent.services.list(daily=True).get("items", []),
             },
+            "mobile": getattr(self, "mobile_companion", None).status() if getattr(self, "mobile_companion", None) else {"ok": False, "running": False},
             "health": self.agent.supervisor.quick_health(),
             "diagnostics": {
                 "last_error": self.agent.diagnostics.last_error(),
@@ -595,6 +630,33 @@ class HabitatWindow(QMainWindow):
     def _cleanup_worker(self):
         self.worker = None
         self.thread = None
+
+    def show_mobile_pairing(self):
+        mobile = getattr(self, "mobile_companion", None)
+        if not mobile:
+            QMessageBox.information(self, "Jarvis Mobile", "Mobile Companion indisponível nesta instalação.")
+            return
+        state = mobile.status()
+        if not state.get("running"):
+            answer = QMessageBox.question(
+                self,
+                "Jarvis Mobile",
+                "O acesso mobile está desligado. Deseja ativá-lo agora?",
+                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.Yes,
+            )
+            if answer != QMessageBox.Yes:
+                return
+            state = mobile.start()
+        QMessageBox.information(
+            self,
+            "Jarvis Mobile",
+            f"Conecte o celular à mesma rede Wi-Fi.\n\n"
+            f"Endereço: {state.get('url')}\n"
+            f"PIN: {state.get('pin')}\n\n"
+            "Abra o endereço no navegador do celular e digite o PIN. "
+            "O processamento continua neste computador.",
+        )
 
     def closeEvent(self, event):
         event.ignore()
