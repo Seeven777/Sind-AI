@@ -21,7 +21,7 @@ function Has-Command($Name) { return [bool](Get-Command $Name -ErrorAction Silen
 
 if ($env:OS -ne "Windows_NT") { throw "Este instalador desta release e para Windows 10/11." }
 
-Write-Host "Sind AI - Jarvis Personal GPT" -ForegroundColor Magenta
+Write-Host "Sind AI - Jarvis Personal GPT 1.3" -ForegroundColor Magenta
 Write-Host "Instalacao local-first. A Vercel nao executa o modelo nem armazena as conversas."
 
 # Python
@@ -64,7 +64,22 @@ $source = Get-ChildItem $tempRoot -Directory | Where-Object { Test-Path (Join-Pa
 if (-not $source) {
   $source = Get-ChildItem $tempRoot -Directory -Recurse | Where-Object { Test-Path (Join-Path $_.FullName "jarvis_desktop.py") } | Select-Object -First 1
 }
-if (-not $source) { throw "O pacote baixado nao contem jarvis_desktop.py. Confirme se a branch '$Branch' ja recebeu a versao 1.2." }
+if (-not $source) { throw "O pacote baixado nao contem jarvis_desktop.py. Confirme se a branch '$Branch' já recebeu a versão 1.3." }
+
+
+# Resolve the exact commit being installed so the updater can compare future pushes.
+$commitSha = ""
+try {
+  $headers = @{
+    "User-Agent" = "SindAI-Jarvis-Installer/1.3"
+    "Accept" = "application/vnd.github+json"
+    "X-GitHub-Api-Version" = "2022-11-28"
+  }
+  $commitInfo = Invoke-RestMethod -Headers $headers -Uri "https://api.github.com/repos/$Repository/commits/$Branch"
+  $commitSha = [string]$commitInfo.sha
+} catch {
+  Write-Warn "Nao foi possivel registrar o SHA remoto agora: $($_.Exception.Message)"
+}
 
 Write-Step "Atualizando runtime local"
 New-Item -ItemType Directory -Path $InstallDir -Force | Out-Null
@@ -83,6 +98,25 @@ if (-not (Test-Path ".venv\Scripts\python.exe")) {
 & ".venv\Scripts\python.exe" -m pip install -r requirements.txt
 if ($LASTEXITCODE -ne 0) { throw "Falha ao instalar dependencias Python." }
 Write-Ok "Dependencias Python instaladas"
+
+
+# Installation metadata lives with the code, not with personal data.
+try {
+  $installedConfig = Get-Content (Join-Path $InstallDir "data\config.json") -Raw | ConvertFrom-Json
+  $installMeta = @{
+    repository = $Repository
+    channel = "main"
+    branch = $Branch
+    sha = $commitSha
+    version = [string]$installedConfig.release_version
+    installed_at = (Get-Date).ToUniversalTime().ToString("o")
+  } | ConvertTo-Json -Depth 4
+  Set-Content -Path (Join-Path $InstallDir ".jarvis_install.json") -Value $installMeta -Encoding UTF8
+  Write-Ok "Metadados de atualizacao registrados"
+} catch {
+  Write-Warn "Nao foi possivel gravar os metadados de atualizacao: $($_.Exception.Message)"
+}
+
 
 # Local models chosen by RAM. ModelRouter can still reuse any already installed model.
 if (-not $SkipModels) {

@@ -242,6 +242,51 @@ class JarvisBridge(QObject):
             return json.dumps({"ok": False, "error": str(exc)}, ensure_ascii=False)
 
     @Slot(result=str)
+    def updateStatus(self):
+        try:
+            updater = getattr(self.window, "updater", None)
+            if not updater:
+                return json.dumps({"ok": False, "error": "Updater indisponível."}, ensure_ascii=False)
+            return json.dumps(updater.status(), ensure_ascii=False, default=str)
+        except Exception as exc:
+            return json.dumps({"ok": False, "error": str(exc)}, ensure_ascii=False)
+
+    @Slot(result=str)
+    def checkUpdate(self):
+        try:
+            updater = getattr(self.window, "updater", None)
+            if not updater:
+                return json.dumps({"ok": False, "error": "Updater indisponível."}, ensure_ascii=False)
+            result = updater.check_async(force=True)
+            return json.dumps(result, ensure_ascii=False, default=str)
+        except Exception as exc:
+            return json.dumps({"ok": False, "error": str(exc)}, ensure_ascii=False)
+
+    @Slot(str, result=str)
+    def setUpdateChannel(self, channel):
+        try:
+            updater = getattr(self.window, "updater", None)
+            if not updater:
+                return json.dumps({"ok": False, "error": "Updater indisponível."}, ensure_ascii=False)
+            return json.dumps(updater.set_channel(channel), ensure_ascii=False, default=str)
+        except Exception as exc:
+            return json.dumps({"ok": False, "error": str(exc)}, ensure_ascii=False)
+
+    @Slot(result=str)
+    def installUpdate(self):
+        try:
+            updater = getattr(self.window, "updater", None)
+            if not updater:
+                return json.dumps({"ok": False, "error": "Updater indisponível."}, ensure_ascii=False)
+            result = updater.launch_update()
+            if result.get("ok"):
+                from PySide6.QtCore import QTimer
+                QTimer.singleShot(700, self.window.request_update_exit)
+            return json.dumps(result, ensure_ascii=False, default=str)
+        except Exception as exc:
+            return json.dumps({"ok": False, "error": str(exc)}, ensure_ascii=False)
+
+    @Slot(result=str)
     def mobileStatus(self):
         try:
             mobile = getattr(self.window, "mobile_companion", None)
@@ -260,6 +305,31 @@ class JarvisBridge(QObject):
             result = mobile.toggle()
             self.snapshotChanged.emit(json.dumps(self.window.build_snapshot(), ensure_ascii=False))
             return json.dumps(result, ensure_ascii=False, default=str)
+        except Exception as exc:
+            return json.dumps({"ok": False, "error": str(exc)}, ensure_ascii=False)
+
+    @Slot(result=str)
+    def mobileDiagnostics(self):
+        try:
+            mobile = getattr(self.window, "mobile_companion", None)
+            if not mobile:
+                return json.dumps({"ok": False, "error": "Mobile Companion indisponível."}, ensure_ascii=False)
+            return json.dumps(mobile.diagnostics(), ensure_ascii=False, default=str)
+        except Exception as exc:
+            return json.dumps({"ok": False, "error": str(exc)}, ensure_ascii=False)
+
+    @Slot(result=str)
+    def mobileEnableFirewall(self):
+        try:
+            script = self.window.base_dir / "Enable-Jarvis-Mobile.ps1"
+            if not script.exists():
+                return json.dumps({"ok": False, "error": "Helper do firewall não encontrado."}, ensure_ascii=False)
+            import subprocess
+            subprocess.Popen([
+                "powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command",
+                f"Start-Process powershell -Verb RunAs -ArgumentList '-NoProfile -ExecutionPolicy Bypass -File \"{script}\"'"
+            ])
+            return json.dumps({"ok": True, "message": "Solicitação administrativa aberta."}, ensure_ascii=False)
         except Exception as exc:
             return json.dumps({"ok": False, "error": str(exc)}, ensure_ascii=False)
 
@@ -436,12 +506,21 @@ class HabitatWindow(QMainWindow):
                 "items": self.agent.services.list(daily=True).get("items", []),
             },
             "mobile": getattr(self, "mobile_companion", None).status() if getattr(self, "mobile_companion", None) else {"ok": False, "running": False},
+            "updates": getattr(self, "updater", None).status() if getattr(self, "updater", None) else {"ok": False, "available": False},
             "health": self.agent.supervisor.quick_health(),
             "diagnostics": {
                 "last_error": self.agent.diagnostics.last_error(),
                 "recent": self.agent.diagnostics.recent(limit=12),
             },
         }
+
+    def request_update_exit(self):
+        """Close cleanly after the external updater process has been launched."""
+        try:
+            from PySide6.QtWidgets import QApplication
+            QApplication.instance().quit()
+        except Exception:
+            self.close()
 
     def show_and_focus(self):
         if self.mode == "habitat":

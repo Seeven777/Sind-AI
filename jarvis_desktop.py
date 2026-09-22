@@ -2,6 +2,7 @@ import json
 import sys
 from pathlib import Path
 
+from PySide6.QtCore import QTimer
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QApplication, QMenu, QSystemTrayIcon
 
@@ -10,6 +11,7 @@ from ui.habitat import HabitatWindow
 from ui.hotkey import GlobalHotkey, HotkeyBridge
 from ui.popup import make_icon
 from mobile.companion import MobileCompanion
+from updates.manager import UpdateManager
 
 
 BASE = Path(__file__).resolve().parent
@@ -39,6 +41,15 @@ def main():
         base_dir=BASE,
     )
 
+    updater = UpdateManager(BASE, config)
+    window.updater = updater
+    if config.get("update_auto_check", True):
+        updater.check_async(force=False)
+    update_timer = QTimer()
+    update_timer.setInterval(60 * 60 * 1000)
+    update_timer.timeout.connect(lambda: updater.check_async(force=False))
+    update_timer.start()
+
     mobile = MobileCompanion(agent, config, BASE)
     window.mobile_companion = mobile
     if config.get("mobile_companion_enabled", True) and config.get("mobile_companion_autostart", False):
@@ -63,6 +74,32 @@ def main():
     menu.addAction(open_compact)
 
     menu.addSeparator()
+
+    update_action = QAction("Verificar atualizações", app)
+    def check_updates():
+        state = updater.check(force=True)
+        from PySide6.QtWidgets import QMessageBox
+        if state.get("available"):
+            remote = state.get("remote_version") or (state.get("remote_sha") or "")[:8]
+            msg = f"Atualização disponível: {remote}\n\n{state.get('remote_message','')}"
+            box = QMessageBox(window)
+            box.setWindowTitle("Atualização do Jarvis")
+            box.setText(msg)
+            box.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+            box.button(QMessageBox.Yes).setText("Atualizar agora")
+            box.button(QMessageBox.No).setText("Depois")
+            if box.exec() == QMessageBox.Yes:
+                result = updater.launch_update()
+                if result.get("ok"):
+                    window.request_update_exit()
+                else:
+                    QMessageBox.warning(window, "Atualização", result.get("error","Falha ao iniciar atualização."))
+        elif state.get("error"):
+            QMessageBox.warning(window, "Atualização", state.get("error"))
+        else:
+            QMessageBox.information(window, "Atualização", "Você já está na versão mais recente.")
+    update_action.triggered.connect(check_updates)
+    menu.addAction(update_action)
 
     mobile_toggle = QAction("Ativar acesso mobile", app)
     def toggle_mobile():
@@ -102,8 +139,16 @@ def main():
     hotkey = GlobalHotkey(bridge)
     hotkey.start()
 
-    def quit_app():
-        hotkey.stop()
+    _shutdown_done = {"value": False}
+
+    def cleanup_app():
+        if _shutdown_done["value"]:
+            return
+        _shutdown_done["value"] = True
+        try:
+            hotkey.stop()
+        except Exception:
+            pass
         try:
             mobile.stop()
         except Exception:
@@ -112,9 +157,16 @@ def main():
             agent.shutdown()
         except Exception:
             pass
-        tray.hide()
+        try:
+            tray.hide()
+        except Exception:
+            pass
+
+    def quit_app():
+        cleanup_app()
         app.quit()
 
+    app.aboutToQuit.connect(cleanup_app)
     quit_action.triggered.connect(quit_app)
 
     window.show_and_focus()

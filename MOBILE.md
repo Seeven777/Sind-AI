@@ -1,48 +1,51 @@
-# Jarvis Mobile Companion — 1.2
+# Jarvis Mobile — diagnóstico e acesso
 
-## O que é
+## Importante
 
-O Mobile Companion transforma o telefone em uma interface para o mesmo Jarvis que está rodando no computador.
+Se a barra lateral não mostra **Jarvis Mobile**, essa instalação ainda está em uma versão anterior à 1.2.
+Atualize manualmente uma única vez usando `Install-Jarvis.ps1` da versão 1.3. Depois disso, o Auto Updater passa a cuidar das próximas versões.
 
-O celular **não executa Ollama, automação de Windows nem a memória principal**. O computador continua sendo o runtime.
+## Uso
 
-## Uso na mesma rede
+1. Abra o Jarvis no computador.
+2. Clique em **Jarvis Mobile**.
+3. Clique em **Ativar acesso mobile**.
+4. Mantenha computador e celular na mesma rede Wi-Fi/LAN.
+5. Abra no celular um dos endereços exibidos, por exemplo `http://192.168.0.20:8770/`.
+6. Informe o PIN de 6 dígitos.
 
-1. Abra o Jarvis no Windows.
-2. Clique em **Jarvis Mobile** na lateral ou use o ícone da bandeja.
-3. Ative o acesso mobile.
-4. O Jarvis exibirá um endereço como `http://192.168.0.20:8770/` e um PIN de 6 dígitos.
-5. Conecte o celular à mesma rede Wi‑Fi.
-6. Abra o endereço no navegador e digite o PIN.
+## Se o celular não abrir o endereço
 
-O pareamento cria uma sessão temporária. Trocar o PIN invalida as sessões anteriores.
+Use **Jarvis Mobile → Diagnosticar**.
 
-## Firewall
+A versão 1.3 verifica:
 
-Se o telefone não conseguir abrir o endereço, execute:
+- se o servidor Mobile Companion está realmente ativo;
+- se a porta responde localmente;
+- perfil de rede do Windows;
+- existência da regra `Jarvis Mobile Companion` no Firewall;
+- todos os IPv4 privados detectados no computador;
+- endereços alternativos para máquinas com Ethernet, Wi-Fi, VPN ou adaptadores virtuais.
 
-`enable_mobile_access.bat`
+Se o Firewall ainda não estiver liberado, use **Liberar no Firewall**.
 
-A regra criada aceita TCP 8770 apenas no perfil **Private** do Firewall do Windows.
-
-Para remover:
-
-`disable_mobile_access.bat`
-
-## Instalação no celular
-
-O portal da Vercel é uma PWA instalável via HTTPS e funciona como launcher/distribuidor.
-
-No Android, navegadores compatíveis podem mostrar **Instalar app**.
-
-No iPhone, use **Compartilhar → Adicionar à Tela de Início** e **Abrir como App** quando a opção estiver disponível.
-
-A interface completa do Mobile Companion é servida pelo computador local. Em uma rede LAN HTTP ela pode ser usada normalmente no navegador; a PWA hospedada na Vercel continua sendo o app instalável e o ponto de entrada.
+A regra é criada apenas para redes **Private**. Se o diagnóstico mostrar que a rede atual do Windows está como **Public**, altere o perfil dessa rede para Privado antes de usar o companion.
 
 ## Segurança
 
-- Mobile Companion fica desligado por padrão.
-- Acesso é feito por PIN e token temporário.
-- Nenhum PIN é enviado à Vercel.
-- O servidor deve permanecer restrito à rede privada.
-- Não encaminhe a porta 8770 no roteador para a internet.
+- não encaminhe a porta TCP 8770 no roteador;
+- o serviço foi projetado para LAN;
+- o companion exige PIN e cria uma sessão temporária;
+- troca do PIN invalida as sessões mobile;
+- clientes externos à rede privada/loopback/link-local são recusados;
+- modelos, memória e ferramentas continuam no computador, não no celular.
+
+## Atualização
+
+A partir da 1.3, o Jarvis verifica o GitHub automaticamente.
+
+A instalação antiga precisa receber a 1.3 manualmente uma única vez. Depois:
+
+`GitHub push → Jarvis detecta → Atualizações → Atualizar agora → backup → update → restart`
+
+O canal padrão é `main` durante o desenvolvimento. O canal `stable` fica preparado para GitHub Releases.

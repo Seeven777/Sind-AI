@@ -1,0 +1,8 @@
+{
+  "product": "Jarvis Personal GPT",
+  "version": "1.3",
+  "channel": "main",
+  "min_python": "3.12",
+  "data_schema": 1,
+  "notes": "Auto Updater com verificação do GitHub, instalação em um clique, backup e rollback."
+}

@@ -123,7 +123,7 @@ function renderSnapshot(data){
   snapshot=data||{};
   $('footerModel').textContent=snapshot.model||'adaptive local';
   const hw=snapshot.hardware||{};$('hardwareLabel').textContent=hw.tier?`${hw.tier} • ${hw.ram_gb||'?'} GB • ${hw.cpu_threads||'?'} threads`:'local • CPU';
-  renderSessions();renderContext();renderSources();renderActivity();renderProjects();renderAttachments();renderMobile();renderControlCenter();
+  renderSessions();renderContext();renderSources();renderActivity();renderProjects();renderAttachments();renderMobile();renderUpdates();renderControlCenter();
 }
 function renderSessions(){
   const info=snapshot?.cognitive?.sessions||{};const items=info.items||[];const current=info.current;
@@ -213,6 +213,7 @@ function renderMobile(){
   const hint=$('mobileStateHint');if(hint)hint.textContent=running?'Use o endereço abaixo no celular.':'Ative para usar na mesma rede Wi‑Fi.';
   const url=$('mobileUrl');if(url)url.textContent=running?(m.url||'—'):'—';
   const pin=$('mobilePin');if(pin)pin.textContent=running?(m.pin||'———'):'———';
+  const alt=$('mobileAltUrls');if(alt)alt.innerHTML=running?(m.urls||[]).filter(x=>x!==m.url).map(x=>`<code>${esc(x)}</code>`).join(''):'';
   const toggle=$('mobileToggleBtn');if(toggle)toggle.textContent=running?'Desativar acesso mobile':'Ativar acesso mobile';
 }
 function toggleMobile(){
@@ -232,6 +233,81 @@ function resetMobilePin(){
     if(!d.ok&&d.error)alert(d.error);
     fetchSnapshot();
   });
+}
+
+
+
+function diagnoseMobile(){
+  if(!bridge)return;
+  const box=$('mobileDiagnostic');const text=$('mobileDiagnosticText');
+  if(box){box.classList.remove('hidden','ok','warn');box.classList.add('warn')}
+  if(text)text.textContent='Verificando servidor, rede e Firewall do Windows…';
+  bridge.mobileDiagnostics(raw=>{
+    let d={};try{d=JSON.parse(raw)}catch{}
+    if(!box||!text)return;
+    box.classList.remove('ok','warn');box.classList.add(d.ok?'ok':'warn');
+    const details=[];
+    if(d.running)details.push('Servidor mobile: ativo');
+    if(d.loopback_ok)details.push('Teste local: OK');
+    if(d.network_profile)details.push(`Perfil da rede: ${d.network_profile}`);
+    details.push(`Firewall Jarvis: ${d.firewall_rule?'liberado':'não detectado'}`);
+    if((d.urls||[]).length)details.push(`Endereços: ${(d.urls||[]).join(' • ')}`);
+    if((d.issues||[]).length)details.push(`Problemas: ${(d.issues||[]).join(' ')}`);
+    text.textContent=details.join('\\n');
+  });
+}
+function enableMobileFirewall(){
+  if(!bridge)return;
+  bridge.mobileEnableFirewall(raw=>{
+    let d={};try{d=JSON.parse(raw)}catch{}
+    if(!d.ok)alert(d.error||'Não foi possível abrir a configuração de firewall.');
+    else setTimeout(diagnoseMobile,2500);
+  });
+}
+
+function renderUpdates(){
+  const u=snapshot?.updates||{};
+  const available=!!u.available;
+  const checking=!!u.checking;
+  const side=$('updateSideStatus');
+  if(side)side.textContent=checking?'verificando…':available?'nova versão disponível':u.error?'não foi possível verificar':'atualizado';
+  const badge=$('updateBadge');if(badge)badge.classList.toggle('available',available);
+  const current=$('updateCurrentVersion');if(current)current.textContent=u.current_version||'—';
+  const channel=$('updateChannelLabel');if(channel)channel.textContent=u.channel||'main';
+  const remote=$('updateRemoteVersion');if(remote)remote.textContent=u.remote_version||((u.remote_sha||'').slice(0,8))||'—';
+  const date=$('updateRemoteDate');if(date)date.textContent=u.remote_date||u.last_checked_at||'ainda não consultado';
+  const summary=$('updateSummary');
+  if(summary){
+    summary.textContent=checking?'Consultando o GitHub…':
+      available?'Existe uma versão nova pronta para instalar.':
+      u.error?'A verificação encontrou um problema.':'Este computador está atualizado.';
+  }
+  const msg=$('updateMessage');if(msg)msg.textContent=u.error||u.remote_message||'Nenhuma observação remota.';
+  const install=$('updateInstallBtn');if(install){install.disabled=!available||checking;install.textContent=available?'Atualizar agora':'Atualizado'}
+  document.querySelectorAll('input[name="updateChannel"]').forEach(r=>r.checked=r.value===(u.channel||'main'));
+}
+function checkUpdate(){
+  if(!bridge)return;
+  const btn=$('updateCheckBtn');if(btn)btn.disabled=true;
+  bridge.checkUpdate(()=>{setTimeout(()=>{fetchSnapshot();if(btn)btn.disabled=false},1400)});
+}
+function installUpdate(){
+  if(!bridge)return;
+  const u=snapshot?.updates||{};
+  if(!u.available)return;
+  if(!confirm('O Jarvis será fechado, atualizado e reiniciado. O runtime atual será salvo como backup antes da troca. Continuar?'))return;
+  const btn=$('updateInstallBtn');if(btn){btn.disabled=true;btn.textContent='Preparando…'}
+  bridge.installUpdate(raw=>{
+    let d={};try{d=JSON.parse(raw)}catch{}
+    if(!d.ok){
+      alert(d.error||'Não foi possível iniciar a atualização.');
+      if(btn){btn.disabled=false;btn.textContent='Atualizar agora'}
+    }
+  });
+}
+function changeUpdateChannel(value){
+  if(!bridge)return;
+  bridge.setUpdateChannel(value,()=>setTimeout(fetchSnapshot,800));
 }
 
 function renderControlCenter(){
@@ -320,3 +396,12 @@ document.addEventListener('keydown',e=>{
   if(e.key==='Escape'){document.querySelectorAll('.overlay').forEach(x=>x.classList.add('hidden'))}
 });
 bindPromptButtons();toggleInspector(false);initBridge();
+
+$('updateCheckBtn').onclick=checkUpdate;
+$('updateInstallBtn').onclick=installUpdate;
+document.querySelectorAll('input[name="updateChannel"]').forEach(r=>r.addEventListener('change',e=>changeUpdateChannel(e.target.value)));
+
+setInterval(()=>{if(bridge&&!busy)fetchSnapshot()},15000);
+
+$('mobileDiagBtn').onclick=diagnoseMobile;
+$('mobileFirewallBtn').onclick=enableMobileFirewall;

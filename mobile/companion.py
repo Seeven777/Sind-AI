@@ -4,6 +4,7 @@ import mimetypes
 import ipaddress
 import secrets
 import socket
+import subprocess
 import threading
 import time
 from http import cookies
@@ -59,28 +60,135 @@ class MobileCompanion:
             self._sessions.clear()
         return {"ok": True, "pin": self._pin}
 
-    def local_ip(self):
-        # Sem tráfego de aplicação: apenas força o SO a escolher a interface LAN.
+    def local_ips(self):
+        """Return useful private IPv4 candidates, preferring real LAN interfaces."""
+        candidates = []
+
+        def add(value):
+            try:
+                ip = ipaddress.ip_address(str(value).strip())
+                if ip.version != 4 or ip.is_loopback or ip.is_unspecified:
+                    return
+                if not (ip.is_private or ip.is_link_local):
+                    return
+                value = str(ip)
+                if value not in candidates:
+                    candidates.append(value)
+            except Exception:
+                pass
+
+        # Windows: enumerate active IPv4 interfaces. This avoids accidentally
+        # advertising a VPN/virtual adapter address as the only mobile URL.
+        if __import__("os").name == "nt":
+            try:
+                cmd = [
+                    "powershell", "-NoProfile", "-Command",
+                    "Get-NetIPAddress -AddressFamily IPv4 | "
+                    "Where-Object {$_.IPAddress -notlike '127.*' -and $_.AddressState -eq 'Preferred'} | "
+                    "Select-Object -ExpandProperty IPAddress"
+                ]
+                proc = subprocess.run(cmd, capture_output=True, text=True, timeout=4)
+                for line in proc.stdout.splitlines():
+                    add(line)
+            except Exception:
+                pass
+
+        # Ask the OS which interface would normally reach the network.
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             s.settimeout(0.5)
             s.connect(("8.8.8.8", 80))
-            ip = s.getsockname()[0]
+            add(s.getsockname()[0])
             s.close()
-            if ip and not ip.startswith("127."):
-                return ip
         except Exception:
             pass
+
         try:
             for ip in socket.gethostbyname_ex(socket.gethostname())[2]:
-                if ip and not ip.startswith("127."):
-                    return ip
+                add(ip)
         except Exception:
             pass
-        return "127.0.0.1"
+
+        # Prefer common RFC1918 LAN ranges over link-local addresses.
+        def priority(value):
+            ip = ipaddress.ip_address(value)
+            if value.startswith("192.168."):
+                return (0, value)
+            if value.startswith("10."):
+                return (1, value)
+            if value.startswith("172."):
+                return (2, value)
+            if ip.is_link_local:
+                return (9, value)
+            return (5, value)
+
+        return sorted(candidates, key=priority)
+
+    def local_ip(self):
+        ips = self.local_ips()
+        return ips[0] if ips else "127.0.0.1"
 
     def url(self):
         return f"http://{self.local_ip()}:{self.port}/"
+
+    def urls(self):
+        return [f"http://{ip}:{self.port}/" for ip in self.local_ips()] or [self.url()]
+
+    def diagnostics(self):
+        running = bool(self._server and self._thread and self._thread.is_alive())
+        loopback_ok = False
+        if running:
+            try:
+                s = socket.create_connection(("127.0.0.1", self.port), timeout=1.0)
+                s.close()
+                loopback_ok = True
+            except Exception:
+                pass
+
+        profile = ""
+        firewall_rule = False
+        if __import__("os").name == "nt":
+            try:
+                proc = subprocess.run(
+                    ["powershell","-NoProfile","-Command",
+                     "(Get-NetConnectionProfile | Where-Object {$_.IPv4Connectivity -ne 'Disconnected'} | "
+                     "Select-Object -First 1 -ExpandProperty NetworkCategory)"],
+                    capture_output=True, text=True, timeout=4
+                )
+                profile = proc.stdout.strip()
+            except Exception:
+                pass
+            try:
+                proc = subprocess.run(
+                    ["powershell","-NoProfile","-Command",
+                     "if(Get-NetFirewallRule -DisplayName 'Jarvis Mobile Companion' -ErrorAction SilentlyContinue){'yes'}else{'no'}"],
+                    capture_output=True, text=True, timeout=4
+                )
+                firewall_rule = proc.stdout.strip().lower() == "yes"
+            except Exception:
+                pass
+
+        issues = []
+        if not running:
+            issues.append("O Mobile Companion está desligado.")
+        elif not loopback_ok:
+            issues.append("O servidor mobile iniciou, mas não respondeu localmente.")
+        if profile.lower() == "public":
+            issues.append("A rede do Windows está marcada como Pública; a regra segura do Jarvis aceita apenas redes Privadas.")
+        if running and __import__("os").name == "nt" and not firewall_rule:
+            issues.append("A regra do Firewall do Windows ainda não foi criada.")
+        if not self.local_ips():
+            issues.append("Nenhum endereço IPv4 privado foi detectado.")
+
+        return {
+            "ok": not issues,
+            "running": running,
+            "loopback_ok": loopback_ok,
+            "network_profile": profile,
+            "firewall_rule": firewall_rule,
+            "urls": self.urls(),
+            "issues": issues,
+        }
 
     def status(self):
         return {
@@ -89,6 +197,7 @@ class MobileCompanion:
             "host": self.host,
             "port": self.port,
             "url": self.url(),
+            "urls": self.urls(),
             "pin": self._pin,
             "sessions": len(self._sessions),
             "lan_only": True,

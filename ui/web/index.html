@@ -31,6 +31,9 @@
       <button class="nav-card" id="mobileBtn">
         <span class="nav-icon">▱</span><div><b>Jarvis Mobile</b><small id="mobileSideStatus">desligado</small></div><em>›</em>
       </button>
+      <button class="nav-card" id="updateBtn">
+        <span class="nav-icon">↻</span><div><b>Atualizações</b><small id="updateSideStatus">verificando versão</small></div><em id="updateBadge">›</em>
+      </button>
       <button class="nav-card" id="controlBtn">
         <span class="nav-icon">⌘</span><div><b>Centro de controle</b><small>memória, dados e sistema</small></div><em>›</em>
       </button>
@@ -147,11 +150,48 @@
       <div class="phone-mock"><div class="phone-notch"></div><div class="phone-orb">✦</div><b>Jarvis Mobile</b><span>mesma memória • mesmo contexto</span></div>
       <div class="mobile-info">
         <div class="mobile-state"><i id="mobileStateDot"></i><div><b id="mobileStateLabel">Desligado</b><span id="mobileStateHint">Ative para usar na mesma rede Wi‑Fi.</span></div></div>
-        <div class="pair-grid"><div><small>ENDEREÇO</small><code id="mobileUrl">—</code></div><div><small>PIN</small><code id="mobilePin">———</code></div></div>
-        <div class="mobile-actions"><button class="primary-action" id="mobileToggleBtn">Ativar acesso mobile</button><button class="secondary-action" id="mobileResetBtn">Novo PIN</button></div>
-        <div class="mobile-note">Abra o endereço no navegador do celular e informe o PIN. O acesso fica restrito à sua rede local por padrão.</div>
+        <div class="pair-grid"><div><small>ENDEREÇO PRINCIPAL</small><code id="mobileUrl">—</code></div><div><small>PIN</small><code id="mobilePin">———</code></div></div>
+        <div class="mobile-alt" id="mobileAltUrls"></div>
+        <div class="mobile-actions"><button class="primary-action" id="mobileToggleBtn">Ativar acesso mobile</button><button class="secondary-action" id="mobileResetBtn">Novo PIN</button><button class="secondary-action" id="mobileDiagBtn">Diagnosticar</button></div>
+        <div class="mobile-diagnostic hidden" id="mobileDiagnostic">
+          <div id="mobileDiagnosticText">—</div>
+          <button class="secondary-action" id="mobileFirewallBtn">Liberar no Firewall</button>
+        </div>
+        <div class="mobile-note">Abra um dos endereços no navegador do celular, conectado à mesma rede Wi‑Fi, e informe o PIN. Se não abrir, use “Diagnosticar”.</div>
       </div>
     </div>
+  </div>
+</div>
+
+
+<div class="overlay hidden" id="updateOverlay">
+  <div class="modal update-modal">
+    <div class="modal-head">
+      <div><small>JARVIS UPDATER</small><h2>Atualizações</h2><p>O GitHub distribui o código; memória, projetos e dados pessoais permanecem em <code>JarvisData</code>.</p></div>
+      <button data-close="updateOverlay">×</button>
+    </div>
+    <div class="update-hero">
+      <div class="update-icon">↻</div>
+      <div>
+        <small>VERSÃO INSTALADA</small>
+        <h3 id="updateCurrentVersion">—</h3>
+        <p id="updateSummary">Consultando o GitHub…</p>
+      </div>
+    </div>
+    <div class="update-grid">
+      <div><small>CANAL</small><b id="updateChannelLabel">main</b><span>main acompanha cada push; stable acompanha Releases.</span></div>
+      <div><small>REMOTO</small><b id="updateRemoteVersion">—</b><span id="updateRemoteDate">ainda não consultado</span></div>
+    </div>
+    <div class="update-message" id="updateMessage">—</div>
+    <div class="update-channel">
+      <label><input type="radio" name="updateChannel" value="main" checked> Desenvolvimento <span>GitHub main</span></label>
+      <label><input type="radio" name="updateChannel" value="stable"> Estável <span>GitHub Releases</span></label>
+    </div>
+    <div class="update-actions">
+      <button class="secondary-action" id="updateCheckBtn">Verificar agora</button>
+      <button class="primary-action" id="updateInstallBtn" disabled>Atualizar agora</button>
+    </div>
+    <div class="mobile-note">Antes de aplicar uma atualização, o Jarvis cria um backup do runtime. Se a instalação falhar, o helper restaura a versão anterior e reinicia o aplicativo.</div>
   </div>
 </div>
 
