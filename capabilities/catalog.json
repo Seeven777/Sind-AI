@@ -1,0 +1,6563 @@
+[
+  {
+    "id": "apiguru.list",
+    "provider": "APIs.guru",
+    "group": "capability_discovery",
+    "description": "Listar catálogo público de especificações OpenAPI.",
+    "url": "https://api.apis.guru/v2/list.json",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {},
+    "fixed_query": {},
+    "keywords": [
+      "openapi",
+      "apis",
+      "discovery"
+    ],
+    "cache_ttl": 86400,
+    "min_interval": 0.25,
+    "max_bytes": 20000000
+  },
+  {
+    "id": "apiguru.metrics",
+    "provider": "APIs.guru",
+    "group": "capability_discovery",
+    "description": "Obter métricas do catálogo APIs.guru.",
+    "url": "https://api.apis.guru/v2/metrics.json",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {},
+    "fixed_query": {},
+    "keywords": [
+      "openapi",
+      "metricas"
+    ],
+    "cache_ttl": 3600,
+    "min_interval": 0.25
+  },
+  {
+    "id": "apiguru.provider.apis",
+    "provider": "APIs.guru",
+    "group": "capability_discovery",
+    "description": "Listar APIs conhecidas de um provedor.",
+    "url": "https://api.apis.guru/v2/{provider}.json",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "provider": {
+        "in": "path",
+        "required": true
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "provider",
+      "openapi"
+    ],
+    "cache_ttl": 3600,
+    "min_interval": 0.25
+  },
+  {
+    "id": "apiguru.providers",
+    "provider": "APIs.guru",
+    "group": "capability_discovery",
+    "description": "Listar provedores no diretório APIs.guru.",
+    "url": "https://api.apis.guru/v2/providers.json",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {},
+    "fixed_query": {},
+    "keywords": [
+      "provedores",
+      "openapi"
+    ],
+    "cache_ttl": 3600,
+    "min_interval": 0.25
+  },
+  {
+    "id": "arxiv.id.list",
+    "provider": "arXiv",
+    "group": "research",
+    "description": "Consultar artigos arXiv por lista de IDs.",
+    "url": "https://export.arxiv.org/api/query",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "text",
+    "params": {
+      "id_list": {
+        "in": "query",
+        "required": true
+      },
+      "max_results": {
+        "in": "query",
+        "required": false,
+        "default": 10
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "id",
+      "arxiv"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 3.0
+  },
+  {
+    "id": "arxiv.latest",
+    "provider": "arXiv",
+    "group": "research",
+    "description": "Listar artigos recentes para uma consulta.",
+    "url": "https://export.arxiv.org/api/query",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "text",
+    "params": {
+      "query": {
+        "in": "query",
+        "required": true,
+        "name": "search_query"
+      },
+      "max_results": {
+        "in": "query",
+        "required": false,
+        "default": 10
+      }
+    },
+    "fixed_query": {
+      "sortBy": "submittedDate",
+      "sortOrder": "descending"
+    },
+    "keywords": [
+      "recentes"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 3.0
+  },
+  {
+    "id": "arxiv.search.all",
+    "provider": "arXiv",
+    "group": "research",
+    "description": "Pesquisar artigos no arXiv por qualquer campo.",
+    "url": "https://export.arxiv.org/api/query",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "text",
+    "params": {
+      "query": {
+        "in": "query",
+        "required": true,
+        "name": "search_query"
+      },
+      "max_results": {
+        "in": "query",
+        "required": false,
+        "default": 10
+      }
+    },
+    "fixed_query": {
+      "sortBy": "relevance",
+      "sortOrder": "descending"
+    },
+    "keywords": [
+      "arxiv",
+      "preprint"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 3.0
+  },
+  {
+    "id": "arxiv.search.author",
+    "provider": "arXiv",
+    "group": "research",
+    "description": "Pesquisar arXiv por autor (use au:nome).",
+    "url": "https://export.arxiv.org/api/query",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "text",
+    "params": {
+      "query": {
+        "in": "query",
+        "required": true,
+        "name": "search_query"
+      },
+      "max_results": {
+        "in": "query",
+        "required": false,
+        "default": 10
+      }
+    },
+    "fixed_query": {
+      "sortBy": "submittedDate",
+      "sortOrder": "descending"
+    },
+    "keywords": [
+      "autor"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 3.0
+  },
+  {
+    "id": "arxiv.search.category",
+    "provider": "arXiv",
+    "group": "research",
+    "description": "Pesquisar arXiv por categoria (use cat:codigo).",
+    "url": "https://export.arxiv.org/api/query",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "text",
+    "params": {
+      "query": {
+        "in": "query",
+        "required": true,
+        "name": "search_query"
+      },
+      "max_results": {
+        "in": "query",
+        "required": false,
+        "default": 10
+      }
+    },
+    "fixed_query": {
+      "sortBy": "submittedDate",
+      "sortOrder": "descending"
+    },
+    "keywords": [
+      "categoria"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 3.0
+  },
+  {
+    "id": "arxiv.search.title",
+    "provider": "arXiv",
+    "group": "research",
+    "description": "Pesquisar arXiv por título (use ti:termo).",
+    "url": "https://export.arxiv.org/api/query",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "text",
+    "params": {
+      "query": {
+        "in": "query",
+        "required": true,
+        "name": "search_query"
+      },
+      "max_results": {
+        "in": "query",
+        "required": false,
+        "default": 10
+      }
+    },
+    "fixed_query": {
+      "sortBy": "relevance"
+    },
+    "keywords": [
+      "titulo"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 3.0
+  },
+  {
+    "id": "brasil.b3.funds",
+    "provider": "BrasilAPI",
+    "group": "brazil",
+    "description": "Listar tickers de fundos B3 por tipo de fundo.",
+    "url": "https://brasilapi.com.br/api/tickers/b3/fundos/v1/{type_fund}",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "type_fund": {
+        "in": "path",
+        "required": true
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "b3",
+      "fundos",
+      "fiis",
+      "etf",
+      "ticker"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 1.0
+  },
+  {
+    "id": "brasil.b3.stocks",
+    "provider": "BrasilAPI",
+    "group": "brazil",
+    "description": "Listar tickers de ações negociadas na B3.",
+    "url": "https://brasilapi.com.br/api/tickers/b3/acoes/v1",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {},
+    "fixed_query": {},
+    "keywords": [
+      "b3",
+      "acoes",
+      "ticker"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 1.0
+  },
+  {
+    "id": "brasil.banks.get",
+    "provider": "BrasilAPI",
+    "group": "brazil",
+    "description": "Consultar banco por código.",
+    "url": "https://brasilapi.com.br/api/banks/v1/{code}",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "code": {
+        "in": "path",
+        "required": true
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "banco",
+      "codigo"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 1.0
+  },
+  {
+    "id": "brasil.banks.list",
+    "provider": "BrasilAPI",
+    "group": "brazil",
+    "description": "Listar bancos brasileiros.",
+    "url": "https://brasilapi.com.br/api/banks/v1",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {},
+    "fixed_query": {},
+    "keywords": [
+      "bancos"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 1.0
+  },
+  {
+    "id": "brasil.cep.v1",
+    "provider": "BrasilAPI",
+    "group": "brazil",
+    "description": "Consultar endereço por CEP.",
+    "url": "https://brasilapi.com.br/api/cep/v1/{cep}",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "cep": {
+        "in": "path",
+        "required": true
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "cep",
+      "endereco"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 1.0
+  },
+  {
+    "id": "brasil.cep.v2",
+    "provider": "BrasilAPI",
+    "group": "brazil",
+    "description": "Consultar CEP com dados v2 e possível geolocalização.",
+    "url": "https://brasilapi.com.br/api/cep/v2/{cep}",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "cep": {
+        "in": "path",
+        "required": true
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "cep",
+      "coordenadas"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 1.0
+  },
+  {
+    "id": "brasil.cnpj",
+    "provider": "BrasilAPI",
+    "group": "brazil",
+    "description": "Consultar dados cadastrais públicos de CNPJ.",
+    "url": "https://brasilapi.com.br/api/cnpj/v1/{cnpj}",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "cnpj": {
+        "in": "path",
+        "required": true
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "cnpj",
+      "empresa"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 1.0
+  },
+  {
+    "id": "brasil.cptec.airport",
+    "provider": "BrasilAPI",
+    "group": "brazil",
+    "description": "Consultar clima em aeroporto por código ICAO.",
+    "url": "https://brasilapi.com.br/api/cptec/v1/clima/aeroporto/{icao}",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "icao": {
+        "in": "path",
+        "required": true
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "aeroporto",
+      "clima"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 1.0
+  },
+  {
+    "id": "brasil.cptec.capitals",
+    "provider": "BrasilAPI",
+    "group": "brazil",
+    "description": "Consultar clima atual de capitais pelo CPTEC.",
+    "url": "https://brasilapi.com.br/api/cptec/v1/clima/capital",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {},
+    "fixed_query": {},
+    "keywords": [
+      "clima",
+      "capitais"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 1.0
+  },
+  {
+    "id": "brasil.cptec.cities.list",
+    "provider": "BrasilAPI",
+    "group": "brazil",
+    "description": "Listar cidades disponíveis no serviço CPTEC.",
+    "url": "https://brasilapi.com.br/api/cptec/v1/cidade",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {},
+    "fixed_query": {},
+    "keywords": [
+      "cptec",
+      "cidades",
+      "clima"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 1.0
+  },
+  {
+    "id": "brasil.cptec.cities.search",
+    "provider": "BrasilAPI",
+    "group": "brazil",
+    "description": "Pesquisar cidades no CPTEC.",
+    "url": "https://brasilapi.com.br/api/cptec/v1/cidade/{city}",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "city": {
+        "in": "path",
+        "required": true
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "cptec",
+      "cidade",
+      "clima"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 1.0
+  },
+  {
+    "id": "brasil.cptec.forecast",
+    "provider": "BrasilAPI",
+    "group": "brazil",
+    "description": "Consultar previsão CPTEC por cidade e dias.",
+    "url": "https://brasilapi.com.br/api/cptec/v1/clima/previsao/{city_code}/{days}",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "city_code": {
+        "in": "path",
+        "required": true
+      },
+      "days": {
+        "in": "path",
+        "required": true
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "previsao",
+      "clima"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 1.0
+  },
+  {
+    "id": "brasil.cptec.forecast.coordinates",
+    "provider": "BrasilAPI",
+    "group": "brazil",
+    "description": "Consultar previsão semanal CPTEC por latitude e longitude.",
+    "url": "https://brasilapi.com.br/api/cptec/v1/clima/previsao/semana/{latitude}/{longitude}",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "latitude": {
+        "in": "path",
+        "required": true
+      },
+      "longitude": {
+        "in": "path",
+        "required": true
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "cptec",
+      "previsao",
+      "coordenadas",
+      "clima"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 1.0
+  },
+  {
+    "id": "brasil.cptec.forecast.default",
+    "provider": "BrasilAPI",
+    "group": "brazil",
+    "description": "Consultar previsão CPTEC padrão por código da cidade.",
+    "url": "https://brasilapi.com.br/api/cptec/v1/clima/previsao/{city_code}",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "city_code": {
+        "in": "path",
+        "required": true
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "cptec",
+      "previsao",
+      "clima"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 1.0
+  },
+  {
+    "id": "brasil.cptec.ocean",
+    "provider": "BrasilAPI",
+    "group": "brazil",
+    "description": "Consultar previsão de ondas por cidade.",
+    "url": "https://brasilapi.com.br/api/cptec/v1/ondas/{city_code}/{days}",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "city_code": {
+        "in": "path",
+        "required": true
+      },
+      "days": {
+        "in": "path",
+        "required": true
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "ondas",
+      "mar"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 1.0
+  },
+  {
+    "id": "brasil.cptec.ocean.default",
+    "provider": "BrasilAPI",
+    "group": "brazil",
+    "description": "Consultar previsão de ondas CPTEC padrão por cidade.",
+    "url": "https://brasilapi.com.br/api/cptec/v1/ondas/{city_code}",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "city_code": {
+        "in": "path",
+        "required": true
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "cptec",
+      "ondas",
+      "oceano"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 1.0
+  },
+  {
+    "id": "brasil.currency.list",
+    "provider": "BrasilAPI",
+    "group": "brazil",
+    "description": "Listar moedas disponíveis para consulta de câmbio.",
+    "url": "https://brasilapi.com.br/api/cambio/v1/moedas",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {},
+    "fixed_query": {},
+    "keywords": [
+      "cambio",
+      "moedas",
+      "bacen"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 1.0
+  },
+  {
+    "id": "brasil.currency.quote",
+    "provider": "BrasilAPI",
+    "group": "brazil",
+    "description": "Consultar cotação de moeda em uma data.",
+    "url": "https://brasilapi.com.br/api/cambio/v1/cotacao/{currency}/{date}",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "currency": {
+        "in": "path",
+        "required": true
+      },
+      "date": {
+        "in": "path",
+        "required": true
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "cambio",
+      "cotacao",
+      "moeda",
+      "bacen"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 1.0
+  },
+  {
+    "id": "brasil.cvm.broker.get",
+    "provider": "BrasilAPI",
+    "group": "brazil",
+    "description": "Consultar corretora CVM por CNPJ.",
+    "url": "https://brasilapi.com.br/api/cvm/corretoras/v1/{cnpj}",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "cnpj": {
+        "in": "path",
+        "required": true
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "cvm",
+      "corretora"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 1.0
+  },
+  {
+    "id": "brasil.cvm.brokers.list",
+    "provider": "BrasilAPI",
+    "group": "brazil",
+    "description": "Listar corretoras registradas na CVM.",
+    "url": "https://brasilapi.com.br/api/cvm/corretoras/v1",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {},
+    "fixed_query": {},
+    "keywords": [
+      "cvm",
+      "corretoras"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 1.0
+  },
+  {
+    "id": "brasil.cvm.fund.get",
+    "provider": "BrasilAPI",
+    "group": "brazil",
+    "description": "Consultar fundo CVM por CNPJ.",
+    "url": "https://brasilapi.com.br/api/cvm/fundos/v1/{cnpj}",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "cnpj": {
+        "in": "path",
+        "required": true
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "cvm",
+      "fundo"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 1.0
+  },
+  {
+    "id": "brasil.cvm.funds.list",
+    "provider": "BrasilAPI",
+    "group": "brazil",
+    "description": "Listar fundos registrados na CVM.",
+    "url": "https://brasilapi.com.br/api/cvm/fundos/v1",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {},
+    "fixed_query": {},
+    "keywords": [
+      "cvm",
+      "fundos"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 1.0,
+    "max_bytes": 10000000
+  },
+  {
+    "id": "brasil.ddd",
+    "provider": "BrasilAPI",
+    "group": "brazil",
+    "description": "Consultar estado e cidades por DDD.",
+    "url": "https://brasilapi.com.br/api/ddd/v1/{ddd}",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "ddd": {
+        "in": "path",
+        "required": true
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "ddd",
+      "telefone"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 1.0
+  },
+  {
+    "id": "brasil.fipe.brands",
+    "provider": "BrasilAPI",
+    "group": "brazil",
+    "description": "Listar marcas FIPE por tipo de veículo.",
+    "url": "https://brasilapi.com.br/api/fipe/marcas/v1/{vehicle_type}",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "vehicle_type": {
+        "in": "path",
+        "required": true
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "fipe",
+      "marcas"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 1.0
+  },
+  {
+    "id": "brasil.fipe.price",
+    "provider": "BrasilAPI",
+    "group": "brazil",
+    "description": "Consultar preço FIPE por código.",
+    "url": "https://brasilapi.com.br/api/fipe/preco/v1/{fipe_code}",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "fipe_code": {
+        "in": "path",
+        "required": true
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "fipe",
+      "preco"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 1.0
+  },
+  {
+    "id": "brasil.fipe.tables",
+    "provider": "BrasilAPI",
+    "group": "brazil",
+    "description": "Listar tabelas de referência FIPE.",
+    "url": "https://brasilapi.com.br/api/fipe/tabelas/v1",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {},
+    "fixed_query": {},
+    "keywords": [
+      "fipe",
+      "veiculos"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 1.0
+  },
+  {
+    "id": "brasil.fipe.vehicles",
+    "provider": "BrasilAPI",
+    "group": "brazil",
+    "description": "Listar veículos FIPE por tipo e código da marca.",
+    "url": "https://brasilapi.com.br/api/fipe/veiculos/v1/{vehicle_type}/{brand_code}",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "vehicle_type": {
+        "in": "path",
+        "required": true
+      },
+      "brand_code": {
+        "in": "path",
+        "required": true
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "fipe",
+      "veiculos",
+      "marca"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 1.0
+  },
+  {
+    "id": "brasil.holidays",
+    "provider": "BrasilAPI",
+    "group": "brazil",
+    "description": "Listar feriados nacionais por ano.",
+    "url": "https://brasilapi.com.br/api/feriados/v1/{year}",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "year": {
+        "in": "path",
+        "required": true
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "feriados",
+      "calendario"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 1.0
+  },
+  {
+    "id": "brasil.ibge.cities",
+    "provider": "BrasilAPI",
+    "group": "brazil",
+    "description": "Listar municípios de uma UF.",
+    "url": "https://brasilapi.com.br/api/ibge/municipios/v1/{uf}",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "uf": {
+        "in": "path",
+        "required": true
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "municipios",
+      "cidades"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 1.0
+  },
+  {
+    "id": "brasil.ibge.state.get",
+    "provider": "BrasilAPI",
+    "group": "brazil",
+    "description": "Consultar UF por sigla ou código.",
+    "url": "https://brasilapi.com.br/api/ibge/uf/v1/{code}",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "code": {
+        "in": "path",
+        "required": true
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "ibge",
+      "uf"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 1.0
+  },
+  {
+    "id": "brasil.ibge.states.list",
+    "provider": "BrasilAPI",
+    "group": "brazil",
+    "description": "Listar UFs brasileiras.",
+    "url": "https://brasilapi.com.br/api/ibge/uf/v1",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {},
+    "fixed_query": {},
+    "keywords": [
+      "ibge",
+      "estados",
+      "uf"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 1.0
+  },
+  {
+    "id": "brasil.isbn",
+    "provider": "BrasilAPI",
+    "group": "brazil",
+    "description": "Consultar livro por ISBN.",
+    "url": "https://brasilapi.com.br/api/isbn/v1/{isbn}",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "isbn": {
+        "in": "path",
+        "required": true
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "isbn",
+      "livro"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 1.0
+  },
+  {
+    "id": "brasil.ncm.get",
+    "provider": "BrasilAPI",
+    "group": "brazil",
+    "description": "Consultar NCM por código.",
+    "url": "https://brasilapi.com.br/api/ncm/v1/{code}",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "code": {
+        "in": "path",
+        "required": true
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "ncm"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 1.0
+  },
+  {
+    "id": "brasil.ncm.list",
+    "provider": "BrasilAPI",
+    "group": "brazil",
+    "description": "Listar códigos NCM.",
+    "url": "https://brasilapi.com.br/api/ncm/v1",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {},
+    "fixed_query": {},
+    "keywords": [
+      "ncm",
+      "mercosul"
+    ],
+    "cache_ttl": 3600,
+    "min_interval": 1.0,
+    "max_bytes": 10000000
+  },
+  {
+    "id": "brasil.ncm.search",
+    "provider": "BrasilAPI",
+    "group": "brazil",
+    "description": "Pesquisar NCM por descrição ou código.",
+    "url": "https://brasilapi.com.br/api/ncm/v1",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "search": {
+        "in": "query",
+        "required": true
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "ncm",
+      "pesquisa"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 1.0
+  },
+  {
+    "id": "brasil.pix.participants",
+    "provider": "BrasilAPI",
+    "group": "brazil",
+    "description": "Listar participantes do PIX.",
+    "url": "https://brasilapi.com.br/api/pix/v1/participants",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {},
+    "fixed_query": {},
+    "keywords": [
+      "pix",
+      "bancos"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 1.0
+  },
+  {
+    "id": "brasil.rates.get",
+    "provider": "BrasilAPI",
+    "group": "brazil",
+    "description": "Consultar uma taxa oficial por nome.",
+    "url": "https://brasilapi.com.br/api/taxas/v1/{name}",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "name": {
+        "in": "path",
+        "required": true
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "selic",
+      "cdi",
+      "ipca"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 1.0
+  },
+  {
+    "id": "brasil.rates.list",
+    "provider": "BrasilAPI",
+    "group": "brazil",
+    "description": "Listar taxas e índices oficiais disponíveis.",
+    "url": "https://brasilapi.com.br/api/taxas/v1",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {},
+    "fixed_query": {},
+    "keywords": [
+      "selic",
+      "cdi",
+      "ipca",
+      "taxas"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 1.0
+  },
+  {
+    "id": "brasil.registrobr.domain",
+    "provider": "BrasilAPI",
+    "group": "brazil",
+    "description": "Consultar situação de domínio .br.",
+    "url": "https://brasilapi.com.br/api/registrobr/v1/{domain}",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "domain": {
+        "in": "path",
+        "required": true
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "dominio",
+      "registro.br"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 1.0
+  },
+  {
+    "id": "brasil.tuss.autocomplete",
+    "provider": "BrasilAPI",
+    "group": "brazil",
+    "description": "Obter sugestões autocomplete TUSS.",
+    "url": "https://brasilapi.com.br/api/tuss/v1/autocomplete",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "search": {
+        "in": "query",
+        "required": true
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "tuss",
+      "saude",
+      "autocomplete"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 1.0
+  },
+  {
+    "id": "brasil.tuss.get",
+    "provider": "BrasilAPI",
+    "group": "brazil",
+    "description": "Buscar registro TUSS pelo código.",
+    "url": "https://brasilapi.com.br/api/tuss/v1/{tuss}",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "tuss": {
+        "in": "path",
+        "required": true
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "tuss",
+      "saude",
+      "procedimento",
+      "codigo"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 1.0
+  },
+  {
+    "id": "brasil.tuss.list",
+    "provider": "BrasilAPI",
+    "group": "brazil",
+    "description": "Listar registros TUSS.",
+    "url": "https://brasilapi.com.br/api/tuss/v1",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {},
+    "fixed_query": {},
+    "keywords": [
+      "tuss",
+      "saude",
+      "procedimentos"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 1.0
+  },
+  {
+    "id": "brasil.tuss.search",
+    "provider": "BrasilAPI",
+    "group": "brazil",
+    "description": "Pesquisar procedimentos TUSS por termo.",
+    "url": "https://brasilapi.com.br/api/tuss/v1/search",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "search": {
+        "in": "query",
+        "required": true
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "tuss",
+      "saude",
+      "procedimentos",
+      "pesquisa"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 1.0
+  },
+  {
+    "id": "commons.category.members",
+    "provider": "Wikimedia Commons",
+    "group": "media",
+    "description": "Listar membros de uma categoria do Wikimedia Commons.",
+    "url": "https://commons.wikimedia.org/w/api.php",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "category": {
+        "in": "query",
+        "required": true,
+        "name": "cmtitle"
+      }
+    },
+    "fixed_query": {
+      "action": "query",
+      "list": "categorymembers",
+      "cmlimit": 25,
+      "format": "json"
+    },
+    "keywords": [
+      "categoria",
+      "arquivos"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "commons.file.info",
+    "provider": "Wikimedia Commons",
+    "group": "media",
+    "description": "Obter informações de um arquivo do Wikimedia Commons.",
+    "url": "https://commons.wikimedia.org/w/api.php",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "title": {
+        "in": "query",
+        "required": true,
+        "name": "titles"
+      }
+    },
+    "fixed_query": {
+      "action": "query",
+      "prop": "imageinfo",
+      "iiprop": "url|mime|size|extmetadata",
+      "format": "json"
+    },
+    "keywords": [
+      "arquivo",
+      "licenca",
+      "metadata"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "commons.search.categories",
+    "provider": "Wikimedia Commons",
+    "group": "media",
+    "description": "Pesquisar categorias no Wikimedia Commons.",
+    "url": "https://commons.wikimedia.org/w/api.php",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "query": {
+        "in": "query",
+        "required": true,
+        "name": "gsrsearch"
+      }
+    },
+    "fixed_query": {
+      "action": "query",
+      "generator": "search",
+      "gsrnamespace": 14,
+      "gsrlimit": 12,
+      "format": "json"
+    },
+    "keywords": [
+      "categorias",
+      "commons"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "commons.search.images",
+    "provider": "Wikimedia Commons",
+    "group": "media",
+    "description": "Pesquisar arquivos de mídia no Wikimedia Commons.",
+    "url": "https://commons.wikimedia.org/w/api.php",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "query": {
+        "in": "query",
+        "required": true,
+        "name": "gsrsearch"
+      }
+    },
+    "fixed_query": {
+      "action": "query",
+      "generator": "search",
+      "gsrnamespace": 6,
+      "gsrlimit": 12,
+      "prop": "imageinfo",
+      "iiprop": "url|mime|size",
+      "format": "json"
+    },
+    "keywords": [
+      "imagens",
+      "commons",
+      "media"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "crossref.agency",
+    "provider": "Crossref",
+    "group": "research",
+    "description": "Identificar agência responsável por um DOI.",
+    "url": "https://api.crossref.org/works/{doi}/agency",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "doi": {
+        "in": "path",
+        "required": true
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "doi",
+      "agency"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "crossref.funders.get",
+    "provider": "Crossref",
+    "group": "research",
+    "description": "Consultar financiador por DOI/ID.",
+    "url": "https://api.crossref.org/funders/{id}",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "id": {
+        "in": "path",
+        "required": true
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "funder"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "crossref.funders.search",
+    "provider": "Crossref",
+    "group": "research",
+    "description": "Pesquisar financiadores.",
+    "url": "https://api.crossref.org/funders",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "query": {
+        "in": "query",
+        "required": true
+      },
+      "rows": {
+        "in": "query",
+        "required": false,
+        "default": 10
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "funder",
+      "financiador"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "crossref.funders.works",
+    "provider": "Crossref",
+    "group": "research",
+    "description": "Listar trabalhos associados a financiador.",
+    "url": "https://api.crossref.org/funders/{id}/works",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "id": {
+        "in": "path",
+        "required": true
+      },
+      "rows": {
+        "in": "query",
+        "required": false,
+        "default": 10
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "funder",
+      "works"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "crossref.journals.get",
+    "provider": "Crossref",
+    "group": "research",
+    "description": "Consultar periódico por ISSN.",
+    "url": "https://api.crossref.org/journals/{issn}",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "issn": {
+        "in": "path",
+        "required": true
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "issn"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "crossref.journals.list",
+    "provider": "Crossref",
+    "group": "research",
+    "description": "Listar periódicos no Crossref.",
+    "url": "https://api.crossref.org/journals",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "rows": {
+        "in": "query",
+        "required": false,
+        "default": 20
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "periodicos",
+      "journals"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "crossref.journals.works",
+    "provider": "Crossref",
+    "group": "research",
+    "description": "Listar trabalhos de um periódico por ISSN.",
+    "url": "https://api.crossref.org/journals/{issn}/works",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "issn": {
+        "in": "path",
+        "required": true
+      },
+      "rows": {
+        "in": "query",
+        "required": false,
+        "default": 10
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "issn",
+      "artigos"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "crossref.members.get",
+    "provider": "Crossref",
+    "group": "research",
+    "description": "Consultar membro Crossref por ID.",
+    "url": "https://api.crossref.org/members/{id}",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "id": {
+        "in": "path",
+        "required": true
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "publisher"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "crossref.members.list",
+    "provider": "Crossref",
+    "group": "research",
+    "description": "Listar membros/publicadores Crossref.",
+    "url": "https://api.crossref.org/members",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "rows": {
+        "in": "query",
+        "required": false,
+        "default": 20
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "publishers",
+      "membros"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "crossref.members.works",
+    "provider": "Crossref",
+    "group": "research",
+    "description": "Listar trabalhos de um membro Crossref.",
+    "url": "https://api.crossref.org/members/{id}/works",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "id": {
+        "in": "path",
+        "required": true
+      },
+      "rows": {
+        "in": "query",
+        "required": false,
+        "default": 10
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "publisher",
+      "works"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "crossref.prefixes.get",
+    "provider": "Crossref",
+    "group": "research",
+    "description": "Consultar prefixo DOI.",
+    "url": "https://api.crossref.org/prefixes/{prefix}",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "prefix": {
+        "in": "path",
+        "required": true
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "doi",
+      "prefixo"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "crossref.prefixes.works",
+    "provider": "Crossref",
+    "group": "research",
+    "description": "Listar trabalhos por prefixo DOI.",
+    "url": "https://api.crossref.org/prefixes/{prefix}/works",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "prefix": {
+        "in": "path",
+        "required": true
+      },
+      "rows": {
+        "in": "query",
+        "required": false,
+        "default": 10
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "doi",
+      "prefixo"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "crossref.types.list",
+    "provider": "Crossref",
+    "group": "research",
+    "description": "Listar tipos de obra do Crossref.",
+    "url": "https://api.crossref.org/types",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {},
+    "fixed_query": {},
+    "keywords": [
+      "tipos",
+      "works"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "crossref.types.works",
+    "provider": "Crossref",
+    "group": "research",
+    "description": "Listar trabalhos por tipo Crossref.",
+    "url": "https://api.crossref.org/types/{type}/works",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "type": {
+        "in": "path",
+        "required": true
+      },
+      "rows": {
+        "in": "query",
+        "required": false,
+        "default": 10
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "tipo",
+      "artigo"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "crossref.works.author",
+    "provider": "Crossref",
+    "group": "research",
+    "description": "Pesquisar trabalhos por autor.",
+    "url": "https://api.crossref.org/works",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "author": {
+        "in": "query",
+        "required": true,
+        "name": "query.author"
+      },
+      "rows": {
+        "in": "query",
+        "required": false,
+        "default": 10
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "autor"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "crossref.works.doi",
+    "provider": "Crossref",
+    "group": "research",
+    "description": "Consultar metadados de DOI.",
+    "url": "https://api.crossref.org/works/{doi}",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "doi": {
+        "in": "path",
+        "required": true
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "doi",
+      "metadata"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "crossref.works.search",
+    "provider": "Crossref",
+    "group": "research",
+    "description": "Pesquisar trabalhos acadêmicos por texto.",
+    "url": "https://api.crossref.org/works",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "query": {
+        "in": "query",
+        "required": true,
+        "name": "query.bibliographic"
+      },
+      "rows": {
+        "in": "query",
+        "required": false,
+        "default": 10
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "doi",
+      "artigos",
+      "pesquisa"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.5
+  },
+  {
+    "id": "crossref.works.title",
+    "provider": "Crossref",
+    "group": "research",
+    "description": "Pesquisar trabalhos por título.",
+    "url": "https://api.crossref.org/works",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "title": {
+        "in": "query",
+        "required": true,
+        "name": "query.title"
+      },
+      "rows": {
+        "in": "query",
+        "required": false,
+        "default": 10
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "titulo",
+      "doi"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "dev.sample.comments",
+    "provider": "JSONPlaceholder",
+    "group": "developer",
+    "description": "Obter comentários de exemplo.",
+    "url": "https://jsonplaceholder.typicode.com/comments",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {},
+    "fixed_query": {},
+    "keywords": [
+      "teste"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "dev.sample.post",
+    "provider": "JSONPlaceholder",
+    "group": "developer",
+    "description": "Obter post de exemplo por ID.",
+    "url": "https://jsonplaceholder.typicode.com/posts/{id}",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "id": {
+        "in": "path",
+        "required": true
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "teste"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "dev.sample.posts",
+    "provider": "JSONPlaceholder",
+    "group": "developer",
+    "description": "Obter posts de exemplo para testar pipelines.",
+    "url": "https://jsonplaceholder.typicode.com/posts",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {},
+    "fixed_query": {},
+    "keywords": [
+      "teste",
+      "json"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "dev.sample.todos",
+    "provider": "JSONPlaceholder",
+    "group": "developer",
+    "description": "Obter tarefas de exemplo.",
+    "url": "https://jsonplaceholder.typicode.com/todos",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {},
+    "fixed_query": {},
+    "keywords": [
+      "teste"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "dev.sample.users",
+    "provider": "JSONPlaceholder",
+    "group": "developer",
+    "description": "Obter usuários de exemplo.",
+    "url": "https://jsonplaceholder.typicode.com/users",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {},
+    "fixed_query": {},
+    "keywords": [
+      "teste"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "dns.a",
+    "provider": "Google DNS",
+    "group": "network",
+    "description": "Resolver IPv4 via DNS-over-HTTPS.",
+    "url": "https://dns.google/resolve",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "name": {
+        "in": "query",
+        "required": true
+      }
+    },
+    "fixed_query": {
+      "type": "A"
+    },
+    "keywords": [
+      "dns",
+      "a"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "dns.aaaa",
+    "provider": "Google DNS",
+    "group": "network",
+    "description": "Resolver IPv6 via DNS-over-HTTPS.",
+    "url": "https://dns.google/resolve",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "name": {
+        "in": "query",
+        "required": true
+      }
+    },
+    "fixed_query": {
+      "type": "AAAA"
+    },
+    "keywords": [
+      "dns",
+      "aaaa"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "dns.mx",
+    "provider": "Google DNS",
+    "group": "network",
+    "description": "Consultar servidores de email via DNS-over-HTTPS.",
+    "url": "https://dns.google/resolve",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "name": {
+        "in": "query",
+        "required": true
+      }
+    },
+    "fixed_query": {
+      "type": "MX"
+    },
+    "keywords": [
+      "dns",
+      "mx"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "dns.txt",
+    "provider": "Google DNS",
+    "group": "network",
+    "description": "Consultar registros TXT via DNS-over-HTTPS.",
+    "url": "https://dns.google/resolve",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "name": {
+        "in": "query",
+        "required": true
+      }
+    },
+    "fixed_query": {
+      "type": "TXT"
+    },
+    "keywords": [
+      "dns",
+      "txt"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "fx.currencies",
+    "provider": "Frankfurter",
+    "group": "finance",
+    "description": "Listar moedas suportadas.",
+    "url": "https://api.frankfurter.dev/v2/currencies",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {},
+    "fixed_query": {},
+    "keywords": [
+      "moedas",
+      "cambio"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "fx.providers",
+    "provider": "Frankfurter",
+    "group": "finance",
+    "description": "Listar provedores de cotações oficiais.",
+    "url": "https://api.frankfurter.dev/v2/providers",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {},
+    "fixed_query": {},
+    "keywords": [
+      "bancos centrais"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "fx.rate.pair",
+    "provider": "Frankfurter",
+    "group": "finance",
+    "description": "Obter cotação direta entre duas moedas.",
+    "url": "https://api.frankfurter.dev/v2/rate/{base}/{quote}",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "base": {
+        "in": "path",
+        "required": true
+      },
+      "quote": {
+        "in": "path",
+        "required": true
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "par",
+      "moeda"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "fx.rates.brl",
+    "provider": "Frankfurter",
+    "group": "finance",
+    "description": "Cotações atuais com BRL como base.",
+    "url": "https://api.frankfurter.dev/v2/rates",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "quotes": {
+        "in": "query",
+        "required": false
+      }
+    },
+    "fixed_query": {
+      "base": "BRL"
+    },
+    "keywords": [
+      "real",
+      "brl"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "fx.rates.date",
+    "provider": "Frankfurter",
+    "group": "finance",
+    "description": "Obter cotações de uma data.",
+    "url": "https://api.frankfurter.dev/v2/rates",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "date": {
+        "in": "query",
+        "required": true
+      },
+      "base": {
+        "in": "query",
+        "required": false
+      },
+      "quotes": {
+        "in": "query",
+        "required": false
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "historico",
+      "data"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "fx.rates.latest",
+    "provider": "Frankfurter",
+    "group": "finance",
+    "description": "Obter cotações mais recentes.",
+    "url": "https://api.frankfurter.dev/v2/rates",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "base": {
+        "in": "query",
+        "required": false
+      },
+      "quotes": {
+        "in": "query",
+        "required": false
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "cambio",
+      "cotacao"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "fx.rates.period",
+    "provider": "Frankfurter",
+    "group": "finance",
+    "description": "Obter série de cotações por período.",
+    "url": "https://api.frankfurter.dev/v2/rates",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "from": {
+        "in": "query",
+        "required": true
+      },
+      "to": {
+        "in": "query",
+        "required": true
+      },
+      "base": {
+        "in": "query",
+        "required": false
+      },
+      "quotes": {
+        "in": "query",
+        "required": false
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "serie temporal"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "fx.rates.usd",
+    "provider": "Frankfurter",
+    "group": "finance",
+    "description": "Cotações atuais com USD como base.",
+    "url": "https://api.frankfurter.dev/v2/rates",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "quotes": {
+        "in": "query",
+        "required": false
+      }
+    },
+    "fixed_query": {
+      "base": "USD"
+    },
+    "keywords": [
+      "dolar"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "gdelt.news.search",
+    "provider": "GDELT",
+    "group": "news",
+    "description": "Pesquisar notícias globais recentes no GDELT.",
+    "url": "https://api.gdeltproject.org/api/v2/doc/doc",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "query": {
+        "in": "query",
+        "required": true
+      },
+      "timespan": {
+        "in": "query",
+        "required": false,
+        "default": "7d"
+      },
+      "maxrecords": {
+        "in": "query",
+        "required": false,
+        "default": 50
+      }
+    },
+    "fixed_query": {
+      "mode": "artlist",
+      "format": "json",
+      "sort": "datedesc"
+    },
+    "keywords": [
+      "noticias",
+      "news",
+      "monitoramento",
+      "gdelt"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 5.0
+  },
+  {
+    "id": "gdelt.news.timeline.country",
+    "provider": "GDELT",
+    "group": "news",
+    "description": "Cobertura no GDELT separada por país da fonte.",
+    "url": "https://api.gdeltproject.org/api/v2/doc/doc",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "query": {
+        "in": "query",
+        "required": true
+      },
+      "timespan": {
+        "in": "query",
+        "required": false,
+        "default": "7d"
+      }
+    },
+    "fixed_query": {
+      "mode": "timelinesourcecountry",
+      "format": "json"
+    },
+    "keywords": [
+      "noticias",
+      "news",
+      "monitoramento",
+      "gdelt"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 5.0
+  },
+  {
+    "id": "gdelt.news.timeline.language",
+    "provider": "GDELT",
+    "group": "news",
+    "description": "Cobertura no GDELT separada por idioma.",
+    "url": "https://api.gdeltproject.org/api/v2/doc/doc",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "query": {
+        "in": "query",
+        "required": true
+      },
+      "timespan": {
+        "in": "query",
+        "required": false,
+        "default": "7d"
+      }
+    },
+    "fixed_query": {
+      "mode": "timelinelang",
+      "format": "json"
+    },
+    "keywords": [
+      "noticias",
+      "news",
+      "monitoramento",
+      "gdelt"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 5.0
+  },
+  {
+    "id": "gdelt.news.timeline.raw",
+    "provider": "GDELT",
+    "group": "news",
+    "description": "Linha do tempo com volume bruto de notícias no GDELT.",
+    "url": "https://api.gdeltproject.org/api/v2/doc/doc",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "query": {
+        "in": "query",
+        "required": true
+      },
+      "timespan": {
+        "in": "query",
+        "required": false,
+        "default": "7d"
+      }
+    },
+    "fixed_query": {
+      "mode": "timelinevolraw",
+      "format": "json"
+    },
+    "keywords": [
+      "noticias",
+      "news",
+      "monitoramento",
+      "gdelt"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 5.0
+  },
+  {
+    "id": "gdelt.news.timeline.tone",
+    "provider": "GDELT",
+    "group": "news",
+    "description": "Linha do tempo do tom médio da cobertura no GDELT.",
+    "url": "https://api.gdeltproject.org/api/v2/doc/doc",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "query": {
+        "in": "query",
+        "required": true
+      },
+      "timespan": {
+        "in": "query",
+        "required": false,
+        "default": "7d"
+      }
+    },
+    "fixed_query": {
+      "mode": "timelinetone",
+      "format": "json"
+    },
+    "keywords": [
+      "noticias",
+      "news",
+      "monitoramento",
+      "gdelt"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 5.0
+  },
+  {
+    "id": "gdelt.news.timeline.volume",
+    "provider": "GDELT",
+    "group": "news",
+    "description": "Linha do tempo do volume relativo de cobertura no GDELT.",
+    "url": "https://api.gdeltproject.org/api/v2/doc/doc",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "query": {
+        "in": "query",
+        "required": true
+      },
+      "timespan": {
+        "in": "query",
+        "required": false,
+        "default": "7d"
+      }
+    },
+    "fixed_query": {
+      "mode": "timelinevol",
+      "format": "json"
+    },
+    "keywords": [
+      "noticias",
+      "news",
+      "monitoramento",
+      "gdelt"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 5.0
+  },
+  {
+    "id": "github.org.get",
+    "provider": "GitHub",
+    "group": "software",
+    "description": "Consultar organização GitHub.",
+    "url": "https://api.github.com/orgs/{org}",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "org": {
+        "in": "path",
+        "required": true
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "organizacao"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 1.1,
+    "headers": {
+      "Accept": "application/vnd.github+json"
+    }
+  },
+  {
+    "id": "github.org.repos",
+    "provider": "GitHub",
+    "group": "software",
+    "description": "Listar repositórios de organização GitHub.",
+    "url": "https://api.github.com/orgs/{org}/repos",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "org": {
+        "in": "path",
+        "required": true
+      },
+      "per_page": {
+        "in": "query",
+        "required": false,
+        "default": 30
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "organizacao",
+      "repositorios"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 1.1,
+    "headers": {
+      "Accept": "application/vnd.github+json"
+    }
+  },
+  {
+    "id": "github.repo.branches",
+    "provider": "GitHub",
+    "group": "software",
+    "description": "Listar branches de um repositório público.",
+    "url": "https://api.github.com/repos/{owner}/{repo}/branches",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "owner": {
+        "in": "path",
+        "required": true
+      },
+      "repo": {
+        "in": "path",
+        "required": true
+      },
+      "per_page": {
+        "in": "query",
+        "required": false,
+        "default": 20
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "github",
+      "branches"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 1.1,
+    "headers": {
+      "Accept": "application/vnd.github+json"
+    }
+  },
+  {
+    "id": "github.repo.commits",
+    "provider": "GitHub",
+    "group": "software",
+    "description": "Listar commits de um repositório público.",
+    "url": "https://api.github.com/repos/{owner}/{repo}/commits",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "owner": {
+        "in": "path",
+        "required": true
+      },
+      "repo": {
+        "in": "path",
+        "required": true
+      },
+      "per_page": {
+        "in": "query",
+        "required": false,
+        "default": 20
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "github",
+      "commits"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 1.1,
+    "headers": {
+      "Accept": "application/vnd.github+json"
+    }
+  },
+  {
+    "id": "github.repo.community",
+    "provider": "GitHub",
+    "group": "software",
+    "description": "Consultar perfil de comunidade/saúde do repositório.",
+    "url": "https://api.github.com/repos/{owner}/{repo}/community/profile",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "owner": {
+        "in": "path",
+        "required": true
+      },
+      "repo": {
+        "in": "path",
+        "required": true
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "community",
+      "license"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 1.1,
+    "headers": {
+      "Accept": "application/vnd.github+json"
+    }
+  },
+  {
+    "id": "github.repo.compare",
+    "provider": "GitHub",
+    "group": "software",
+    "description": "Comparar duas refs/commits de repositório.",
+    "url": "https://api.github.com/repos/{owner}/{repo}/compare/{basehead}",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "owner": {
+        "in": "path",
+        "required": true
+      },
+      "repo": {
+        "in": "path",
+        "required": true
+      },
+      "basehead": {
+        "in": "path",
+        "required": true
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "diff",
+      "compare"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 1.1,
+    "headers": {
+      "Accept": "application/vnd.github+json"
+    }
+  },
+  {
+    "id": "github.repo.contents",
+    "provider": "GitHub",
+    "group": "software",
+    "description": "Ler conteúdo de arquivo/diretório público no GitHub.",
+    "url": "https://api.github.com/repos/{owner}/{repo}/contents/{path}",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "owner": {
+        "in": "path",
+        "required": true
+      },
+      "repo": {
+        "in": "path",
+        "required": true
+      },
+      "path": {
+        "in": "path",
+        "required": true
+      },
+      "ref": {
+        "in": "query",
+        "required": false
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "arquivo",
+      "codigo"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 1.1,
+    "headers": {
+      "Accept": "application/vnd.github+json"
+    }
+  },
+  {
+    "id": "github.repo.contributors",
+    "provider": "GitHub",
+    "group": "software",
+    "description": "Listar contribuidores de um repositório público.",
+    "url": "https://api.github.com/repos/{owner}/{repo}/contributors",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "owner": {
+        "in": "path",
+        "required": true
+      },
+      "repo": {
+        "in": "path",
+        "required": true
+      },
+      "per_page": {
+        "in": "query",
+        "required": false,
+        "default": 20
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "github",
+      "contributors"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 1.1,
+    "headers": {
+      "Accept": "application/vnd.github+json"
+    }
+  },
+  {
+    "id": "github.repo.events",
+    "provider": "GitHub",
+    "group": "software",
+    "description": "Listar eventos recentes de repositório público.",
+    "url": "https://api.github.com/repos/{owner}/{repo}/events",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "owner": {
+        "in": "path",
+        "required": true
+      },
+      "repo": {
+        "in": "path",
+        "required": true
+      },
+      "per_page": {
+        "in": "query",
+        "required": false,
+        "default": 20
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "eventos"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 1.1,
+    "headers": {
+      "Accept": "application/vnd.github+json"
+    }
+  },
+  {
+    "id": "github.repo.forks",
+    "provider": "GitHub",
+    "group": "software",
+    "description": "Listar forks de um repositório público.",
+    "url": "https://api.github.com/repos/{owner}/{repo}/forks",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "owner": {
+        "in": "path",
+        "required": true
+      },
+      "repo": {
+        "in": "path",
+        "required": true
+      },
+      "per_page": {
+        "in": "query",
+        "required": false,
+        "default": 20
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "github",
+      "forks"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 1.1,
+    "headers": {
+      "Accept": "application/vnd.github+json"
+    }
+  },
+  {
+    "id": "github.repo.get",
+    "provider": "GitHub",
+    "group": "software",
+    "description": "Consultar repositório público.",
+    "url": "https://api.github.com/repos/{owner}/{repo}",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "owner": {
+        "in": "path",
+        "required": true
+      },
+      "repo": {
+        "in": "path",
+        "required": true
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "repositorio",
+      "github"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 1.1,
+    "headers": {
+      "Accept": "application/vnd.github+json"
+    }
+  },
+  {
+    "id": "github.repo.issues",
+    "provider": "GitHub",
+    "group": "software",
+    "description": "Listar issues públicas de um repositório público.",
+    "url": "https://api.github.com/repos/{owner}/{repo}/issues",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "owner": {
+        "in": "path",
+        "required": true
+      },
+      "repo": {
+        "in": "path",
+        "required": true
+      },
+      "per_page": {
+        "in": "query",
+        "required": false,
+        "default": 20
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "github",
+      "issues"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 1.1,
+    "headers": {
+      "Accept": "application/vnd.github+json"
+    }
+  },
+  {
+    "id": "github.repo.languages",
+    "provider": "GitHub",
+    "group": "software",
+    "description": "Listar linguagens de um repositório público.",
+    "url": "https://api.github.com/repos/{owner}/{repo}/languages",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "owner": {
+        "in": "path",
+        "required": true
+      },
+      "repo": {
+        "in": "path",
+        "required": true
+      },
+      "per_page": {
+        "in": "query",
+        "required": false,
+        "default": 20
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "github",
+      "languages"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 1.1,
+    "headers": {
+      "Accept": "application/vnd.github+json"
+    }
+  },
+  {
+    "id": "github.repo.license",
+    "provider": "GitHub",
+    "group": "software",
+    "description": "Consultar licença de repositório público.",
+    "url": "https://api.github.com/repos/{owner}/{repo}/license",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "owner": {
+        "in": "path",
+        "required": true
+      },
+      "repo": {
+        "in": "path",
+        "required": true
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "license",
+      "licenca"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 1.1,
+    "headers": {
+      "Accept": "application/vnd.github+json"
+    }
+  },
+  {
+    "id": "github.repo.pulls",
+    "provider": "GitHub",
+    "group": "software",
+    "description": "Listar pull requests de um repositório público.",
+    "url": "https://api.github.com/repos/{owner}/{repo}/pulls",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "owner": {
+        "in": "path",
+        "required": true
+      },
+      "repo": {
+        "in": "path",
+        "required": true
+      },
+      "per_page": {
+        "in": "query",
+        "required": false,
+        "default": 20
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "github",
+      "pulls"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 1.1,
+    "headers": {
+      "Accept": "application/vnd.github+json"
+    }
+  },
+  {
+    "id": "github.repo.readme",
+    "provider": "GitHub",
+    "group": "software",
+    "description": "Obter README de um repositório público.",
+    "url": "https://api.github.com/repos/{owner}/{repo}/readme",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "owner": {
+        "in": "path",
+        "required": true
+      },
+      "repo": {
+        "in": "path",
+        "required": true
+      },
+      "per_page": {
+        "in": "query",
+        "required": false,
+        "default": 20
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "github",
+      "readme"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 1.1,
+    "headers": {
+      "Accept": "application/vnd.github+json"
+    }
+  },
+  {
+    "id": "github.repo.release.latest",
+    "provider": "GitHub",
+    "group": "software",
+    "description": "Obter release mais recente de um repositório público.",
+    "url": "https://api.github.com/repos/{owner}/{repo}/releases/latest",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "owner": {
+        "in": "path",
+        "required": true
+      },
+      "repo": {
+        "in": "path",
+        "required": true
+      },
+      "per_page": {
+        "in": "query",
+        "required": false,
+        "default": 20
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "github",
+      "release.latest"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 1.1,
+    "headers": {
+      "Accept": "application/vnd.github+json"
+    }
+  },
+  {
+    "id": "github.repo.releases",
+    "provider": "GitHub",
+    "group": "software",
+    "description": "Listar releases de um repositório público.",
+    "url": "https://api.github.com/repos/{owner}/{repo}/releases",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "owner": {
+        "in": "path",
+        "required": true
+      },
+      "repo": {
+        "in": "path",
+        "required": true
+      },
+      "per_page": {
+        "in": "query",
+        "required": false,
+        "default": 20
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "github",
+      "releases"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 1.1,
+    "headers": {
+      "Accept": "application/vnd.github+json"
+    }
+  },
+  {
+    "id": "github.repo.stargazers",
+    "provider": "GitHub",
+    "group": "software",
+    "description": "Listar estrelas/usuários de um repositório público.",
+    "url": "https://api.github.com/repos/{owner}/{repo}/stargazers",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "owner": {
+        "in": "path",
+        "required": true
+      },
+      "repo": {
+        "in": "path",
+        "required": true
+      },
+      "per_page": {
+        "in": "query",
+        "required": false,
+        "default": 20
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "github",
+      "stargazers"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 1.1,
+    "headers": {
+      "Accept": "application/vnd.github+json"
+    }
+  },
+  {
+    "id": "github.repo.tags",
+    "provider": "GitHub",
+    "group": "software",
+    "description": "Listar tags de um repositório público.",
+    "url": "https://api.github.com/repos/{owner}/{repo}/tags",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "owner": {
+        "in": "path",
+        "required": true
+      },
+      "repo": {
+        "in": "path",
+        "required": true
+      },
+      "per_page": {
+        "in": "query",
+        "required": false,
+        "default": 20
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "github",
+      "tags"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 1.1,
+    "headers": {
+      "Accept": "application/vnd.github+json"
+    }
+  },
+  {
+    "id": "github.repo.topics",
+    "provider": "GitHub",
+    "group": "software",
+    "description": "Obter tópicos de um repositório público.",
+    "url": "https://api.github.com/repos/{owner}/{repo}/topics",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "owner": {
+        "in": "path",
+        "required": true
+      },
+      "repo": {
+        "in": "path",
+        "required": true
+      },
+      "per_page": {
+        "in": "query",
+        "required": false,
+        "default": 20
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "github",
+      "topics"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 1.1,
+    "headers": {
+      "Accept": "application/vnd.github+json"
+    }
+  },
+  {
+    "id": "github.search.repositories",
+    "provider": "GitHub",
+    "group": "software",
+    "description": "Pesquisar repositórios públicos no GitHub.",
+    "url": "https://api.github.com/search/repositories",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "q": {
+        "in": "query",
+        "required": true
+      },
+      "per_page": {
+        "in": "query",
+        "required": false,
+        "default": 10
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "search",
+      "repositorio"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 2.0,
+    "headers": {
+      "Accept": "application/vnd.github+json"
+    }
+  },
+  {
+    "id": "github.user.get",
+    "provider": "GitHub",
+    "group": "software",
+    "description": "Consultar perfil público de usuário GitHub.",
+    "url": "https://api.github.com/users/{username}",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "username": {
+        "in": "path",
+        "required": true
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "usuario"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 1.1,
+    "headers": {
+      "Accept": "application/vnd.github+json"
+    }
+  },
+  {
+    "id": "github.user.repos",
+    "provider": "GitHub",
+    "group": "software",
+    "description": "Listar repositórios públicos de usuário GitHub.",
+    "url": "https://api.github.com/users/{username}/repos",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "username": {
+        "in": "path",
+        "required": true
+      },
+      "per_page": {
+        "in": "query",
+        "required": false,
+        "default": 30
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "repositorios"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 1.1,
+    "headers": {
+      "Accept": "application/vnd.github+json"
+    }
+  },
+  {
+    "id": "hn.ask",
+    "provider": "Hacker News",
+    "group": "news",
+    "description": "IDs de Ask HN do Hacker News.",
+    "url": "https://hacker-news.firebaseio.com/v0/askstories.json",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {},
+    "fixed_query": {},
+    "keywords": [
+      "hacker news",
+      "tech"
+    ],
+    "cache_ttl": 60,
+    "min_interval": 0.25
+  },
+  {
+    "id": "hn.best",
+    "provider": "Hacker News",
+    "group": "news",
+    "description": "IDs das melhores histórias do Hacker News.",
+    "url": "https://hacker-news.firebaseio.com/v0/beststories.json",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {},
+    "fixed_query": {},
+    "keywords": [
+      "hacker news",
+      "tech"
+    ],
+    "cache_ttl": 60,
+    "min_interval": 0.25
+  },
+  {
+    "id": "hn.item",
+    "provider": "Hacker News",
+    "group": "news",
+    "description": "Obter item/história/comentário por ID.",
+    "url": "https://hacker-news.firebaseio.com/v0/item/{id}.json",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "id": {
+        "in": "path",
+        "required": true
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "item",
+      "noticia"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "hn.jobs",
+    "provider": "Hacker News",
+    "group": "news",
+    "description": "IDs de vagas do Hacker News.",
+    "url": "https://hacker-news.firebaseio.com/v0/jobstories.json",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {},
+    "fixed_query": {},
+    "keywords": [
+      "hacker news",
+      "tech"
+    ],
+    "cache_ttl": 60,
+    "min_interval": 0.25
+  },
+  {
+    "id": "hn.new",
+    "provider": "Hacker News",
+    "group": "news",
+    "description": "IDs das histórias novas do Hacker News.",
+    "url": "https://hacker-news.firebaseio.com/v0/newstories.json",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {},
+    "fixed_query": {},
+    "keywords": [
+      "hacker news",
+      "tech"
+    ],
+    "cache_ttl": 60,
+    "min_interval": 0.25
+  },
+  {
+    "id": "hn.show",
+    "provider": "Hacker News",
+    "group": "news",
+    "description": "IDs de Show HN do Hacker News.",
+    "url": "https://hacker-news.firebaseio.com/v0/showstories.json",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {},
+    "fixed_query": {},
+    "keywords": [
+      "hacker news",
+      "tech"
+    ],
+    "cache_ttl": 60,
+    "min_interval": 0.25
+  },
+  {
+    "id": "hn.top",
+    "provider": "Hacker News",
+    "group": "news",
+    "description": "IDs das principais histórias do Hacker News.",
+    "url": "https://hacker-news.firebaseio.com/v0/topstories.json",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {},
+    "fixed_query": {},
+    "keywords": [
+      "hacker news",
+      "tech"
+    ],
+    "cache_ttl": 60,
+    "min_interval": 0.25
+  },
+  {
+    "id": "hn.updates",
+    "provider": "Hacker News",
+    "group": "news",
+    "description": "Consultar itens e perfis atualizados recentemente.",
+    "url": "https://hacker-news.firebaseio.com/v0/updates.json",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {},
+    "fixed_query": {},
+    "keywords": [
+      "updates"
+    ],
+    "cache_ttl": 60,
+    "min_interval": 0.25
+  },
+  {
+    "id": "hn.user",
+    "provider": "Hacker News",
+    "group": "news",
+    "description": "Consultar usuário Hacker News.",
+    "url": "https://hacker-news.firebaseio.com/v0/user/{id}.json",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "id": {
+        "in": "path",
+        "required": true
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "usuario"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "network.public_ip",
+    "provider": "ipify",
+    "group": "network",
+    "description": "Descobrir IP público atual.",
+    "url": "https://api.ipify.org",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {},
+    "fixed_query": {
+      "format": "json"
+    },
+    "keywords": [
+      "ip",
+      "internet"
+    ],
+    "cache_ttl": 60,
+    "min_interval": 0.25
+  },
+  {
+    "id": "npm.package",
+    "provider": "npm",
+    "group": "software",
+    "description": "Consultar metadados de pacote npm.",
+    "url": "https://registry.npmjs.org/{package}",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "package": {
+        "in": "path",
+        "required": true
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "javascript",
+      "npm"
+    ],
+    "cache_ttl": 600,
+    "min_interval": 0.25
+  },
+  {
+    "id": "npm.package.version",
+    "provider": "npm",
+    "group": "software",
+    "description": "Consultar versão específica de pacote npm.",
+    "url": "https://registry.npmjs.org/{package}/{version}",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "package": {
+        "in": "path",
+        "required": true
+      },
+      "version": {
+        "in": "path",
+        "required": true
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "npm",
+      "versao"
+    ],
+    "cache_ttl": 600,
+    "min_interval": 0.25
+  },
+  {
+    "id": "npm.search",
+    "provider": "npm",
+    "group": "software",
+    "description": "Pesquisar pacotes npm.",
+    "url": "https://registry.npmjs.org/-/v1/search",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "text": {
+        "in": "query",
+        "required": true
+      },
+      "size": {
+        "in": "query",
+        "required": false,
+        "default": 10
+      },
+      "from": {
+        "in": "query",
+        "required": false,
+        "default": 0
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "npm",
+      "search"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "npm.search.popular",
+    "provider": "npm",
+    "group": "software",
+    "description": "Pesquisar npm priorizando popularidade.",
+    "url": "https://registry.npmjs.org/-/v1/search",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "text": {
+        "in": "query",
+        "required": true
+      },
+      "size": {
+        "in": "query",
+        "required": false,
+        "default": 10
+      }
+    },
+    "fixed_query": {
+      "quality": 0.0,
+      "popularity": 1.0,
+      "maintenance": 0.0
+    },
+    "keywords": [
+      "npm",
+      "popularidade"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "npm.search.quality",
+    "provider": "npm",
+    "group": "software",
+    "description": "Pesquisar npm priorizando qualidade.",
+    "url": "https://registry.npmjs.org/-/v1/search",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "text": {
+        "in": "query",
+        "required": true
+      },
+      "size": {
+        "in": "query",
+        "required": false,
+        "default": 10
+      }
+    },
+    "fixed_query": {
+      "quality": 1.0,
+      "popularity": 0.0,
+      "maintenance": 0.0
+    },
+    "keywords": [
+      "npm",
+      "qualidade"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "openalex.authors.get",
+    "provider": "OpenAlex",
+    "group": "research",
+    "description": "Consultar authors por ID OpenAlex.",
+    "url": "https://api.openalex.org/authors/{id}",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "id": {
+        "in": "path",
+        "required": true
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "openalex",
+      "authors",
+      "id"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.2
+  },
+  {
+    "id": "openalex.authors.group.country",
+    "provider": "OpenAlex",
+    "group": "research",
+    "description": "Agrupar autores por país quando disponível.",
+    "url": "https://api.openalex.org/authors",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "search": {
+        "in": "query",
+        "required": true
+      }
+    },
+    "fixed_query": {
+      "group_by": "last_known_institutions.country_code",
+      "per-page": 50
+    },
+    "keywords": [
+      "autores",
+      "pais"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "openalex.authors.search",
+    "provider": "OpenAlex",
+    "group": "research",
+    "description": "Pesquisar authors no OpenAlex.",
+    "url": "https://api.openalex.org/authors",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "search": {
+        "in": "query",
+        "required": true
+      },
+      "per-page": {
+        "in": "query",
+        "required": false,
+        "default": 10
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "openalex",
+      "authors"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.2
+  },
+  {
+    "id": "openalex.funders.get",
+    "provider": "OpenAlex",
+    "group": "research",
+    "description": "Consultar funders por ID OpenAlex.",
+    "url": "https://api.openalex.org/funders/{id}",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "id": {
+        "in": "path",
+        "required": true
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "openalex",
+      "funders",
+      "id"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.2
+  },
+  {
+    "id": "openalex.funders.search",
+    "provider": "OpenAlex",
+    "group": "research",
+    "description": "Pesquisar funders no OpenAlex.",
+    "url": "https://api.openalex.org/funders",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "search": {
+        "in": "query",
+        "required": true
+      },
+      "per-page": {
+        "in": "query",
+        "required": false,
+        "default": 10
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "openalex",
+      "funders"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.2
+  },
+  {
+    "id": "openalex.institutions.country",
+    "provider": "OpenAlex",
+    "group": "research",
+    "description": "Pesquisar instituições com filtro opcional de país.",
+    "url": "https://api.openalex.org/institutions",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "search": {
+        "in": "query",
+        "required": true
+      },
+      "filter": {
+        "in": "query",
+        "required": false
+      },
+      "per-page": {
+        "in": "query",
+        "required": false,
+        "default": 10
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "universidade",
+      "instituicao"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "openalex.institutions.get",
+    "provider": "OpenAlex",
+    "group": "research",
+    "description": "Consultar institutions por ID OpenAlex.",
+    "url": "https://api.openalex.org/institutions/{id}",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "id": {
+        "in": "path",
+        "required": true
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "openalex",
+      "institutions",
+      "id"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.2
+  },
+  {
+    "id": "openalex.institutions.search",
+    "provider": "OpenAlex",
+    "group": "research",
+    "description": "Pesquisar institutions no OpenAlex.",
+    "url": "https://api.openalex.org/institutions",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "search": {
+        "in": "query",
+        "required": true
+      },
+      "per-page": {
+        "in": "query",
+        "required": false,
+        "default": 10
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "openalex",
+      "institutions"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.2
+  },
+  {
+    "id": "openalex.keywords.get",
+    "provider": "OpenAlex",
+    "group": "research",
+    "description": "Consultar keywords por ID OpenAlex.",
+    "url": "https://api.openalex.org/keywords/{id}",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "id": {
+        "in": "path",
+        "required": true
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "openalex",
+      "keywords",
+      "id"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.2
+  },
+  {
+    "id": "openalex.keywords.search",
+    "provider": "OpenAlex",
+    "group": "research",
+    "description": "Pesquisar keywords no OpenAlex.",
+    "url": "https://api.openalex.org/keywords",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "search": {
+        "in": "query",
+        "required": true
+      },
+      "per-page": {
+        "in": "query",
+        "required": false,
+        "default": 10
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "openalex",
+      "keywords"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.2
+  },
+  {
+    "id": "openalex.publishers.get",
+    "provider": "OpenAlex",
+    "group": "research",
+    "description": "Consultar publishers por ID OpenAlex.",
+    "url": "https://api.openalex.org/publishers/{id}",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "id": {
+        "in": "path",
+        "required": true
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "openalex",
+      "publishers",
+      "id"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.2
+  },
+  {
+    "id": "openalex.publishers.search",
+    "provider": "OpenAlex",
+    "group": "research",
+    "description": "Pesquisar publishers no OpenAlex.",
+    "url": "https://api.openalex.org/publishers",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "search": {
+        "in": "query",
+        "required": true
+      },
+      "per-page": {
+        "in": "query",
+        "required": false,
+        "default": 10
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "openalex",
+      "publishers"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.2
+  },
+  {
+    "id": "openalex.sources.get",
+    "provider": "OpenAlex",
+    "group": "research",
+    "description": "Consultar sources por ID OpenAlex.",
+    "url": "https://api.openalex.org/sources/{id}",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "id": {
+        "in": "path",
+        "required": true
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "openalex",
+      "sources",
+      "id"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.2
+  },
+  {
+    "id": "openalex.sources.issn",
+    "provider": "OpenAlex",
+    "group": "research",
+    "description": "Consultar fontes/periódicos por filtro ISSN.",
+    "url": "https://api.openalex.org/sources",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "filter": {
+        "in": "query",
+        "required": true
+      },
+      "per-page": {
+        "in": "query",
+        "required": false,
+        "default": 10
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "issn",
+      "journals"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "openalex.sources.search",
+    "provider": "OpenAlex",
+    "group": "research",
+    "description": "Pesquisar sources no OpenAlex.",
+    "url": "https://api.openalex.org/sources",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "search": {
+        "in": "query",
+        "required": true
+      },
+      "per-page": {
+        "in": "query",
+        "required": false,
+        "default": 10
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "openalex",
+      "sources"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.2
+  },
+  {
+    "id": "openalex.topics.get",
+    "provider": "OpenAlex",
+    "group": "research",
+    "description": "Consultar topics por ID OpenAlex.",
+    "url": "https://api.openalex.org/topics/{id}",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "id": {
+        "in": "path",
+        "required": true
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "openalex",
+      "topics",
+      "id"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.2
+  },
+  {
+    "id": "openalex.topics.group.domain",
+    "provider": "OpenAlex",
+    "group": "research",
+    "description": "Agrupar tópicos por domínio.",
+    "url": "https://api.openalex.org/topics",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "search": {
+        "in": "query",
+        "required": false
+      }
+    },
+    "fixed_query": {
+      "group_by": "domain.id",
+      "per-page": 50
+    },
+    "keywords": [
+      "topicos",
+      "dominio"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "openalex.topics.search",
+    "provider": "OpenAlex",
+    "group": "research",
+    "description": "Pesquisar topics no OpenAlex.",
+    "url": "https://api.openalex.org/topics",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "search": {
+        "in": "query",
+        "required": true
+      },
+      "per-page": {
+        "in": "query",
+        "required": false,
+        "default": 10
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "openalex",
+      "topics"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.2
+  },
+  {
+    "id": "openalex.works.doi",
+    "provider": "OpenAlex",
+    "group": "research",
+    "description": "Consultar trabalho por DOI via filtro OpenAlex.",
+    "url": "https://api.openalex.org/works",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "doi": {
+        "in": "query",
+        "required": true,
+        "name": "filter"
+      }
+    },
+    "fixed_query": {
+      "per-page": 5
+    },
+    "keywords": [
+      "doi"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "openalex.works.filter.year",
+    "provider": "OpenAlex",
+    "group": "research",
+    "description": "Pesquisar trabalhos filtrados por ano.",
+    "url": "https://api.openalex.org/works",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "search": {
+        "in": "query",
+        "required": true
+      },
+      "filter": {
+        "in": "query",
+        "required": true
+      },
+      "per-page": {
+        "in": "query",
+        "required": false,
+        "default": 10
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "ano",
+      "filtro"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "openalex.works.get",
+    "provider": "OpenAlex",
+    "group": "research",
+    "description": "Consultar works por ID OpenAlex.",
+    "url": "https://api.openalex.org/works/{id}",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "id": {
+        "in": "path",
+        "required": true
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "openalex",
+      "works",
+      "id"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.2
+  },
+  {
+    "id": "openalex.works.group.year",
+    "provider": "OpenAlex",
+    "group": "research",
+    "description": "Contar trabalhos por ano de publicação.",
+    "url": "https://api.openalex.org/works",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "search": {
+        "in": "query",
+        "required": true
+      }
+    },
+    "fixed_query": {
+      "group_by": "publication_year",
+      "per-page": 50
+    },
+    "keywords": [
+      "tendencia",
+      "ano"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "openalex.works.open_access",
+    "provider": "OpenAlex",
+    "group": "research",
+    "description": "Pesquisar trabalhos e filtrar por acesso aberto.",
+    "url": "https://api.openalex.org/works",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "search": {
+        "in": "query",
+        "required": true
+      },
+      "filter": {
+        "in": "query",
+        "required": false,
+        "default": "open_access.is_oa:true"
+      },
+      "per-page": {
+        "in": "query",
+        "required": false,
+        "default": 10
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "open access",
+      "oa"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "openalex.works.search",
+    "provider": "OpenAlex",
+    "group": "research",
+    "description": "Pesquisar works no OpenAlex.",
+    "url": "https://api.openalex.org/works",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "search": {
+        "in": "query",
+        "required": true
+      },
+      "per-page": {
+        "in": "query",
+        "required": false,
+        "default": 10
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "openalex",
+      "works"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.2
+  },
+  {
+    "id": "openalex.works.sort.cited",
+    "provider": "OpenAlex",
+    "group": "research",
+    "description": "Pesquisar trabalhos ordenados por citações.",
+    "url": "https://api.openalex.org/works",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "search": {
+        "in": "query",
+        "required": true
+      },
+      "per-page": {
+        "in": "query",
+        "required": false,
+        "default": 10
+      }
+    },
+    "fixed_query": {
+      "sort": "cited_by_count:desc"
+    },
+    "keywords": [
+      "citacoes"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "openlibrary.author.get",
+    "provider": "Open Library",
+    "group": "books",
+    "description": "Consultar autor por chave Open Library.",
+    "url": "https://openlibrary.org/authors/{key}.json",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "key": {
+        "in": "path",
+        "required": true
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "autor"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "openlibrary.author.works",
+    "provider": "Open Library",
+    "group": "books",
+    "description": "Listar obras de autor Open Library.",
+    "url": "https://openlibrary.org/authors/{key}/works.json",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "key": {
+        "in": "path",
+        "required": true
+      },
+      "limit": {
+        "in": "query",
+        "required": false,
+        "default": 20
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "autor",
+      "obras"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "openlibrary.edition.get",
+    "provider": "Open Library",
+    "group": "books",
+    "description": "Consultar edição por chave.",
+    "url": "https://openlibrary.org/books/{key}.json",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "key": {
+        "in": "path",
+        "required": true
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "edicao"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "openlibrary.recent.changes",
+    "provider": "Open Library",
+    "group": "books",
+    "description": "Consultar mudanças recentes no catálogo.",
+    "url": "https://openlibrary.org/recentchanges.json",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "limit": {
+        "in": "query",
+        "required": false,
+        "default": 20
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "recentes"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 1.0
+  },
+  {
+    "id": "openlibrary.search.author",
+    "provider": "Open Library",
+    "group": "books",
+    "description": "Pesquisar livros por autor.",
+    "url": "https://openlibrary.org/search.json",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "author": {
+        "in": "query",
+        "required": true
+      },
+      "limit": {
+        "in": "query",
+        "required": false,
+        "default": 10
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "autor"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "openlibrary.search.books",
+    "provider": "Open Library",
+    "group": "books",
+    "description": "Pesquisar livros por texto.",
+    "url": "https://openlibrary.org/search.json",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "q": {
+        "in": "query",
+        "required": true
+      },
+      "limit": {
+        "in": "query",
+        "required": false,
+        "default": 10
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "livros",
+      "books"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 1.0
+  },
+  {
+    "id": "openlibrary.search.isbn",
+    "provider": "Open Library",
+    "group": "books",
+    "description": "Pesquisar livro por ISBN.",
+    "url": "https://openlibrary.org/search.json",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "isbn": {
+        "in": "query",
+        "required": true
+      },
+      "limit": {
+        "in": "query",
+        "required": false,
+        "default": 5
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "isbn"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "openlibrary.search.title",
+    "provider": "Open Library",
+    "group": "books",
+    "description": "Pesquisar livros por título.",
+    "url": "https://openlibrary.org/search.json",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "title": {
+        "in": "query",
+        "required": true
+      },
+      "limit": {
+        "in": "query",
+        "required": false,
+        "default": 10
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "titulo"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "openlibrary.subject",
+    "provider": "Open Library",
+    "group": "books",
+    "description": "Listar livros por assunto.",
+    "url": "https://openlibrary.org/subjects/{subject}.json",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "subject": {
+        "in": "path",
+        "required": true
+      },
+      "limit": {
+        "in": "query",
+        "required": false,
+        "default": 20
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "assunto",
+      "tema"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "openlibrary.work.get",
+    "provider": "Open Library",
+    "group": "books",
+    "description": "Consultar obra por chave Open Library.",
+    "url": "https://openlibrary.org/works/{key}.json",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "key": {
+        "in": "path",
+        "required": true
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "obra"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "pypi.project",
+    "provider": "PyPI",
+    "group": "software",
+    "description": "Consultar metadados de pacote Python.",
+    "url": "https://pypi.org/pypi/{project}/json",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "project": {
+        "in": "path",
+        "required": true
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "python",
+      "pacote",
+      "pypi"
+    ],
+    "cache_ttl": 600,
+    "min_interval": 0.25
+  },
+  {
+    "id": "pypi.release",
+    "provider": "PyPI",
+    "group": "software",
+    "description": "Consultar uma versão específica de pacote Python.",
+    "url": "https://pypi.org/pypi/{project}/{version}/json",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "project": {
+        "in": "path",
+        "required": true
+      },
+      "version": {
+        "in": "path",
+        "required": true
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "python",
+      "versao"
+    ],
+    "cache_ttl": 600,
+    "min_interval": 0.25
+  },
+  {
+    "id": "pypi.simple.project",
+    "provider": "PyPI",
+    "group": "software",
+    "description": "Listar arquivos/versionamento pelo Simple JSON API.",
+    "url": "https://pypi.org/simple/{project}/",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "project": {
+        "in": "path",
+        "required": true
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "python",
+      "simple"
+    ],
+    "cache_ttl": 600,
+    "min_interval": 0.25,
+    "headers": {
+      "Accept": "application/vnd.pypi.simple.v1+json"
+    }
+  },
+  {
+    "id": "usgs.earthquake.all.day",
+    "provider": "USGS",
+    "group": "geoscience",
+    "description": "Todos os terremotos do último dia.",
+    "url": "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {},
+    "fixed_query": {},
+    "keywords": [
+      "todos",
+      "terremotos"
+    ],
+    "cache_ttl": 120,
+    "min_interval": 0.25
+  },
+  {
+    "id": "usgs.earthquake.day",
+    "provider": "USGS",
+    "group": "geoscience",
+    "description": "Terremotos do último dia (M1+).",
+    "url": "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/1.0_day.geojson",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {},
+    "fixed_query": {},
+    "keywords": [
+      "terremoto"
+    ],
+    "cache_ttl": 120,
+    "min_interval": 0.25
+  },
+  {
+    "id": "usgs.earthquake.hour",
+    "provider": "USGS",
+    "group": "geoscience",
+    "description": "Terremotos da última hora (M1+).",
+    "url": "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/1.0_hour.geojson",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {},
+    "fixed_query": {},
+    "keywords": [
+      "terremoto",
+      "earthquake"
+    ],
+    "cache_ttl": 60,
+    "min_interval": 0.25
+  },
+  {
+    "id": "usgs.earthquake.month",
+    "provider": "USGS",
+    "group": "geoscience",
+    "description": "Terremotos do último mês (M4.5+).",
+    "url": "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/4.5_month.geojson",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {},
+    "fixed_query": {},
+    "keywords": [
+      "terremoto"
+    ],
+    "cache_ttl": 1800,
+    "min_interval": 0.25
+  },
+  {
+    "id": "usgs.earthquake.near",
+    "provider": "USGS",
+    "group": "geoscience",
+    "description": "Pesquisar terremotos próximos a coordenadas.",
+    "url": "https://earthquake.usgs.gov/fdsnws/event/1/query",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "latitude": {
+        "in": "query",
+        "required": true
+      },
+      "longitude": {
+        "in": "query",
+        "required": true
+      },
+      "maxradiuskm": {
+        "in": "query",
+        "required": false,
+        "default": 200
+      },
+      "minmagnitude": {
+        "in": "query",
+        "required": false,
+        "default": 2.5
+      },
+      "limit": {
+        "in": "query",
+        "required": false,
+        "default": 50
+      }
+    },
+    "fixed_query": {
+      "format": "geojson",
+      "orderby": "time"
+    },
+    "keywords": [
+      "proximidade"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "usgs.earthquake.search",
+    "provider": "USGS",
+    "group": "geoscience",
+    "description": "Pesquisar terremotos por período e magnitude.",
+    "url": "https://earthquake.usgs.gov/fdsnws/event/1/query",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "starttime": {
+        "in": "query",
+        "required": true
+      },
+      "endtime": {
+        "in": "query",
+        "required": true
+      },
+      "minmagnitude": {
+        "in": "query",
+        "required": false,
+        "default": 2.5
+      },
+      "limit": {
+        "in": "query",
+        "required": false,
+        "default": 50
+      }
+    },
+    "fixed_query": {
+      "format": "geojson"
+    },
+    "keywords": [
+      "terremoto",
+      "periodo"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "usgs.earthquake.significant",
+    "provider": "USGS",
+    "group": "geoscience",
+    "description": "Terremotos significativos do último mês.",
+    "url": "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/significant_month.geojson",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {},
+    "fixed_query": {},
+    "keywords": [
+      "significativo"
+    ],
+    "cache_ttl": 600,
+    "min_interval": 0.25
+  },
+  {
+    "id": "usgs.earthquake.week",
+    "provider": "USGS",
+    "group": "geoscience",
+    "description": "Terremotos da última semana (M2.5+).",
+    "url": "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_week.geojson",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {},
+    "fixed_query": {},
+    "keywords": [
+      "terremoto"
+    ],
+    "cache_ttl": 600,
+    "min_interval": 0.25
+  },
+  {
+    "id": "weather.air_quality",
+    "provider": "Open-Meteo",
+    "group": "weather",
+    "description": "Qualidade do ar e poluentes.",
+    "url": "https://air-quality-api.open-meteo.com/v1/air-quality",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "latitude": {
+        "in": "query",
+        "required": true
+      },
+      "longitude": {
+        "in": "query",
+        "required": true
+      },
+      "timezone": {
+        "in": "query",
+        "required": false,
+        "default": "auto"
+      }
+    },
+    "fixed_query": {
+      "hourly": "pm10,pm2_5,carbon_monoxide,nitrogen_dioxide,sulphur_dioxide,ozone,european_aqi,us_aqi",
+      "forecast_days": 3
+    },
+    "keywords": [
+      "ar",
+      "poluicao"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "weather.current",
+    "provider": "Open-Meteo",
+    "group": "weather",
+    "description": "Condições meteorológicas atuais.",
+    "url": "https://api.open-meteo.com/v1/forecast",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "latitude": {
+        "in": "query",
+        "required": true
+      },
+      "longitude": {
+        "in": "query",
+        "required": true
+      },
+      "timezone": {
+        "in": "query",
+        "required": false,
+        "default": "auto"
+      }
+    },
+    "fixed_query": {
+      "current": "temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,rain,weather_code,cloud_cover,wind_speed_10m,wind_direction_10m",
+      "forecast_days": 1
+    },
+    "keywords": [
+      "tempo",
+      "agora"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "weather.daily.basic",
+    "provider": "Open-Meteo",
+    "group": "weather",
+    "description": "Previsão diária de temperatura, chuva e vento.",
+    "url": "https://api.open-meteo.com/v1/forecast",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "latitude": {
+        "in": "query",
+        "required": true
+      },
+      "longitude": {
+        "in": "query",
+        "required": true
+      },
+      "timezone": {
+        "in": "query",
+        "required": false,
+        "default": "auto"
+      }
+    },
+    "fixed_query": {
+      "daily": "weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,wind_speed_10m_max,sunrise,sunset",
+      "forecast_days": 7
+    },
+    "keywords": [
+      "previsao",
+      "7 dias"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "weather.elevation",
+    "provider": "Open-Meteo",
+    "group": "geography",
+    "description": "Consultar elevação por coordenadas.",
+    "url": "https://api.open-meteo.com/v1/elevation",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "latitude": {
+        "in": "query",
+        "required": true
+      },
+      "longitude": {
+        "in": "query",
+        "required": true
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "altitude",
+      "elevacao"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "weather.flood",
+    "provider": "Open-Meteo",
+    "group": "weather",
+    "description": "Previsão de vazão de rios/enchentes.",
+    "url": "https://flood-api.open-meteo.com/v1/flood",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "latitude": {
+        "in": "query",
+        "required": true
+      },
+      "longitude": {
+        "in": "query",
+        "required": true
+      }
+    },
+    "fixed_query": {
+      "daily": "river_discharge,river_discharge_mean,river_discharge_max",
+      "forecast_days": 7
+    },
+    "keywords": [
+      "enchente",
+      "rio"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "weather.geocode",
+    "provider": "Open-Meteo",
+    "group": "weather",
+    "description": "Pesquisar localidade e coordenadas.",
+    "url": "https://geocoding-api.open-meteo.com/v1/search",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "name": {
+        "in": "query",
+        "required": true
+      },
+      "count": {
+        "in": "query",
+        "required": false,
+        "default": 10
+      },
+      "language": {
+        "in": "query",
+        "required": false,
+        "default": "pt"
+      },
+      "countryCode": {
+        "in": "query",
+        "required": false
+      }
+    },
+    "fixed_query": {},
+    "keywords": [
+      "cidade",
+      "coordenadas",
+      "geocode"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "weather.history",
+    "provider": "Open-Meteo",
+    "group": "weather",
+    "description": "Consultar histórico meteorológico por período.",
+    "url": "https://archive-api.open-meteo.com/v1/archive",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "latitude": {
+        "in": "query",
+        "required": true
+      },
+      "longitude": {
+        "in": "query",
+        "required": true
+      },
+      "start_date": {
+        "in": "query",
+        "required": true
+      },
+      "end_date": {
+        "in": "query",
+        "required": true
+      },
+      "timezone": {
+        "in": "query",
+        "required": false,
+        "default": "auto"
+      }
+    },
+    "fixed_query": {
+      "daily": "weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max"
+    },
+    "keywords": [
+      "historico",
+      "clima"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "weather.hourly.basic",
+    "provider": "Open-Meteo",
+    "group": "weather",
+    "description": "Previsão horária básica.",
+    "url": "https://api.open-meteo.com/v1/forecast",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "latitude": {
+        "in": "query",
+        "required": true
+      },
+      "longitude": {
+        "in": "query",
+        "required": true
+      },
+      "timezone": {
+        "in": "query",
+        "required": false,
+        "default": "auto"
+      }
+    },
+    "fixed_query": {
+      "hourly": "temperature_2m,apparent_temperature,precipitation_probability,precipitation,weather_code,wind_speed_10m",
+      "forecast_days": 3
+    },
+    "keywords": [
+      "hora",
+      "previsao"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "weather.humidity",
+    "provider": "Open-Meteo",
+    "group": "weather",
+    "description": "Umidade e ponto de orvalho por hora.",
+    "url": "https://api.open-meteo.com/v1/forecast",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "latitude": {
+        "in": "query",
+        "required": true
+      },
+      "longitude": {
+        "in": "query",
+        "required": true
+      },
+      "timezone": {
+        "in": "query",
+        "required": false,
+        "default": "auto"
+      }
+    },
+    "fixed_query": {
+      "hourly": "relative_humidity_2m,dew_point_2m",
+      "forecast_days": 3
+    },
+    "keywords": [
+      "umidade"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "weather.marine",
+    "provider": "Open-Meteo",
+    "group": "weather",
+    "description": "Condições marítimas e ondas.",
+    "url": "https://marine-api.open-meteo.com/v1/marine",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "latitude": {
+        "in": "query",
+        "required": true
+      },
+      "longitude": {
+        "in": "query",
+        "required": true
+      },
+      "timezone": {
+        "in": "query",
+        "required": false,
+        "default": "auto"
+      }
+    },
+    "fixed_query": {
+      "hourly": "wave_height,wave_direction,wave_period,wind_wave_height,swell_wave_height",
+      "forecast_days": 5
+    },
+    "keywords": [
+      "mar",
+      "ondas"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "weather.pollen",
+    "provider": "Open-Meteo",
+    "group": "weather",
+    "description": "Previsão de pólen quando disponível.",
+    "url": "https://air-quality-api.open-meteo.com/v1/air-quality",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "latitude": {
+        "in": "query",
+        "required": true
+      },
+      "longitude": {
+        "in": "query",
+        "required": true
+      },
+      "timezone": {
+        "in": "query",
+        "required": false,
+        "default": "auto"
+      }
+    },
+    "fixed_query": {
+      "hourly": "alder_pollen,birch_pollen,grass_pollen,mugwort_pollen,ragweed_pollen",
+      "forecast_days": 3
+    },
+    "keywords": [
+      "polen",
+      "alergia"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "weather.precipitation",
+    "provider": "Open-Meteo",
+    "group": "weather",
+    "description": "Previsão detalhada de precipitação.",
+    "url": "https://api.open-meteo.com/v1/forecast",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "latitude": {
+        "in": "query",
+        "required": true
+      },
+      "longitude": {
+        "in": "query",
+        "required": true
+      },
+      "timezone": {
+        "in": "query",
+        "required": false,
+        "default": "auto"
+      }
+    },
+    "fixed_query": {
+      "hourly": "precipitation_probability,precipitation,rain,showers",
+      "forecast_days": 5
+    },
+    "keywords": [
+      "chuva"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "weather.pressure",
+    "provider": "Open-Meteo",
+    "group": "weather",
+    "description": "Consultar pressão atmosférica.",
+    "url": "https://api.open-meteo.com/v1/forecast",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "latitude": {
+        "in": "query",
+        "required": true
+      },
+      "longitude": {
+        "in": "query",
+        "required": true
+      },
+      "timezone": {
+        "in": "query",
+        "required": false,
+        "default": "auto"
+      }
+    },
+    "fixed_query": {
+      "hourly": "surface_pressure,pressure_msl",
+      "forecast_days": 3
+    },
+    "keywords": [
+      "pressao"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "weather.soil",
+    "provider": "Open-Meteo",
+    "group": "weather",
+    "description": "Consultar temperatura e umidade do solo.",
+    "url": "https://api.open-meteo.com/v1/forecast",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "latitude": {
+        "in": "query",
+        "required": true
+      },
+      "longitude": {
+        "in": "query",
+        "required": true
+      },
+      "timezone": {
+        "in": "query",
+        "required": false,
+        "default": "auto"
+      }
+    },
+    "fixed_query": {
+      "hourly": "soil_temperature_0cm,soil_temperature_6cm,soil_moisture_0_to_1cm,soil_moisture_3_to_9cm",
+      "forecast_days": 3
+    },
+    "keywords": [
+      "solo"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "weather.sun",
+    "provider": "Open-Meteo",
+    "group": "weather",
+    "description": "Nascer/pôr do sol e duração do dia.",
+    "url": "https://api.open-meteo.com/v1/forecast",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "latitude": {
+        "in": "query",
+        "required": true
+      },
+      "longitude": {
+        "in": "query",
+        "required": true
+      },
+      "timezone": {
+        "in": "query",
+        "required": false,
+        "default": "auto"
+      }
+    },
+    "fixed_query": {
+      "daily": "sunrise,sunset,daylight_duration,sunshine_duration",
+      "forecast_days": 7
+    },
+    "keywords": [
+      "sol"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "weather.uv",
+    "provider": "Open-Meteo",
+    "group": "weather",
+    "description": "Índice UV diário.",
+    "url": "https://api.open-meteo.com/v1/forecast",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "latitude": {
+        "in": "query",
+        "required": true
+      },
+      "longitude": {
+        "in": "query",
+        "required": true
+      },
+      "timezone": {
+        "in": "query",
+        "required": false,
+        "default": "auto"
+      }
+    },
+    "fixed_query": {
+      "daily": "uv_index_max,uv_index_clear_sky_max",
+      "forecast_days": 7
+    },
+    "keywords": [
+      "uv"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "weather.visibility",
+    "provider": "Open-Meteo",
+    "group": "weather",
+    "description": "Consultar visibilidade e cobertura de nuvens.",
+    "url": "https://api.open-meteo.com/v1/forecast",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "latitude": {
+        "in": "query",
+        "required": true
+      },
+      "longitude": {
+        "in": "query",
+        "required": true
+      },
+      "timezone": {
+        "in": "query",
+        "required": false,
+        "default": "auto"
+      }
+    },
+    "fixed_query": {
+      "hourly": "visibility,cloud_cover,cloud_cover_low,cloud_cover_mid,cloud_cover_high",
+      "forecast_days": 3
+    },
+    "keywords": [
+      "visibilidade",
+      "nuvens"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "weather.wind",
+    "provider": "Open-Meteo",
+    "group": "weather",
+    "description": "Previsão detalhada de vento.",
+    "url": "https://api.open-meteo.com/v1/forecast",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "latitude": {
+        "in": "query",
+        "required": true
+      },
+      "longitude": {
+        "in": "query",
+        "required": true
+      },
+      "timezone": {
+        "in": "query",
+        "required": false,
+        "default": "auto"
+      }
+    },
+    "fixed_query": {
+      "hourly": "wind_speed_10m,wind_gusts_10m,wind_direction_10m",
+      "forecast_days": 5
+    },
+    "keywords": [
+      "vento"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "wikidata.entity.get",
+    "provider": "Wikidata",
+    "group": "knowledge",
+    "description": "Obter uma entidade do Wikidata por QID.",
+    "url": "https://www.wikidata.org/w/api.php",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "id": {
+        "in": "query",
+        "required": true,
+        "name": "ids"
+      }
+    },
+    "fixed_query": {
+      "action": "wbgetentities",
+      "props": "labels|descriptions|claims|sitelinks",
+      "languages": "pt|en",
+      "format": "json"
+    },
+    "keywords": [
+      "qid",
+      "dados estruturados"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "wikidata.entity.labels",
+    "provider": "Wikidata",
+    "group": "knowledge",
+    "description": "Obter rótulos e descrições de uma entidade do Wikidata.",
+    "url": "https://www.wikidata.org/w/api.php",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "id": {
+        "in": "query",
+        "required": true,
+        "name": "ids"
+      }
+    },
+    "fixed_query": {
+      "action": "wbgetentities",
+      "props": "labels|descriptions",
+      "languages": "pt|en",
+      "format": "json"
+    },
+    "keywords": [
+      "labels"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "wikidata.entity.sitelinks",
+    "provider": "Wikidata",
+    "group": "knowledge",
+    "description": "Obter links de uma entidade para projetos Wikimedia.",
+    "url": "https://www.wikidata.org/w/api.php",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "id": {
+        "in": "query",
+        "required": true,
+        "name": "ids"
+      }
+    },
+    "fixed_query": {
+      "action": "wbgetentities",
+      "props": "sitelinks",
+      "format": "json"
+    },
+    "keywords": [
+      "sitelinks"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "wikidata.search.en",
+    "provider": "Wikidata",
+    "group": "knowledge",
+    "description": "Pesquisar entidades do Wikidata em inglês.",
+    "url": "https://www.wikidata.org/w/api.php",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "query": {
+        "in": "query",
+        "required": true,
+        "name": "search"
+      }
+    },
+    "fixed_query": {
+      "action": "wbsearchentities",
+      "language": "en",
+      "format": "json",
+      "limit": 10
+    },
+    "keywords": [
+      "wikidata"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "wikidata.search.pt",
+    "provider": "Wikidata",
+    "group": "knowledge",
+    "description": "Pesquisar entidades estruturadas no Wikidata em português.",
+    "url": "https://www.wikidata.org/w/api.php",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "query": {
+        "in": "query",
+        "required": true,
+        "name": "search"
+      }
+    },
+    "fixed_query": {
+      "action": "wbsearchentities",
+      "language": "pt",
+      "format": "json",
+      "limit": 10
+    },
+    "keywords": [
+      "wikidata",
+      "entidades"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "wikidata.sparql",
+    "provider": "Wikidata",
+    "group": "knowledge",
+    "description": "Executar consulta SPARQL pública no Wikidata.",
+    "url": "https://query.wikidata.org/sparql",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "query": {
+        "in": "query",
+        "required": true,
+        "name": "query"
+      }
+    },
+    "fixed_query": {
+      "format": "json"
+    },
+    "keywords": [
+      "sparql",
+      "grafo"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 1.0,
+    "headers": {
+      "Accept": "application/sparql-results+json"
+    }
+  },
+  {
+    "id": "wikipedia.opensearch.pt",
+    "provider": "Wikimedia",
+    "group": "knowledge",
+    "description": "Autocompletar títulos da Wikipédia em português.",
+    "url": "https://pt.wikipedia.org/w/api.php",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "query": {
+        "in": "query",
+        "required": true,
+        "name": "search"
+      }
+    },
+    "fixed_query": {
+      "action": "opensearch",
+      "limit": 10,
+      "namespace": 0,
+      "format": "json"
+    },
+    "keywords": [
+      "autocomplete"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "wikipedia.page.categories.pt",
+    "provider": "Wikimedia",
+    "group": "knowledge",
+    "description": "Listar categorias de um artigo da Wikipédia.",
+    "url": "https://pt.wikipedia.org/w/api.php",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "title": {
+        "in": "query",
+        "required": true,
+        "name": "titles"
+      }
+    },
+    "fixed_query": {
+      "action": "query",
+      "prop": "categories",
+      "cllimit": 50,
+      "format": "json"
+    },
+    "keywords": [
+      "categorias"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "wikipedia.page.extract.en",
+    "provider": "Wikimedia",
+    "group": "knowledge",
+    "description": "Obter resumo/extrato de uma página da Wikipédia em inglês.",
+    "url": "https://en.wikipedia.org/w/api.php",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "title": {
+        "in": "query",
+        "required": true,
+        "name": "titles"
+      }
+    },
+    "fixed_query": {
+      "action": "query",
+      "prop": "extracts",
+      "explaintext": 1,
+      "format": "json"
+    },
+    "keywords": [
+      "summary",
+      "article"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "wikipedia.page.extract.pt",
+    "provider": "Wikimedia",
+    "group": "knowledge",
+    "description": "Obter resumo/extrato de uma página da Wikipédia em português.",
+    "url": "https://pt.wikipedia.org/w/api.php",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "title": {
+        "in": "query",
+        "required": true,
+        "name": "titles"
+      }
+    },
+    "fixed_query": {
+      "action": "query",
+      "prop": "extracts",
+      "explaintext": 1,
+      "format": "json"
+    },
+    "keywords": [
+      "resumo",
+      "artigo",
+      "wikipedia"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "wikipedia.page.images.pt",
+    "provider": "Wikimedia",
+    "group": "knowledge",
+    "description": "Listar imagens associadas a um artigo da Wikipédia.",
+    "url": "https://pt.wikipedia.org/w/api.php",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "title": {
+        "in": "query",
+        "required": true,
+        "name": "titles"
+      }
+    },
+    "fixed_query": {
+      "action": "query",
+      "prop": "images",
+      "imlimit": 50,
+      "format": "json"
+    },
+    "keywords": [
+      "imagens"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "wikipedia.page.info.pt",
+    "provider": "Wikimedia",
+    "group": "knowledge",
+    "description": "Obter metadados e informações básicas de uma página.",
+    "url": "https://pt.wikipedia.org/w/api.php",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "title": {
+        "in": "query",
+        "required": true,
+        "name": "titles"
+      }
+    },
+    "fixed_query": {
+      "action": "query",
+      "prop": "info",
+      "inprop": "url",
+      "format": "json"
+    },
+    "keywords": [
+      "metadata",
+      "url"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "wikipedia.page.links.pt",
+    "provider": "Wikimedia",
+    "group": "knowledge",
+    "description": "Listar links internos de um artigo da Wikipédia.",
+    "url": "https://pt.wikipedia.org/w/api.php",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "title": {
+        "in": "query",
+        "required": true,
+        "name": "titles"
+      }
+    },
+    "fixed_query": {
+      "action": "query",
+      "prop": "links",
+      "pllimit": 50,
+      "format": "json"
+    },
+    "keywords": [
+      "links",
+      "referencias"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "wikipedia.random.pt",
+    "provider": "Wikimedia",
+    "group": "knowledge",
+    "description": "Obter páginas aleatórias da Wikipédia em português.",
+    "url": "https://pt.wikipedia.org/w/api.php",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "limit": {
+        "in": "query",
+        "required": false,
+        "name": "rnlimit",
+        "default": 5
+      }
+    },
+    "fixed_query": {
+      "action": "query",
+      "list": "random",
+      "rnnamespace": 0,
+      "format": "json"
+    },
+    "keywords": [
+      "aleatorio"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "wikipedia.search.en",
+    "provider": "Wikimedia",
+    "group": "knowledge",
+    "description": "Pesquisar artigos na Wikipédia em inglês.",
+    "url": "https://en.wikipedia.org/w/api.php",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "query": {
+        "in": "query",
+        "required": true,
+        "name": "srsearch"
+      }
+    },
+    "fixed_query": {
+      "action": "query",
+      "list": "search",
+      "format": "json",
+      "srlimit": 10
+    },
+    "keywords": [
+      "wikipedia",
+      "english",
+      "search"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "wikipedia.search.pt",
+    "provider": "Wikimedia",
+    "group": "knowledge",
+    "description": "Pesquisar artigos na Wikipédia em português.",
+    "url": "https://pt.wikipedia.org/w/api.php",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "query": {
+        "in": "query",
+        "required": true,
+        "name": "srsearch"
+      }
+    },
+    "fixed_query": {
+      "action": "query",
+      "list": "search",
+      "format": "json",
+      "srlimit": 10
+    },
+    "keywords": [
+      "wikipedia",
+      "pesquisa",
+      "enciclopedia"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "worldbank.countries.list",
+    "provider": "World Bank",
+    "group": "economy",
+    "description": "Listar países e economias do Banco Mundial.",
+    "url": "https://api.worldbank.org/v2/country",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {},
+    "fixed_query": {
+      "format": "json",
+      "per_page": 100
+    },
+    "keywords": [
+      "paises",
+      "economia"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "worldbank.country.get",
+    "provider": "World Bank",
+    "group": "economy",
+    "description": "Consultar país/economia por código.",
+    "url": "https://api.worldbank.org/v2/country/{code}",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "code": {
+        "in": "path",
+        "required": true
+      }
+    },
+    "fixed_query": {
+      "format": "json",
+      "per_page": 100
+    },
+    "keywords": [
+      "pais"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "worldbank.data.co2",
+    "provider": "World Bank",
+    "group": "economy",
+    "description": "Consultar Emissões de CO2 per capita por país.",
+    "url": "https://api.worldbank.org/v2/country/{country}/indicator/EN.ATM.CO2E.PC",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "country": {
+        "in": "path",
+        "required": true
+      },
+      "date": {
+        "in": "query",
+        "required": false
+      }
+    },
+    "fixed_query": {
+      "format": "json",
+      "per_page": 100
+    },
+    "keywords": [
+      "emissões de co2 per capita",
+      "dados"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "worldbank.data.gdp",
+    "provider": "World Bank",
+    "group": "economy",
+    "description": "Consultar PIB em US$ correntes por país.",
+    "url": "https://api.worldbank.org/v2/country/{country}/indicator/NY.GDP.MKTP.CD",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "country": {
+        "in": "path",
+        "required": true
+      },
+      "date": {
+        "in": "query",
+        "required": false
+      }
+    },
+    "fixed_query": {
+      "format": "json",
+      "per_page": 100
+    },
+    "keywords": [
+      "pib em us$ correntes",
+      "dados"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "worldbank.data.gdp.percapita",
+    "provider": "World Bank",
+    "group": "economy",
+    "description": "Consultar PIB per capita por país.",
+    "url": "https://api.worldbank.org/v2/country/{country}/indicator/NY.GDP.PCAP.CD",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "country": {
+        "in": "path",
+        "required": true
+      },
+      "date": {
+        "in": "query",
+        "required": false
+      }
+    },
+    "fixed_query": {
+      "format": "json",
+      "per_page": 100
+    },
+    "keywords": [
+      "pib per capita",
+      "dados"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "worldbank.data.inflation",
+    "provider": "World Bank",
+    "group": "economy",
+    "description": "Consultar Inflação ao consumidor por país.",
+    "url": "https://api.worldbank.org/v2/country/{country}/indicator/FP.CPI.TOTL.ZG",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "country": {
+        "in": "path",
+        "required": true
+      },
+      "date": {
+        "in": "query",
+        "required": false
+      }
+    },
+    "fixed_query": {
+      "format": "json",
+      "per_page": 100
+    },
+    "keywords": [
+      "inflação ao consumidor",
+      "dados"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "worldbank.data.internet_users",
+    "provider": "World Bank",
+    "group": "economy",
+    "description": "Consultar Usuários de internet por país.",
+    "url": "https://api.worldbank.org/v2/country/{country}/indicator/IT.NET.USER.ZS",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "country": {
+        "in": "path",
+        "required": true
+      },
+      "date": {
+        "in": "query",
+        "required": false
+      }
+    },
+    "fixed_query": {
+      "format": "json",
+      "per_page": 100
+    },
+    "keywords": [
+      "usuários de internet",
+      "dados"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "worldbank.data.life_expectancy",
+    "provider": "World Bank",
+    "group": "economy",
+    "description": "Consultar Expectativa de vida por país.",
+    "url": "https://api.worldbank.org/v2/country/{country}/indicator/SP.DYN.LE00.IN",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "country": {
+        "in": "path",
+        "required": true
+      },
+      "date": {
+        "in": "query",
+        "required": false
+      }
+    },
+    "fixed_query": {
+      "format": "json",
+      "per_page": 100
+    },
+    "keywords": [
+      "expectativa de vida",
+      "dados"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "worldbank.data.population",
+    "provider": "World Bank",
+    "group": "economy",
+    "description": "Consultar População total por país.",
+    "url": "https://api.worldbank.org/v2/country/{country}/indicator/SP.POP.TOTL",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "country": {
+        "in": "path",
+        "required": true
+      },
+      "date": {
+        "in": "query",
+        "required": false
+      }
+    },
+    "fixed_query": {
+      "format": "json",
+      "per_page": 100
+    },
+    "keywords": [
+      "população total",
+      "dados"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "worldbank.data.unemployment",
+    "provider": "World Bank",
+    "group": "economy",
+    "description": "Consultar Desemprego por país.",
+    "url": "https://api.worldbank.org/v2/country/{country}/indicator/SL.UEM.TOTL.ZS",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "country": {
+        "in": "path",
+        "required": true
+      },
+      "date": {
+        "in": "query",
+        "required": false
+      }
+    },
+    "fixed_query": {
+      "format": "json",
+      "per_page": 100
+    },
+    "keywords": [
+      "desemprego",
+      "dados"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "worldbank.data.urban_population",
+    "provider": "World Bank",
+    "group": "economy",
+    "description": "Consultar Percentual de população urbana por país.",
+    "url": "https://api.worldbank.org/v2/country/{country}/indicator/SP.URB.TOTL.IN.ZS",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "country": {
+        "in": "path",
+        "required": true
+      },
+      "date": {
+        "in": "query",
+        "required": false
+      }
+    },
+    "fixed_query": {
+      "format": "json",
+      "per_page": 100
+    },
+    "keywords": [
+      "percentual de população urbana",
+      "dados"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "worldbank.income_level.get",
+    "provider": "World Bank",
+    "group": "economy",
+    "description": "Consultar nível de renda por código.",
+    "url": "https://api.worldbank.org/v2/incomeLevel/{code}",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "code": {
+        "in": "path",
+        "required": true
+      }
+    },
+    "fixed_query": {
+      "format": "json",
+      "per_page": 100
+    },
+    "keywords": [
+      "renda"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "worldbank.income_levels",
+    "provider": "World Bank",
+    "group": "economy",
+    "description": "Listar níveis de renda.",
+    "url": "https://api.worldbank.org/v2/incomeLevel",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {},
+    "fixed_query": {
+      "format": "json",
+      "per_page": 100
+    },
+    "keywords": [
+      "renda"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "worldbank.indicator.get",
+    "provider": "World Bank",
+    "group": "economy",
+    "description": "Consultar metadados de indicador.",
+    "url": "https://api.worldbank.org/v2/indicator/{indicator}",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "indicator": {
+        "in": "path",
+        "required": true
+      }
+    },
+    "fixed_query": {
+      "format": "json",
+      "per_page": 100
+    },
+    "keywords": [
+      "indicador"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "worldbank.indicators.list",
+    "provider": "World Bank",
+    "group": "economy",
+    "description": "Listar indicadores do Banco Mundial.",
+    "url": "https://api.worldbank.org/v2/indicator",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "page": {
+        "in": "query",
+        "required": false,
+        "default": 1
+      }
+    },
+    "fixed_query": {
+      "format": "json",
+      "per_page": 100
+    },
+    "keywords": [
+      "indicadores"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "worldbank.lending_types",
+    "provider": "World Bank",
+    "group": "economy",
+    "description": "Listar tipos de empréstimo/classificação.",
+    "url": "https://api.worldbank.org/v2/lendingType",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {},
+    "fixed_query": {
+      "format": "json",
+      "per_page": 100
+    },
+    "keywords": [
+      "lending"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "worldbank.region.get",
+    "provider": "World Bank",
+    "group": "economy",
+    "description": "Consultar região por código.",
+    "url": "https://api.worldbank.org/v2/region/{code}",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {
+      "code": {
+        "in": "path",
+        "required": true
+      }
+    },
+    "fixed_query": {
+      "format": "json",
+      "per_page": 100
+    },
+    "keywords": [
+      "regiao"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "worldbank.regions.list",
+    "provider": "World Bank",
+    "group": "economy",
+    "description": "Listar regiões do Banco Mundial.",
+    "url": "https://api.worldbank.org/v2/region",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {},
+    "fixed_query": {
+      "format": "json",
+      "per_page": 100
+    },
+    "keywords": [
+      "regioes"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "worldbank.sources",
+    "provider": "World Bank",
+    "group": "economy",
+    "description": "Listar fontes de dados.",
+    "url": "https://api.worldbank.org/v2/source",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {},
+    "fixed_query": {
+      "format": "json",
+      "per_page": 100
+    },
+    "keywords": [
+      "fontes"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  },
+  {
+    "id": "worldbank.topics",
+    "provider": "World Bank",
+    "group": "economy",
+    "description": "Listar tópicos de indicadores.",
+    "url": "https://api.worldbank.org/v2/topic",
+    "method": "GET",
+    "auth": "none",
+    "risk": "read_only",
+    "response": "json",
+    "params": {},
+    "fixed_query": {
+      "format": "json",
+      "per_page": 100
+    },
+    "keywords": [
+      "topicos"
+    ],
+    "cache_ttl": 300,
+    "min_interval": 0.25
+  }
+]

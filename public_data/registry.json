@@ -1,0 +1,778 @@
+{
+  "version": "1.0a",
+  "sources": [
+    {
+      "id": "dados_gov_br",
+      "name": "Portal Brasileiro de Dados Abertos",
+      "authority": "official",
+      "country": "BR",
+      "access": "REST/OpenAPI",
+      "auth": "none for public reads",
+      "cost": "free",
+      "domains": [
+        "dados.gov.br"
+      ],
+      "topics": [
+        "governo",
+        "datasets",
+        "dados abertos",
+        "organizações",
+        "serviços públicos"
+      ],
+      "notes": "Catálogo nacional; usar para descobrir conjuntos oficiais e recursos.",
+      "adapter": "direct",
+      "operations": [
+        "datasets",
+        "dataset",
+        "organizations",
+        "themes",
+        "tags"
+      ],
+      "homepage": "https://dados.gov.br/"
+    },
+    {
+      "id": "ibge",
+      "name": "IBGE APIs",
+      "authority": "official",
+      "country": "BR",
+      "access": "REST/JSON",
+      "auth": "none",
+      "cost": "free",
+      "domains": [
+        "servicodados.ibge.gov.br"
+      ],
+      "topics": [
+        "população",
+        "municípios",
+        "estados",
+        "censo",
+        "SIDRA",
+        "estatísticas",
+        "CNAE",
+        "geografia",
+        "economia"
+      ],
+      "notes": "APIs oficiais de localidades e agregados/SIDRA.",
+      "adapter": "direct",
+      "operations": [
+        "states",
+        "municipalities",
+        "aggregates",
+        "aggregate_metadata",
+        "aggregate_values"
+      ],
+      "homepage": "https://servicodados.ibge.gov.br/api/docs/"
+    },
+    {
+      "id": "camara",
+      "name": "Dados Abertos da Câmara dos Deputados",
+      "authority": "official",
+      "country": "BR",
+      "access": "REST/JSON/XML/OpenAPI",
+      "auth": "none",
+      "cost": "free",
+      "domains": [
+        "dadosabertos.camara.leg.br"
+      ],
+      "topics": [
+        "projetos de lei",
+        "proposições",
+        "deputados",
+        "comissões",
+        "eventos",
+        "votações",
+        "legislação"
+      ],
+      "notes": "API REST oficial v2.",
+      "adapter": "direct",
+      "operations": [
+        "propositions",
+        "deputies",
+        "events",
+        "organs",
+        "get"
+      ],
+      "homepage": "https://dadosabertos.camara.leg.br/"
+    },
+    {
+      "id": "senado",
+      "name": "Dados Abertos do Senado Federal",
+      "authority": "official",
+      "country": "BR",
+      "access": "Web Service/JSON/XML/CSV",
+      "auth": "none",
+      "cost": "free",
+      "domains": [
+        "www12.senado.leg.br",
+        "legis.senado.leg.br"
+      ],
+      "topics": [
+        "matérias",
+        "senadores",
+        "votações",
+        "comissões",
+        "legislação",
+        "plenário"
+      ],
+      "notes": "Web Services oficiais e arquivos estruturados.",
+      "adapter": "direct",
+      "operations": [
+        "get"
+      ],
+      "homepage": "https://legis.senado.leg.br/dadosabertos/"
+    },
+    {
+      "id": "datajud",
+      "name": "CNJ DataJud API Pública",
+      "authority": "official",
+      "country": "BR",
+      "access": "REST/JSON",
+      "auth": "public rotating API key",
+      "cost": "free",
+      "domains": [
+        "api-publica.datajud.cnj.jus.br",
+        "datajud-wiki.cnj.jus.br"
+      ],
+      "topics": [
+        "processos judiciais",
+        "movimentações",
+        "tribunais",
+        "TST",
+        "TRT",
+        "metadados processuais"
+      ],
+      "notes": "Metadados processuais públicos; respeitar sigilo e termos de uso.",
+      "adapter": "direct",
+      "operations": [
+        "search"
+      ],
+      "homepage": "https://datajud-wiki.cnj.jus.br/api-publica/"
+    },
+    {
+      "id": "receita_federal",
+      "name": "Receita Federal — Dados Abertos",
+      "authority": "official",
+      "country": "BR",
+      "access": "bulk files/catalog",
+      "auth": "none",
+      "cost": "free",
+      "domains": [
+        "gov.br"
+      ],
+      "topics": [
+        "CNPJ",
+        "empresas",
+        "cadastro",
+        "estabelecimentos",
+        "dados tributários públicos"
+      ],
+      "notes": "Grandes conjuntos devem ser baixados deliberadamente e indexados localmente.",
+      "adapter": "direct",
+      "operations": [
+        "links",
+        "catalog"
+      ],
+      "homepage": "https://www.gov.br/receitafederal/dados"
+    },
+    {
+      "id": "mte_pdet",
+      "name": "MTE — Microdados RAIS/CAGED",
+      "authority": "official",
+      "country": "BR",
+      "access": "bulk files/catalog",
+      "auth": "none for published microdata",
+      "cost": "free",
+      "domains": [
+        "gov.br"
+      ],
+      "topics": [
+        "trabalho",
+        "emprego",
+        "RAIS",
+        "CAGED",
+        "mercado de trabalho",
+        "salários",
+        "ocupações"
+      ],
+      "notes": "Microdados não identificados; alguns sistemas de consulta online podem exigir credencial.",
+      "adapter": "direct",
+      "operations": [
+        "links",
+        "catalog"
+      ],
+      "homepage": "https://www.gov.br/trabalho-e-emprego/pt-br/acesso-a-informacao/acoes-e-programas/programas-projetos-acoes-obras-e-atividades/estatisticas-trabalho/microdados-rais-e-caged"
+    },
+    {
+      "id": "crossref",
+      "name": "Crossref REST API",
+      "authority": "primary_metadata",
+      "country": "GLOBAL",
+      "access": "REST/JSON",
+      "auth": "none",
+      "cost": "free",
+      "domains": [
+        "api.crossref.org"
+      ],
+      "topics": [
+        "artigos",
+        "DOI",
+        "pesquisa científica",
+        "metadados acadêmicos",
+        "publicações"
+      ],
+      "notes": "Metadados primários de DOI.",
+      "adapter": "direct",
+      "operations": [
+        "works"
+      ],
+      "homepage": "https://api.crossref.org/"
+    },
+    {
+      "id": "wikidata",
+      "name": "Wikidata Query Service",
+      "authority": "platform",
+      "country": "GLOBAL",
+      "access": "SPARQL/JSON",
+      "auth": "none",
+      "cost": "free",
+      "domains": [
+        "query.wikidata.org"
+      ],
+      "topics": [
+        "entidades",
+        "relações",
+        "pessoas",
+        "organizações",
+        "lugares",
+        "knowledge graph"
+      ],
+      "notes": "Knowledge graph aberto; usar consultas SPARQL moderadas.",
+      "adapter": "direct",
+      "operations": [
+        "sparql"
+      ],
+      "homepage": "https://query.wikidata.org/"
+    },
+    {
+      "id": "github",
+      "name": "GitHub REST API pública",
+      "authority": "platform",
+      "country": "GLOBAL",
+      "access": "REST/JSON",
+      "auth": "none for limited public reads",
+      "cost": "free",
+      "domains": [
+        "api.github.com"
+      ],
+      "topics": [
+        "código",
+        "software",
+        "repositórios",
+        "open source",
+        "documentação"
+      ],
+      "notes": "Acesso não autenticado tem limite baixo; preferir cache e consultas pontuais.",
+      "adapter": "direct",
+      "operations": [
+        "search_repositories",
+        "repo"
+      ],
+      "homepage": "https://api.github.com/"
+    },
+    {
+      "id": "open_meteo",
+      "name": "Open-Meteo",
+      "authority": "platform",
+      "country": "GLOBAL",
+      "access": "REST/JSON",
+      "auth": "none",
+      "cost": "free/self-hostable; hosted free tier has usage terms",
+      "domains": [
+        "api.open-meteo.com"
+      ],
+      "topics": [
+        "tempo",
+        "clima",
+        "previsão",
+        "temperatura"
+      ],
+      "notes": "Útil como fonte opcional; respeitar termos do serviço hospedado.",
+      "adapter": "direct",
+      "operations": [
+        "forecast"
+      ],
+      "homepage": "https://open-meteo.com/"
+    },
+    {
+      "id": "nominatim",
+      "name": "OpenStreetMap Nominatim",
+      "authority": "platform",
+      "country": "GLOBAL",
+      "access": "REST/JSON",
+      "auth": "none",
+      "cost": "free shared public service",
+      "domains": [
+        "nominatim.openstreetmap.org"
+      ],
+      "topics": [
+        "geocodificação",
+        "endereços",
+        "lugares",
+        "mapas"
+      ],
+      "notes": "Servidor público compartilhado; Jarvis aplica intervalo local de ~1 req/s.",
+      "adapter": "direct",
+      "operations": [
+        "search"
+      ],
+      "homepage": "https://nominatim.openstreetmap.org/"
+    },
+    {
+      "id": "overpass",
+      "name": "OpenStreetMap Overpass API",
+      "authority": "platform",
+      "country": "GLOBAL",
+      "access": "Overpass QL/JSON",
+      "auth": "none",
+      "cost": "free shared public service",
+      "domains": [
+        "overpass-api.de"
+      ],
+      "topics": [
+        "mapas",
+        "POI",
+        "ruas",
+        "geodados",
+        "OpenStreetMap"
+      ],
+      "notes": "Consultas read-only; servidor público compartilhado e sujeito a limites.",
+      "adapter": "direct",
+      "operations": [
+        "query"
+      ],
+      "homepage": "https://overpass-api.de/"
+    },
+    {
+      "id": "brasilapi",
+      "name": "BrasilAPI",
+      "authority": "community",
+      "country": "BR",
+      "access": "REST/JSON",
+      "auth": "none",
+      "cost": "free",
+      "domains": [
+        "brasilapi.com.br"
+      ],
+      "topics": [
+        "CEP",
+        "CNPJ",
+        "bancos",
+        "feriados",
+        "Brasil"
+      ],
+      "notes": "Projeto comunitário beta; não realizar varredura massiva automatizada.",
+      "adapter": "direct",
+      "operations": [
+        "cep",
+        "cnpj",
+        "banks"
+      ],
+      "homepage": "https://brasilapi.com.br/"
+    },
+    {
+      "id": "worldbank",
+      "name": "World Bank Open Data API",
+      "authority": "official_international",
+      "country": "GLOBAL",
+      "access": "REST/JSON",
+      "auth": "none",
+      "cost": "free",
+      "domains": [
+        "api.worldbank.org"
+      ],
+      "topics": [
+        "economia",
+        "população",
+        "PIB",
+        "indicadores",
+        "países"
+      ],
+      "notes": "Já disponível também no Capability Hub.",
+      "adapter": "capability",
+      "operations": [],
+      "homepage": "https://api.worldbank.org/"
+    },
+    {
+      "id": "openalex",
+      "name": "OpenAlex",
+      "authority": "primary_metadata",
+      "country": "GLOBAL",
+      "access": "REST/snapshot",
+      "auth": "varies by current service tier",
+      "cost": "public data + current service terms",
+      "domains": [
+        "api.openalex.org",
+        "openalex.org"
+      ],
+      "topics": [
+        "pesquisa",
+        "autores",
+        "instituições",
+        "trabalhos científicos",
+        "citações"
+      ],
+      "notes": "Verificar termos atuais antes de depender do serviço hospedado; snapshot público pode ser processado localmente.",
+      "adapter": "capability",
+      "operations": [],
+      "homepage": "https://openalex.org/"
+    },
+    {
+      "id": "wikipedia_wikimedia",
+      "name": "Wikimedia APIs",
+      "authority": "platform",
+      "country": "GLOBAL",
+      "access": "REST/MediaWiki",
+      "auth": "none for public reads",
+      "cost": "free",
+      "domains": [
+        "wikipedia.org",
+        "wikimedia.org"
+      ],
+      "topics": [
+        "enciclopédia",
+        "contexto geral",
+        "artigos",
+        "referências"
+      ],
+      "notes": "Boa fonte de contexto, não substitui fonte primária quando esta existir.",
+      "adapter": "discover",
+      "operations": [
+        "discover_interfaces"
+      ],
+      "homepage": "https://www.wikipedia.org/"
+    },
+    {
+      "id": "gdelt",
+      "name": "GDELT",
+      "authority": "platform",
+      "country": "GLOBAL",
+      "access": "API/bulk",
+      "auth": "none",
+      "cost": "free",
+      "domains": [
+        "gdeltproject.org"
+      ],
+      "topics": [
+        "notícias",
+        "mídia",
+        "eventos globais",
+        "monitoramento"
+      ],
+      "notes": "Útil para descoberta/monitoramento; validar alegações em fontes originais.",
+      "adapter": "discover",
+      "operations": [
+        "discover_interfaces"
+      ],
+      "homepage": "https://www.gdeltproject.org/"
+    },
+    {
+      "id": "bcb_dados_abertos",
+      "name": "Banco Central do Brasil — Dados Abertos",
+      "authority": "official",
+      "country": "BR",
+      "access": "API/OData/JSON/CSV",
+      "auth": "none for public datasets",
+      "cost": "free",
+      "domains": [
+        "dadosabertos.bcb.gov.br",
+        "olinda.bcb.gov.br"
+      ],
+      "topics": [
+        "selic",
+        "câmbio",
+        "juros",
+        "crédito",
+        "expectativas de mercado",
+        "instituições financeiras",
+        "economia",
+        "sistema financeiro"
+      ],
+      "notes": "Catálogo oficial com dezenas de conjuntos em API/OData; descobrir endpoint apropriado antes de integrar.",
+      "adapter": "discover",
+      "operations": [
+        "discover_interfaces"
+      ],
+      "homepage": "https://dadosabertos.bcb.gov.br/"
+    },
+    {
+      "id": "portal_transparencia",
+      "name": "Portal da Transparência do Governo Federal",
+      "authority": "official",
+      "country": "BR",
+      "access": "REST + downloads abertos",
+      "auth": "Gov.br authentication to obtain an access token for API; bulk/open-data downloads remain an alternative",
+      "cost": "free",
+      "domains": [
+        "portaldatransparencia.gov.br",
+        "api.portaldatransparencia.gov.br"
+      ],
+      "topics": [
+        "despesas públicas",
+        "licitações",
+        "contratos",
+        "convênios",
+        "servidores",
+        "sanções",
+        "transparência"
+      ],
+      "notes": "API REST oficial para consultas pontuais, com token de acesso e limites de requisição definidos pelo Portal. Para grandes volumes, preferir os downloads de dados abertos quando disponíveis.",
+      "adapter": "discover",
+      "operations": [
+        "discover_interfaces"
+      ],
+      "homepage": "https://portaldatransparencia.gov.br/api-de-dados"
+    },
+    {
+      "id": "compras_gov",
+      "name": "Compras.gov.br — API de Dados Abertos",
+      "authority": "official",
+      "country": "BR",
+      "access": "REST/OpenAPI + CSV",
+      "auth": "none for public reads",
+      "cost": "free",
+      "domains": [
+        "dadosabertos.compras.gov.br",
+        "gov.br"
+      ],
+      "topics": [
+        "compras públicas",
+        "licitações",
+        "contratos",
+        "fornecedores",
+        "preços",
+        "CATMAT",
+        "CATSER",
+        "contratações"
+      ],
+      "notes": "API oficial de compras públicas com documentação OpenAPI e repositório CSV.",
+      "adapter": "discover",
+      "operations": [
+        "discover_interfaces"
+      ],
+      "homepage": "https://www.gov.br/compras/pt-br/cidadao/portal-de-dados-abertos/portal-de-dados-abertos"
+    },
+    {
+      "id": "pncp",
+      "name": "Portal Nacional de Contratações Públicas — Dados Abertos",
+      "authority": "official",
+      "country": "BR",
+      "access": "REST/JSON",
+      "auth": "none for public reads",
+      "cost": "free",
+      "domains": [
+        "pncp.gov.br",
+        "gov.br"
+      ],
+      "topics": [
+        "contratações públicas",
+        "contratos",
+        "atas de registro de preço",
+        "compras públicas",
+        "licitações",
+        "plano de contratações"
+      ],
+      "notes": "APIs públicas consultáveis sem cadastro/login.",
+      "adapter": "discover",
+      "operations": [
+        "discover_interfaces"
+      ],
+      "homepage": "https://www.gov.br/pncp/pt-br/acesso-a-informacao/dados-abertos"
+    },
+    {
+      "id": "inep",
+      "name": "INEP — Dados Abertos e Microdados",
+      "authority": "official",
+      "country": "BR",
+      "access": "downloads/microdados/painéis",
+      "auth": "none for public datasets",
+      "cost": "free",
+      "domains": [
+        "gov.br"
+      ],
+      "topics": [
+        "educação",
+        "censo escolar",
+        "ensino superior",
+        "enem",
+        "enade",
+        "saeb",
+        "indicadores educacionais",
+        "microdados"
+      ],
+      "notes": "Grandes arquivos devem ser baixados sob demanda e processados localmente.",
+      "adapter": "catalog",
+      "operations": [
+        "catalog"
+      ],
+      "homepage": "https://www.gov.br/inep/pt-br/acesso-a-informacao/dados-abertos/microdados"
+    },
+    {
+      "id": "stf_corte_aberta",
+      "name": "STF — Corte Aberta",
+      "authority": "official",
+      "country": "BR",
+      "access": "downloads CSV/XLSX + painéis",
+      "auth": "none",
+      "cost": "free",
+      "domains": [
+        "stf.jus.br",
+        "portal.stf.jus.br"
+      ],
+      "topics": [
+        "STF",
+        "supremo",
+        "processos",
+        "decisões",
+        "julgamentos",
+        "repercussão geral",
+        "estatísticas judiciais"
+      ],
+      "notes": "Painéis e bases abertas para estatísticas do STF.",
+      "adapter": "discover",
+      "operations": [
+        "discover_interfaces"
+      ],
+      "homepage": "https://portal.stf.jus.br/"
+    },
+    {
+      "id": "dados_abertos_sp",
+      "name": "Portal de Dados Abertos do Estado de São Paulo",
+      "authority": "official",
+      "country": "BR-SP",
+      "access": "CKAN REST + downloads",
+      "auth": "public reads generally none; some services may require gov.br",
+      "cost": "free",
+      "domains": [
+        "dadosabertos.sp.gov.br"
+      ],
+      "topics": [
+        "São Paulo",
+        "estado de São Paulo",
+        "trabalho",
+        "comércio",
+        "serviços",
+        "saúde",
+        "educação",
+        "transporte",
+        "empresas",
+        "economia",
+        "municípios",
+        "dados estaduais"
+      ],
+      "notes": "Portal oficial estadual com catálogo CKAN e API pública para grupos, organizações, conjuntos e recursos. Alguns serviços específicos podem exigir autenticação.",
+      "adapter": "direct",
+      "operations": [
+        "datasets",
+        "dataset",
+        "organizations",
+        "groups",
+        "tags"
+      ],
+      "homepage": "https://dadosabertos.sp.gov.br/"
+    },
+    {
+      "id": "alesp_dados_abertos",
+      "name": "ALESP — Dados Abertos",
+      "authority": "official",
+      "country": "BR-SP",
+      "access": "structured downloads + documented interfaces",
+      "auth": "none for public data",
+      "cost": "free",
+      "domains": [
+        "al.sp.gov.br",
+        "www3.al.sp.gov.br"
+      ],
+      "topics": [
+        "ALESP",
+        "legislação estadual",
+        "legislacao estadual",
+        "processo legislativo",
+        "proposituras",
+        "despesas",
+        "comissões",
+        "comissoes",
+        "agenda legislativa",
+        "São Paulo"
+      ],
+      "notes": "Dados abertos da Assembleia Legislativa de São Paulo. Como a infraestrutura está em transição, o Jarvis usa descoberta de interfaces e downloads estruturados em vez de assumir uma única API estável.",
+      "adapter": "discover",
+      "operations": [
+        "discover_interfaces"
+      ],
+      "homepage": "https://www.al.sp.gov.br/dados-abertos/"
+    },
+    {
+      "id": "observasampa",
+      "name": "ObservaSampa — Dados Abertos",
+      "authority": "official",
+      "country": "BR-SP-SAO-PAULO",
+      "access": "CSV/XLSX/JSON/XML downloads",
+      "auth": "none",
+      "cost": "free",
+      "domains": [
+        "observasampa.prefeitura.sp.gov.br",
+        "dados-abertos-observasampa.prefeitura.sp.gov.br"
+      ],
+      "topics": [
+        "cidade de São Paulo",
+        "distritos",
+        "subprefeituras",
+        "indicadores",
+        "trabalho",
+        "população",
+        "populacao",
+        "políticas públicas",
+        "politicas publicas",
+        "série histórica",
+        "serie historica"
+      ],
+      "notes": "Indicadores e variáveis municipais com séries históricas e desagregação por subprefeitura/distrito.",
+      "adapter": "discover",
+      "operations": [
+        "discover_interfaces"
+      ],
+      "homepage": "https://observasampa.prefeitura.sp.gov.br/index.php?page=dadosabertos"
+    },
+    {
+      "id": "geosampa",
+      "name": "GeoSampa — Dados Abertos Geoespaciais",
+      "authority": "official",
+      "country": "BR-SP-SAO-PAULO",
+      "access": "geospatial downloads/web GIS",
+      "auth": "none for public layers",
+      "cost": "free",
+      "domains": [
+        "novogeosampa.prefeitura.sp.gov.br",
+        "prefeitura.sp.gov.br"
+      ],
+      "topics": [
+        "mapa São Paulo",
+        "geodados",
+        "zoneamento",
+        "transporte",
+        "lotes",
+        "escolas",
+        "parques",
+        "equipamentos públicos",
+        "território",
+        "GIS"
+      ],
+      "notes": "Plataforma municipal com centenas de camadas geográficas. Integração deve preferir interfaces/downloads oficiais descobertos e evitar scraping visual.",
+      "adapter": "discover",
+      "operations": [
+        "discover_interfaces"
+      ],
+      "homepage": "https://novogeosampa.prefeitura.sp.gov.br/"
+    }
+  ]
+}

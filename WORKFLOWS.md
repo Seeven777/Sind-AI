@@ -1,0 +1,511 @@
+# Workflow Hub — Jarvis Autonomous Operations 0.9
+
+Total de workflows compostos: **474**.
+
+## Por grupo
+
+- automation_setup: 10
+- autonomous_ops: 12
+- browser: 15
+- connector_ops: 8
+- content: 35
+- content_preparation: 12
+- foundation_browser: 20
+- foundation_content: 30
+- foundation_knowledge: 15
+- foundation_website: 30
+- foundation_wordpress: 15
+- governance: 8
+- institutional_cct: 24
+- institutional_context: 24
+- institutional_ops: 8
+- knowledge: 12
+- knowledge_maintenance: 6
+- knowledge_search: 6
+- monitor_setup: 12
+- notifications: 5
+- operations: 13
+- project_context: 8
+- research: 15
+- research_resilience: 64
+- team_ops: 10
+- training: 12
+- website: 30
+- wordpress: 15
+
+## Catálogo
+
+- `workflow.website.seo_core` — SEO essencial — Executa uma análise combinada: seo essencial. — risco `read`
+- `workflow.website.seo_indexing` — Indexação e rastreabilidade — Executa uma análise combinada: indexação e rastreabilidade. — risco `read`
+- `workflow.website.seo_social` — Metadados sociais — Executa uma análise combinada: metadados sociais. — risco `read`
+- `workflow.website.structure_headings` — Estrutura de headings — Executa uma análise combinada: estrutura de headings. — risco `read`
+- `workflow.website.images_accessibility` — Imagens e acessibilidade — Executa uma análise combinada: imagens e acessibilidade. — risco `read`
+- `workflow.website.forms_accessibility` — Formulários e acessibilidade — Executa uma análise combinada: formulários e acessibilidade. — risco `read`
+- `workflow.website.links_quality` — Qualidade de links — Executa uma análise combinada: qualidade de links. — risco `read`
+- `workflow.website.security_headers` — Cabeçalhos de segurança — Executa uma análise combinada: cabeçalhos de segurança. — risco `read`
+- `workflow.website.performance_http` — HTTP e performance básica — Executa uma análise combinada: http e performance básica. — risco `read`
+- `workflow.website.mobile_basics` — Compatibilidade móvel — Executa uma análise combinada: compatibilidade móvel. — risco `read`
+- `workflow.website.structured_data` — Dados estruturados — Executa uma análise combinada: dados estruturados. — risco `read`
+- `workflow.website.assets_inventory` — Inventário de assets — Executa uma análise combinada: inventário de assets. — risco `read`
+- `workflow.website.contact_presence` — Contatos e redes sociais — Executa uma análise combinada: contatos e redes sociais. — risco `read`
+- `workflow.website.content_readability` — Conteúdo e leitura — Executa uma análise combinada: conteúdo e leitura. — risco `read`
+- `workflow.website.crawl_assets` — Crawl básico — Executa uma análise combinada: crawl básico. — risco `read`
+- `workflow.website.landing_page` — Landing page completa — Executa uma análise combinada: landing page completa. — risco `read`
+- `workflow.website.article_page` — Página editorial — Executa uma análise combinada: página editorial. — risco `read`
+- `workflow.website.institutional_page` — Página institucional — Executa uma análise combinada: página institucional. — risco `read`
+- `workflow.website.privacy_security` — Privacidade e segurança — Executa uma análise combinada: privacidade e segurança. — risco `read`
+- `workflow.website.social_share` — Compartilhamento social — Executa uma análise combinada: compartilhamento social. — risco `read`
+- `workflow.website.technical_seo` — SEO técnico — Executa uma análise combinada: seo técnico. — risco `read`
+- `workflow.website.international_seo` — SEO internacional — Executa uma análise combinada: seo internacional. — risco `read`
+- `workflow.website.media_quality` — Qualidade de mídia — Executa uma análise combinada: qualidade de mídia. — risco `read`
+- `workflow.website.conversion_form` — Conversão por formulário — Executa uma análise combinada: conversão por formulário. — risco `read`
+- `workflow.website.site_identity` — Identidade do site — Executa uma análise combinada: identidade do site. — risco `read`
+- `workflow.website.feed_discovery` — Feeds e publicação — Executa uma análise combinada: feeds e publicação. — risco `read`
+- `workflow.website.server_profile` — Perfil técnico do servidor — Executa uma análise combinada: perfil técnico do servidor. — risco `read`
+- `workflow.website.page_hygiene` — Higiene de página — Executa uma análise combinada: higiene de página. — risco `read`
+- `workflow.website.accessibility_quick` — Acessibilidade rápida — Executa uma análise combinada: acessibilidade rápida. — risco `read`
+- `workflow.website.full_snapshot` — Snapshot técnico amplo — Executa uma análise combinada: snapshot técnico amplo. — risco `read`
+- `workflow.content.metrics_basic` — Métricas básicas — Executa um pacote de análise/transformação: métricas básicas. — risco `read`
+- `workflow.content.social_caption` — Legenda social — Executa um pacote de análise/transformação: legenda social. — risco `read`
+- `workflow.content.seo_copy` — Copy SEO — Executa um pacote de análise/transformação: copy seo. — risco `read`
+- `workflow.content.keywords` — Mapa de palavras-chave — Executa um pacote de análise/transformação: mapa de palavras-chave. — risco `read`
+- `workflow.content.cleanup` — Limpeza textual — Executa um pacote de análise/transformação: limpeza textual. — risco `read`
+- `workflow.content.carousel_readiness` — Prontidão para carrossel — Executa um pacote de análise/transformação: prontidão para carrossel. — risco `read`
+- `workflow.content.contact_extract` — Extração de contatos — Executa um pacote de análise/transformação: extração de contatos. — risco `read`
+- `workflow.content.social_entities` — Elementos sociais — Executa um pacote de análise/transformação: elementos sociais. — risco `read`
+- `workflow.content.dates_numbers` — Datas e números — Executa um pacote de análise/transformação: datas e números. — risco `read`
+- `workflow.content.structure` — Estrutura textual — Executa um pacote de análise/transformação: estrutura textual. — risco `read`
+- `workflow.content.markdown_outline` — Outline Markdown — Executa um pacote de análise/transformação: outline markdown. — risco `read`
+- `workflow.content.filename_slug` — Slug e filename — Executa um pacote de análise/transformação: slug e filename. — risco `read`
+- `workflow.content.case_variants` — Variações de caixa — Executa um pacote de análise/transformação: variações de caixa. — risco `read`
+- `workflow.content.encoding` — Codificação — Executa um pacote de análise/transformação: codificação. — risco `read`
+- `workflow.content.html_safety` — HTML textual — Executa um pacote de análise/transformação: html textual. — risco `read`
+- `workflow.content.json_health` — Saúde JSON — Executa um pacote de análise/transformação: saúde json. — risco `read`
+- `workflow.content.csv_data` — Conversão de dados — Executa um pacote de análise/transformação: conversão de dados. — risco `read`
+- `workflow.content.readability` — Leitura e extensão — Executa um pacote de análise/transformação: leitura e extensão. — risco `read`
+- `workflow.content.headline` — Título editorial — Executa um pacote de análise/transformação: título editorial. — risco `read`
+- `workflow.content.meta_description` — Descrição SEO — Executa um pacote de análise/transformação: descrição seo. — risco `read`
+- `workflow.content.instagram` — Instagram — Executa um pacote de análise/transformação: instagram. — risco `read`
+- `workflow.content.hashtags` — Hashtags — Executa um pacote de análise/transformação: hashtags. — risco `read`
+- `workflow.content.url_package` — Pacote URL — Executa um pacote de análise/transformação: pacote url. — risco `read`
+- `workflow.content.dedupe_lines` — Linhas únicas — Executa um pacote de análise/transformação: linhas únicas. — risco `read`
+- `workflow.content.bullet_package` — Lista estruturada — Executa um pacote de análise/transformação: lista estruturada. — risco `read`
+- `workflow.content.excerpt_package` — Resumo mecânico — Executa um pacote de análise/transformação: resumo mecânico. — risco `read`
+- `workflow.content.quality_scan` — Scan de qualidade — Executa um pacote de análise/transformação: scan de qualidade. — risco `read`
+- `workflow.content.keyword_scan` — Densidade e termos — Executa um pacote de análise/transformação: densidade e termos. — risco `read`
+- `workflow.content.caption_structure` — Estrutura de legenda — Executa um pacote de análise/transformação: estrutura de legenda. — risco `read`
+- `workflow.content.carousel_structure` — Estrutura para carrossel — Executa um pacote de análise/transformação: estrutura para carrossel. — risco `read`
+- `workflow.content.document_stats` — Estatísticas de documento — Executa um pacote de análise/transformação: estatísticas de documento. — risco `read`
+- `workflow.content.web_text_extract` — Texto vindo da web — Executa um pacote de análise/transformação: texto vindo da web. — risco `read`
+- `workflow.content.data_fingerprint` — Fingerprint textual — Executa um pacote de análise/transformação: fingerprint textual. — risco `read`
+- `workflow.content.clean_export` — Limpeza para exportação — Executa um pacote de análise/transformação: limpeza para exportação. — risco `read`
+- `workflow.content.editorial_snapshot` — Snapshot editorial — Executa um pacote de análise/transformação: snapshot editorial. — risco `read`
+- `workflow.browser.page_snapshot` — Snapshot da página — Inspeciona a página ativa: snapshot da página. — risco `read`
+- `workflow.browser.navigation_map` — Mapa de navegação — Inspeciona a página ativa: mapa de navegação. — risco `read`
+- `workflow.browser.form_map` — Mapa de formulário — Inspeciona a página ativa: mapa de formulário. — risco `read`
+- `workflow.browser.content_map` — Mapa de conteúdo — Inspeciona a página ativa: mapa de conteúdo. — risco `read`
+- `workflow.browser.seo_map` — Mapa SEO no browser — Inspeciona a página ativa: mapa seo no browser. — risco `read`
+- `workflow.browser.table_map` — Mapa de tabelas — Inspeciona a página ativa: mapa de tabelas. — risco `read`
+- `workflow.browser.media_map` — Mapa de mídia — Inspeciona a página ativa: mapa de mídia. — risco `read`
+- `workflow.browser.interactive_map` — Mapa interativo — Inspeciona a página ativa: mapa interativo. — risco `read`
+- `workflow.browser.session_snapshot` — Snapshot de sessão — Inspeciona a página ativa: snapshot de sessão. — risco `read`
+- `workflow.browser.page_sources` — Fontes da página — Inspeciona a página ativa: fontes da página. — risco `read`
+- `workflow.browser.quick_read` — Leitura rápida — Inspeciona a página ativa: leitura rápida. — risco `read`
+- `workflow.browser.research_read` — Leitura de pesquisa — Inspeciona a página ativa: leitura de pesquisa. — risco `read`
+- `workflow.browser.accessibility_surface` — Superfície acessível — Inspeciona a página ativa: superfície acessível. — risco `read`
+- `workflow.browser.download_surface` — Superfície de downloads — Inspeciona a página ativa: superfície de downloads. — risco `read`
+- `workflow.browser.page_debug` — Debug de página — Inspeciona a página ativa: debug de página. — risco `read`
+- `workflow.knowledge.collection_overview` — Visão da base — Fluxo de base de conhecimento: visão da base. — risco `read`
+- `workflow.knowledge.search_context` — Busca contextual — Fluxo de base de conhecimento: busca contextual. — risco `read`
+- `workflow.knowledge.document_inventory` — Inventário documental — Fluxo de base de conhecimento: inventário documental. — risco `read`
+- `workflow.knowledge.training_search` — Busca para treinamento — Fluxo de base de conhecimento: busca para treinamento. — risco `read`
+- `workflow.knowledge.policy_search` — Busca de políticas — Fluxo de base de conhecimento: busca de políticas. — risco `read`
+- `workflow.knowledge.cct_search` — Busca em CCT — Fluxo de base de conhecimento: busca em cct. — risco `read`
+- `workflow.knowledge.faq_search` — Busca para FAQ — Fluxo de base de conhecimento: busca para faq. — risco `read`
+- `workflow.knowledge.onboarding_search` — Busca para onboarding — Fluxo de base de conhecimento: busca para onboarding. — risco `read`
+- `workflow.knowledge.procedure_search` — Busca de procedimento — Fluxo de base de conhecimento: busca de procedimento. — risco `read`
+- `workflow.knowledge.legal_reference_search` — Busca de referência interna — Fluxo de base de conhecimento: busca de referência interna. — risco `read`
+- `workflow.knowledge.communication_search` — Busca de padrão de comunicação — Fluxo de base de conhecimento: busca de padrão de comunicação. — risco `read`
+- `workflow.knowledge.collection_export_check` — Exportação e inventário — Fluxo de base de conhecimento: exportação e inventário. — risco `read`
+- `workflow.wordpress.inventory_content` — Inventário de conteúdo — Workflow WordPress: inventário de conteúdo. — risco `read`
+- `workflow.wordpress.inventory_media` — Inventário de mídia — Workflow WordPress: inventário de mídia. — risco `read`
+- `workflow.wordpress.inventory_taxonomy` — Inventário de taxonomias — Workflow WordPress: inventário de taxonomias. — risco `read`
+- `workflow.wordpress.inventory_site` — Inventário do site — Workflow WordPress: inventário do site. — risco `read`
+- `workflow.wordpress.search_content` — Busca de conteúdo — Workflow WordPress: busca de conteúdo. — risco `read`
+- `workflow.wordpress.editorial_queue` — Fila editorial — Workflow WordPress: fila editorial. — risco `read`
+- `workflow.wordpress.comments_review` — Revisão de comentários — Workflow WordPress: revisão de comentários. — risco `read`
+- `workflow.wordpress.authors_review` — Revisão de usuários — Workflow WordPress: revisão de usuários. — risco `read`
+- `workflow.wordpress.draft_post` — Criar rascunho de post — Workflow WordPress: criar rascunho de post. — risco `write`
+- `workflow.wordpress.draft_page` — Criar rascunho de página — Workflow WordPress: criar rascunho de página. — risco `write`
+- `workflow.wordpress.taxonomy_review` — Revisão de categorias e tags — Workflow WordPress: revisão de categorias e tags. — risco `read`
+- `workflow.wordpress.media_review` — Revisão de biblioteca — Workflow WordPress: revisão de biblioteca. — risco `read`
+- `workflow.wordpress.site_discovery` — Descoberta WordPress — Workflow WordPress: descoberta wordpress. — risco `read`
+- `workflow.wordpress.content_status` — Status editorial — Workflow WordPress: status editorial. — risco `read`
+- `workflow.wordpress.site_health_read` — Leitura de configuração — Workflow WordPress: leitura de configuração. — risco `read`
+- `workflow.research.general` — Pesquisa geral — Workflow de pesquisa: pesquisa geral. — risco `read`
+- `workflow.research.exact` — Pesquisa por frase exata — Workflow de pesquisa: pesquisa por frase exata. — risco `read`
+- `workflow.research.recent` — Pesquisa recente — Workflow de pesquisa: pesquisa recente. — risco `read`
+- `workflow.research.site` — Pesquisa em domínio — Workflow de pesquisa: pesquisa em domínio. — risco `read`
+- `workflow.research.news_scan` — Scan de notícias — Workflow de pesquisa: scan de notícias. — risco `read`
+- `workflow.research.source_discovery` — Descoberta de fontes — Workflow de pesquisa: descoberta de fontes. — risco `read`
+- `workflow.research.institutional_sources` — Fontes institucionais — Workflow de pesquisa: fontes institucionais. — risco `read`
+- `workflow.research.technical_sources` — Fontes técnicas — Workflow de pesquisa: fontes técnicas. — risco `read`
+- `workflow.research.legal_sources` — Fontes jurídicas públicas — Workflow de pesquisa: fontes jurídicas públicas. — risco `read`
+- `workflow.research.software_sources` — Pesquisa de software — Workflow de pesquisa: pesquisa de software. — risco `read`
+- `workflow.research.documentation_sources` — Pesquisa de documentação — Workflow de pesquisa: pesquisa de documentação. — risco `read`
+- `workflow.research.community_sources` — Pesquisa comunitária — Workflow de pesquisa: pesquisa comunitária. — risco `read`
+- `workflow.research.local_sources` — Pesquisa local — Workflow de pesquisa: pesquisa local. — risco `read`
+- `workflow.research.comparison_sources` — Fontes para comparação — Workflow de pesquisa: fontes para comparação. — risco `read`
+- `workflow.research.deep_discovery` — Descoberta ampliada — Workflow de pesquisa: descoberta ampliada. — risco `read`
+- `workflow.ops.website_release_check` — Checklist de publicação web — Executa checklist de publicação web. — risco `read`
+- `workflow.ops.article_release_check` — Checklist editorial web — Executa checklist editorial web. — risco `read`
+- `workflow.ops.form_release_check` — Checklist de formulário — Executa checklist de formulário. — risco `read`
+- `workflow.ops.social_release_check` — Checklist social — Executa checklist social. — risco `read`
+- `workflow.ops.content_release_check` — Checklist de conteúdo — Executa checklist de conteúdo. — risco `read`
+- `workflow.ops.seo_release_check` — Checklist SEO de copy — Executa checklist seo de copy. — risco `read`
+- `workflow.ops.browser_readiness` — Prontidão do browser — Executa prontidão do browser. — risco `read`
+- `workflow.ops.browser_page_readiness` — Prontidão da página — Executa prontidão da página. — risco `read`
+- `workflow.ops.knowledge_readiness` — Prontidão da base — Executa prontidão da base. — risco `read`
+- `workflow.ops.wordpress_readiness` — Prontidão WordPress — Executa prontidão wordpress. — risco `read`
+- `workflow.ops.site_contact_check` — Check de contato público — Executa check de contato público. — risco `read`
+- `workflow.ops.site_accessibility_check` — Check de acessibilidade web — Executa check de acessibilidade web. — risco `read`
+- `workflow.ops.site_technical_check` — Check técnico web — Executa check técnico web. — risco `read`
+- `workflow.foundation.website.seo_identity` — Seo Identity — Auditoria focada em seo identity. — risco `read`
+- `workflow.foundation.website.seo_headings` — Seo Headings — Auditoria focada em seo headings. — risco `read`
+- `workflow.foundation.website.seo_indexability` — Seo Indexability — Auditoria focada em seo indexability. — risco `read`
+- `workflow.foundation.website.seo_social` — Seo Social — Auditoria focada em seo social. — risco `read`
+- `workflow.foundation.website.seo_language` — Seo Language — Auditoria focada em seo language. — risco `read`
+- `workflow.foundation.website.seo_feeds` — Seo Feeds — Auditoria focada em seo feeds. — risco `read`
+- `workflow.foundation.website.access_images` — Access Images — Auditoria focada em access images. — risco `read`
+- `workflow.foundation.website.access_forms` — Access Forms — Auditoria focada em access forms. — risco `read`
+- `workflow.foundation.website.access_links` — Access Links — Auditoria focada em access links. — risco `read`
+- `workflow.foundation.website.security_core` — Security Core — Auditoria focada em security core. — risco `read`
+- `workflow.foundation.website.performance_headers` — Performance Headers — Auditoria focada em performance headers. — risco `read`
+- `workflow.foundation.website.performance_assets` — Performance Assets — Auditoria focada em performance assets. — risco `read`
+- `workflow.foundation.website.content_readability` — Content Readability — Auditoria focada em content readability. — risco `read`
+- `workflow.foundation.website.contact_presence` — Contact Presence — Auditoria focada em contact presence. — risco `read`
+- `workflow.foundation.website.structure_core` — Structure Core — Auditoria focada em structure core. — risco `read`
+- `workflow.foundation.website.bundle_01` — Website bundle 01 — Combina duas perspectivas complementares de auditoria de site. — risco `read`
+- `workflow.foundation.website.bundle_02` — Website bundle 02 — Combina duas perspectivas complementares de auditoria de site. — risco `read`
+- `workflow.foundation.website.bundle_03` — Website bundle 03 — Combina duas perspectivas complementares de auditoria de site. — risco `read`
+- `workflow.foundation.website.bundle_04` — Website bundle 04 — Combina duas perspectivas complementares de auditoria de site. — risco `read`
+- `workflow.foundation.website.bundle_05` — Website bundle 05 — Combina duas perspectivas complementares de auditoria de site. — risco `read`
+- `workflow.foundation.website.bundle_06` — Website bundle 06 — Combina duas perspectivas complementares de auditoria de site. — risco `read`
+- `workflow.foundation.website.bundle_07` — Website bundle 07 — Combina duas perspectivas complementares de auditoria de site. — risco `read`
+- `workflow.foundation.website.bundle_08` — Website bundle 08 — Combina duas perspectivas complementares de auditoria de site. — risco `read`
+- `workflow.foundation.website.bundle_09` — Website bundle 09 — Combina duas perspectivas complementares de auditoria de site. — risco `read`
+- `workflow.foundation.website.bundle_10` — Website bundle 10 — Combina duas perspectivas complementares de auditoria de site. — risco `read`
+- `workflow.foundation.website.bundle_11` — Website bundle 11 — Combina duas perspectivas complementares de auditoria de site. — risco `read`
+- `workflow.foundation.website.bundle_12` — Website bundle 12 — Combina duas perspectivas complementares de auditoria de site. — risco `read`
+- `workflow.foundation.website.bundle_13` — Website bundle 13 — Combina duas perspectivas complementares de auditoria de site. — risco `read`
+- `workflow.foundation.website.bundle_14` — Website bundle 14 — Combina duas perspectivas complementares de auditoria de site. — risco `read`
+- `workflow.foundation.website.bundle_15` — Website bundle 15 — Combina duas perspectivas complementares de auditoria de site. — risco `read`
+- `workflow.foundation.content.metrics` — Metrics — Análise/transformação de conteúdo: metrics. — risco `read`
+- `workflow.foundation.content.readability` — Readability — Análise/transformação de conteúdo: readability. — risco `read`
+- `workflow.foundation.content.cleanup` — Cleanup — Análise/transformação de conteúdo: cleanup. — risco `read`
+- `workflow.foundation.content.keywords` — Keywords — Análise/transformação de conteúdo: keywords. — risco `read`
+- `workflow.foundation.content.social_extract` — Social Extract — Análise/transformação de conteúdo: social extract. — risco `read`
+- `workflow.foundation.content.contacts` — Contacts — Análise/transformação de conteúdo: contacts. — risco `read`
+- `workflow.foundation.content.dates_numbers` — Dates Numbers — Análise/transformação de conteúdo: dates numbers. — risco `read`
+- `workflow.foundation.content.structure` — Structure — Análise/transformação de conteúdo: structure. — risco `read`
+- `workflow.foundation.content.seo_copy` — Seo Copy — Análise/transformação de conteúdo: seo copy. — risco `read`
+- `workflow.foundation.content.caption` — Caption — Análise/transformação de conteúdo: caption. — risco `read`
+- `workflow.foundation.content.encoding` — Encoding — Análise/transformação de conteúdo: encoding. — risco `read`
+- `workflow.foundation.content.html` — Html — Análise/transformação de conteúdo: html. — risco `read`
+- `workflow.foundation.content.case` — Case — Análise/transformação de conteúdo: case. — risco `read`
+- `workflow.foundation.content.slug_file` — Slug File — Análise/transformação de conteúdo: slug file. — risco `read`
+- `workflow.foundation.content.markdown` — Markdown — Análise/transformação de conteúdo: markdown. — risco `read`
+- `workflow.foundation.content.bundle_01` — Content bundle 01 — Combina duas análises de conteúdo para revisão editorial. — risco `read`
+- `workflow.foundation.content.bundle_02` — Content bundle 02 — Combina duas análises de conteúdo para revisão editorial. — risco `read`
+- `workflow.foundation.content.bundle_03` — Content bundle 03 — Combina duas análises de conteúdo para revisão editorial. — risco `read`
+- `workflow.foundation.content.bundle_04` — Content bundle 04 — Combina duas análises de conteúdo para revisão editorial. — risco `read`
+- `workflow.foundation.content.bundle_05` — Content bundle 05 — Combina duas análises de conteúdo para revisão editorial. — risco `read`
+- `workflow.foundation.content.bundle_06` — Content bundle 06 — Combina duas análises de conteúdo para revisão editorial. — risco `read`
+- `workflow.foundation.content.bundle_07` — Content bundle 07 — Combina duas análises de conteúdo para revisão editorial. — risco `read`
+- `workflow.foundation.content.bundle_08` — Content bundle 08 — Combina duas análises de conteúdo para revisão editorial. — risco `read`
+- `workflow.foundation.content.bundle_09` — Content bundle 09 — Combina duas análises de conteúdo para revisão editorial. — risco `read`
+- `workflow.foundation.content.bundle_10` — Content bundle 10 — Combina duas análises de conteúdo para revisão editorial. — risco `read`
+- `workflow.foundation.content.bundle_11` — Content bundle 11 — Combina duas análises de conteúdo para revisão editorial. — risco `read`
+- `workflow.foundation.content.bundle_12` — Content bundle 12 — Combina duas análises de conteúdo para revisão editorial. — risco `read`
+- `workflow.foundation.content.bundle_13` — Content bundle 13 — Combina duas análises de conteúdo para revisão editorial. — risco `read`
+- `workflow.foundation.content.bundle_14` — Content bundle 14 — Combina duas análises de conteúdo para revisão editorial. — risco `read`
+- `workflow.foundation.content.bundle_15` — Content bundle 15 — Combina duas análises de conteúdo para revisão editorial. — risco `read`
+- `workflow.foundation.browser.overview` — Overview — Inspeção de navegador: overview. — risco `read`
+- `workflow.foundation.browser.links` — Links — Inspeção de navegador: links. — risco `read`
+- `workflow.foundation.browser.forms` — Forms — Inspeção de navegador: forms. — risco `read`
+- `workflow.foundation.browser.media` — Media — Inspeção de navegador: media. — risco `read`
+- `workflow.foundation.browser.tables` — Tables — Inspeção de navegador: tables. — risco `read`
+- `workflow.foundation.browser.structured` — Structured — Inspeção de navegador: structured. — risco `read`
+- `workflow.foundation.browser.page_text` — Page Text — Inspeção de navegador: page_text. — risco `read`
+- `workflow.foundation.browser.navigation` — Navigation — Inspeção de navegador: navigation. — risco `read`
+- `workflow.foundation.browser.elements` — Elements — Inspeção de navegador: elements. — risco `read`
+- `workflow.foundation.browser.audit` — Audit — Inspeção de navegador: audit. — risco `read`
+- `workflow.foundation.browser.bundle_01` — Browser bundle 01 — Coleta combinada de estrutura de uma página via Browser Agent. — risco `read`
+- `workflow.foundation.browser.bundle_02` — Browser bundle 02 — Coleta combinada de estrutura de uma página via Browser Agent. — risco `read`
+- `workflow.foundation.browser.bundle_03` — Browser bundle 03 — Coleta combinada de estrutura de uma página via Browser Agent. — risco `read`
+- `workflow.foundation.browser.bundle_04` — Browser bundle 04 — Coleta combinada de estrutura de uma página via Browser Agent. — risco `read`
+- `workflow.foundation.browser.bundle_05` — Browser bundle 05 — Coleta combinada de estrutura de uma página via Browser Agent. — risco `read`
+- `workflow.foundation.browser.bundle_06` — Browser bundle 06 — Coleta combinada de estrutura de uma página via Browser Agent. — risco `read`
+- `workflow.foundation.browser.bundle_07` — Browser bundle 07 — Coleta combinada de estrutura de uma página via Browser Agent. — risco `read`
+- `workflow.foundation.browser.bundle_08` — Browser bundle 08 — Coleta combinada de estrutura de uma página via Browser Agent. — risco `read`
+- `workflow.foundation.browser.bundle_09` — Browser bundle 09 — Coleta combinada de estrutura de uma página via Browser Agent. — risco `read`
+- `workflow.foundation.browser.bundle_10` — Browser bundle 10 — Coleta combinada de estrutura de uma página via Browser Agent. — risco `read`
+- `workflow.foundation.wordpress.content_inventory` — Content Inventory — Inventário WordPress read-only: content_inventory. — risco `read`
+- `workflow.foundation.wordpress.media_inventory` — Media Inventory — Inventário WordPress read-only: media_inventory. — risco `read`
+- `workflow.foundation.wordpress.taxonomy_inventory` — Taxonomy Inventory — Inventário WordPress read-only: taxonomy_inventory. — risco `read`
+- `workflow.foundation.wordpress.site_inventory` — Site Inventory — Inventário WordPress read-only: site_inventory. — risco `read`
+- `workflow.foundation.wordpress.editorial_inventory` — Editorial Inventory — Inventário WordPress read-only: editorial_inventory. — risco `read`
+- `workflow.foundation.wordpress.moderation_inventory` — Moderation Inventory — Inventário WordPress read-only: moderation_inventory. — risco `read`
+- `workflow.foundation.wordpress.people_inventory` — People Inventory — Inventário WordPress read-only: people_inventory. — risco `read`
+- `workflow.foundation.wordpress.full_inventory` — Full Inventory — Inventário WordPress read-only: full_inventory. — risco `read`
+- `workflow.foundation.wordpress.search_bundle_01` — WordPress search bundle 01 — Busca editorial read-only em múltiplos tipos de conteúdo WordPress. — risco `read`
+- `workflow.foundation.wordpress.search_bundle_02` — WordPress search bundle 02 — Busca editorial read-only em múltiplos tipos de conteúdo WordPress. — risco `read`
+- `workflow.foundation.wordpress.search_bundle_03` — WordPress search bundle 03 — Busca editorial read-only em múltiplos tipos de conteúdo WordPress. — risco `read`
+- `workflow.foundation.wordpress.search_bundle_04` — WordPress search bundle 04 — Busca editorial read-only em múltiplos tipos de conteúdo WordPress. — risco `read`
+- `workflow.foundation.wordpress.search_bundle_05` — WordPress search bundle 05 — Busca editorial read-only em múltiplos tipos de conteúdo WordPress. — risco `read`
+- `workflow.foundation.wordpress.search_bundle_06` — WordPress search bundle 06 — Busca editorial read-only em múltiplos tipos de conteúdo WordPress. — risco `read`
+- `workflow.foundation.wordpress.search_bundle_07` — WordPress search bundle 07 — Busca editorial read-only em múltiplos tipos de conteúdo WordPress. — risco `read`
+- `workflow.foundation.knowledge.inventory` — Inventory — Consulta local de conhecimento: inventory. — risco `read`
+- `workflow.foundation.knowledge.search_context` — Search Context — Consulta local de conhecimento: search_context. — risco `read`
+- `workflow.foundation.knowledge.search_only` — Search Only — Consulta local de conhecimento: search_only. — risco `read`
+- `workflow.foundation.knowledge.documents` — Documents — Consulta local de conhecimento: documents. — risco `read`
+- `workflow.foundation.knowledge.training_lookup` — Training Lookup — Consulta local de conhecimento: training_lookup. — risco `read`
+- `workflow.foundation.knowledge.lookup_01` — Knowledge lookup 01 — Pesquisa e contextualização em base local para assistência interna. — risco `read`
+- `workflow.foundation.knowledge.lookup_02` — Knowledge lookup 02 — Pesquisa e contextualização em base local para assistência interna. — risco `read`
+- `workflow.foundation.knowledge.lookup_03` — Knowledge lookup 03 — Pesquisa e contextualização em base local para assistência interna. — risco `read`
+- `workflow.foundation.knowledge.lookup_04` — Knowledge lookup 04 — Pesquisa e contextualização em base local para assistência interna. — risco `read`
+- `workflow.foundation.knowledge.lookup_05` — Knowledge lookup 05 — Pesquisa e contextualização em base local para assistência interna. — risco `read`
+- `workflow.foundation.knowledge.lookup_06` — Knowledge lookup 06 — Pesquisa e contextualização em base local para assistência interna. — risco `read`
+- `workflow.foundation.knowledge.lookup_07` — Knowledge lookup 07 — Pesquisa e contextualização em base local para assistência interna. — risco `read`
+- `workflow.foundation.knowledge.lookup_08` — Knowledge lookup 08 — Pesquisa e contextualização em base local para assistência interna. — risco `read`
+- `workflow.foundation.knowledge.lookup_09` — Knowledge lookup 09 — Pesquisa e contextualização em base local para assistência interna. — risco `read`
+- `workflow.foundation.knowledge.lookup_10` — Knowledge lookup 10 — Pesquisa e contextualização em base local para assistência interna. — risco `read`
+- `workflow.research.official.evidence` — Pesquisa oficial • Pacote de evidências — Prioriza fontes oficiais e evidências auditáveis. Saída: pacote de evidências. — risco `read`
+- `workflow.research.official.report` — Pesquisa oficial • Relatório Markdown — Prioriza fontes oficiais e evidências auditáveis. Saída: relatório markdown. — risco `read`
+- `workflow.research.official.sources` — Pesquisa oficial • Mapa de fontes — Prioriza fontes oficiais e evidências auditáveis. Saída: mapa de fontes. — risco `read`
+- `workflow.research.official.summary` — Pesquisa oficial • Resumo determinístico — Prioriza fontes oficiais e evidências auditáveis. Saída: resumo determinístico. — risco `read`
+- `workflow.research.official.audit` — Pesquisa oficial • Auditoria de autoridade — Prioriza fontes oficiais e evidências auditáveis. Saída: auditoria de autoridade. — risco `read`
+- `workflow.research.official.archive` — Pesquisa oficial • Pacote para arquivamento — Prioriza fontes oficiais e evidências auditáveis. Saída: pacote para arquivamento. — risco `read`
+- `workflow.research.quick.evidence` — Pesquisa rápida • Pacote de evidências — Pesquisa enxuta com evidências compactas. Saída: pacote de evidências. — risco `read`
+- `workflow.research.quick.report` — Pesquisa rápida • Relatório Markdown — Pesquisa enxuta com evidências compactas. Saída: relatório markdown. — risco `read`
+- `workflow.research.quick.sources` — Pesquisa rápida • Mapa de fontes — Pesquisa enxuta com evidências compactas. Saída: mapa de fontes. — risco `read`
+- `workflow.research.quick.summary` — Pesquisa rápida • Resumo determinístico — Pesquisa enxuta com evidências compactas. Saída: resumo determinístico. — risco `read`
+- `workflow.research.quick.audit` — Pesquisa rápida • Auditoria de autoridade — Pesquisa enxuta com evidências compactas. Saída: auditoria de autoridade. — risco `read`
+- `workflow.research.quick.archive` — Pesquisa rápida • Pacote para arquivamento — Pesquisa enxuta com evidências compactas. Saída: pacote para arquivamento. — risco `read`
+- `workflow.research.deep.evidence` — Pesquisa aprofundada • Pacote de evidências — Coleta pacote maior de evidências antes da síntese. Saída: pacote de evidências. — risco `read`
+- `workflow.research.deep.report` — Pesquisa aprofundada • Relatório Markdown — Coleta pacote maior de evidências antes da síntese. Saída: relatório markdown. — risco `read`
+- `workflow.research.deep.sources` — Pesquisa aprofundada • Mapa de fontes — Coleta pacote maior de evidências antes da síntese. Saída: mapa de fontes. — risco `read`
+- `workflow.research.deep.summary` — Pesquisa aprofundada • Resumo determinístico — Coleta pacote maior de evidências antes da síntese. Saída: resumo determinístico. — risco `read`
+- `workflow.research.deep.audit` — Pesquisa aprofundada • Auditoria de autoridade — Coleta pacote maior de evidências antes da síntese. Saída: auditoria de autoridade. — risco `read`
+- `workflow.research.deep.archive` — Pesquisa aprofundada • Pacote para arquivamento — Coleta pacote maior de evidências antes da síntese. Saída: pacote para arquivamento. — risco `read`
+- `workflow.research.compare.evidence` — Comparação de fontes • Pacote de evidências — Pesquisa e compara evidências entre fontes. Saída: pacote de evidências. — risco `read`
+- `workflow.research.compare.report` — Comparação de fontes • Relatório Markdown — Pesquisa e compara evidências entre fontes. Saída: relatório markdown. — risco `read`
+- `workflow.research.compare.sources` — Comparação de fontes • Mapa de fontes — Pesquisa e compara evidências entre fontes. Saída: mapa de fontes. — risco `read`
+- `workflow.research.compare.summary` — Comparação de fontes • Resumo determinístico — Pesquisa e compara evidências entre fontes. Saída: resumo determinístico. — risco `read`
+- `workflow.research.compare.audit` — Comparação de fontes • Auditoria de autoridade — Pesquisa e compara evidências entre fontes. Saída: auditoria de autoridade. — risco `read`
+- `workflow.research.compare.archive` — Comparação de fontes • Pacote para arquivamento — Pesquisa e compara evidências entre fontes. Saída: pacote para arquivamento. — risco `read`
+- `workflow.research.labor.evidence` — Pesquisa trabalhista • Pacote de evidências — Prioriza fontes públicas e trabalhistas brasileiras. Saída: pacote de evidências. — risco `read`
+- `workflow.research.labor.report` — Pesquisa trabalhista • Relatório Markdown — Prioriza fontes públicas e trabalhistas brasileiras. Saída: relatório markdown. — risco `read`
+- `workflow.research.labor.sources` — Pesquisa trabalhista • Mapa de fontes — Prioriza fontes públicas e trabalhistas brasileiras. Saída: mapa de fontes. — risco `read`
+- `workflow.research.labor.summary` — Pesquisa trabalhista • Resumo determinístico — Prioriza fontes públicas e trabalhistas brasileiras. Saída: resumo determinístico. — risco `read`
+- `workflow.research.labor.audit` — Pesquisa trabalhista • Auditoria de autoridade — Prioriza fontes públicas e trabalhistas brasileiras. Saída: auditoria de autoridade. — risco `read`
+- `workflow.research.labor.archive` — Pesquisa trabalhista • Pacote para arquivamento — Prioriza fontes públicas e trabalhistas brasileiras. Saída: pacote para arquivamento. — risco `read`
+- `workflow.research.legal.evidence` — Pesquisa normativa • Pacote de evidências — Prioriza fontes governamentais/judiciais. Saída: pacote de evidências. — risco `read`
+- `workflow.research.legal.report` — Pesquisa normativa • Relatório Markdown — Prioriza fontes governamentais/judiciais. Saída: relatório markdown. — risco `read`
+- `workflow.research.legal.sources` — Pesquisa normativa • Mapa de fontes — Prioriza fontes governamentais/judiciais. Saída: mapa de fontes. — risco `read`
+- `workflow.research.legal.summary` — Pesquisa normativa • Resumo determinístico — Prioriza fontes governamentais/judiciais. Saída: resumo determinístico. — risco `read`
+- `workflow.research.legal.audit` — Pesquisa normativa • Auditoria de autoridade — Prioriza fontes governamentais/judiciais. Saída: auditoria de autoridade. — risco `read`
+- `workflow.research.legal.archive` — Pesquisa normativa • Pacote para arquivamento — Prioriza fontes governamentais/judiciais. Saída: pacote para arquivamento. — risco `read`
+- `workflow.research.news.evidence` — Pesquisa de atualização • Pacote de evidências — Busca fontes recentes e separa autoridade de imprensa. Saída: pacote de evidências. — risco `read`
+- `workflow.research.news.report` — Pesquisa de atualização • Relatório Markdown — Busca fontes recentes e separa autoridade de imprensa. Saída: relatório markdown. — risco `read`
+- `workflow.research.news.sources` — Pesquisa de atualização • Mapa de fontes — Busca fontes recentes e separa autoridade de imprensa. Saída: mapa de fontes. — risco `read`
+- `workflow.research.news.summary` — Pesquisa de atualização • Resumo determinístico — Busca fontes recentes e separa autoridade de imprensa. Saída: resumo determinístico. — risco `read`
+- `workflow.research.news.audit` — Pesquisa de atualização • Auditoria de autoridade — Busca fontes recentes e separa autoridade de imprensa. Saída: auditoria de autoridade. — risco `read`
+- `workflow.research.news.archive` — Pesquisa de atualização • Pacote para arquivamento — Busca fontes recentes e separa autoridade de imprensa. Saída: pacote para arquivamento. — risco `read`
+- `workflow.research.training.evidence` — Pesquisa para treinamento • Pacote de evidências — Gera material-base para futura Knowledge Base. Saída: pacote de evidências. — risco `read`
+- `workflow.research.training.report` — Pesquisa para treinamento • Relatório Markdown — Gera material-base para futura Knowledge Base. Saída: relatório markdown. — risco `read`
+- `workflow.research.training.sources` — Pesquisa para treinamento • Mapa de fontes — Gera material-base para futura Knowledge Base. Saída: mapa de fontes. — risco `read`
+- `workflow.research.training.summary` — Pesquisa para treinamento • Resumo determinístico — Gera material-base para futura Knowledge Base. Saída: resumo determinístico. — risco `read`
+- `workflow.research.training.audit` — Pesquisa para treinamento • Auditoria de autoridade — Gera material-base para futura Knowledge Base. Saída: auditoria de autoridade. — risco `read`
+- `workflow.research.training.archive` — Pesquisa para treinamento • Pacote para arquivamento — Gera material-base para futura Knowledge Base. Saída: pacote para arquivamento. — risco `read`
+- `workflow.document.pdf.quick` — Documento pdf • quick — Workflow documental quick para pdf. — risco `read`
+- `workflow.document.pdf.audit` — Documento pdf • audit — Workflow documental audit para pdf. — risco `read`
+- `workflow.document.docx.quick` — Documento docx • quick — Workflow documental quick para docx. — risco `read`
+- `workflow.document.docx.audit` — Documento docx • audit — Workflow documental audit para docx. — risco `read`
+- `workflow.document.folder.quick` — Documento folder • quick — Workflow documental quick para folder. — risco `read`
+- `workflow.document.folder.audit` — Documento folder • audit — Workflow documental audit para folder. — risco `read`
+- `workflow.document.compare.quick` — Documento compare • quick — Workflow documental quick para compare. — risco `read`
+- `workflow.document.compare.audit` — Documento compare • audit — Workflow documental audit para compare. — risco `read`
+- `workflow.document.search.quick` — Documento search • quick — Workflow documental quick para search. — risco `read`
+- `workflow.document.search.audit` — Documento search • audit — Workflow documental audit para search. — risco `read`
+- `workflow.supervisor.startup` — Supervisor • startup — Diagnóstico composto: startup. — risco `read`
+- `workflow.supervisor.full` — Supervisor • full — Diagnóstico composto: full. — risco `read`
+- `workflow.supervisor.network` — Supervisor • network — Diagnóstico composto: network. — risco `read`
+- `workflow.supervisor.model` — Supervisor • model — Diagnóstico composto: model. — risco `read`
+- `workflow.supervisor.storage` — Supervisor • storage — Diagnóstico composto: storage. — risco `read`
+- `workflow.supervisor.recovery` — Supervisor • recovery — Diagnóstico composto: recovery. — risco `read`
+- `workflow.institutional.cct_reajuste_salarial` — CCT — reajuste salarial — Pesquisa cláusulas, evidências e FAQ sobre reajuste salarial. — risco `read`
+- `workflow.institutional.cct_piso_salarial` — CCT — piso salarial — Pesquisa cláusulas, evidências e FAQ sobre piso salarial. — risco `read`
+- `workflow.institutional.cct_plr` — CCT — PLR — Pesquisa cláusulas, evidências e FAQ sobre PLR. — risco `read`
+- `workflow.institutional.cct_auxilio_creche` — CCT — auxílio-creche — Pesquisa cláusulas, evidências e FAQ sobre auxílio-creche. — risco `read`
+- `workflow.institutional.cct_vale_refeicao` — CCT — vale-refeição — Pesquisa cláusulas, evidências e FAQ sobre vale-refeição. — risco `read`
+- `workflow.institutional.cct_vale_alimentacao` — CCT — vale-alimentação — Pesquisa cláusulas, evidências e FAQ sobre vale-alimentação. — risco `read`
+- `workflow.institutional.cct_jornada_de_trabalho` — CCT — jornada de trabalho — Pesquisa cláusulas, evidências e FAQ sobre jornada de trabalho. — risco `read`
+- `workflow.institutional.cct_banco_de_horas` — CCT — banco de horas — Pesquisa cláusulas, evidências e FAQ sobre banco de horas. — risco `read`
+- `workflow.institutional.cct_horas_extras` — CCT — horas extras — Pesquisa cláusulas, evidências e FAQ sobre horas extras. — risco `read`
+- `workflow.institutional.cct_trabalho_aos_domingos` — CCT — trabalho aos domingos — Pesquisa cláusulas, evidências e FAQ sobre trabalho aos domingos. — risco `read`
+- `workflow.institutional.cct_feriados` — CCT — feriados — Pesquisa cláusulas, evidências e FAQ sobre feriados. — risco `read`
+- `workflow.institutional.cct_ferias` — CCT — férias — Pesquisa cláusulas, evidências e FAQ sobre férias. — risco `read`
+- `workflow.institutional.cct_aviso_previo` — CCT — aviso prévio — Pesquisa cláusulas, evidências e FAQ sobre aviso prévio. — risco `read`
+- `workflow.institutional.cct_homologacao` — CCT — homologação — Pesquisa cláusulas, evidências e FAQ sobre homologação. — risco `read`
+- `workflow.institutional.cct_insalubridade` — CCT — insalubridade — Pesquisa cláusulas, evidências e FAQ sobre insalubridade. — risco `read`
+- `workflow.institutional.cct_seguro_de_vida` — CCT — seguro de vida — Pesquisa cláusulas, evidências e FAQ sobre seguro de vida. — risco `read`
+- `workflow.institutional.cct_estabilidade` — CCT — estabilidade — Pesquisa cláusulas, evidências e FAQ sobre estabilidade. — risco `read`
+- `workflow.institutional.cct_acidente_de_trabalho` — CCT — acidente de trabalho — Pesquisa cláusulas, evidências e FAQ sobre acidente de trabalho. — risco `read`
+- `workflow.institutional.cct_atestado_medico` — CCT — atestado médico — Pesquisa cláusulas, evidências e FAQ sobre atestado médico. — risco `read`
+- `workflow.institutional.cct_faltas_justificadas` — CCT — faltas justificadas — Pesquisa cláusulas, evidências e FAQ sobre faltas justificadas. — risco `read`
+- `workflow.institutional.cct_folgas` — CCT — folgas — Pesquisa cláusulas, evidências e FAQ sobre folgas. — risco `read`
+- `workflow.institutional.cct_adicional_noturno` — CCT — adicional noturno — Pesquisa cláusulas, evidências e FAQ sobre adicional noturno. — risco `read`
+- `workflow.institutional.cct_beneficios` — CCT — benefícios — Pesquisa cláusulas, evidências e FAQ sobre benefícios. — risco `read`
+- `workflow.institutional.cct_rescisao` — CCT — rescisão — Pesquisa cláusulas, evidências e FAQ sobre rescisão. — risco `read`
+- `workflow.institutional.context_associacao` — Contexto institucional — associação — Reúne glossário, políticas e evidências institucionais sobre associação. — risco `read`
+- `workflow.institutional.context_denuncia` — Contexto institucional — denúncia — Reúne glossário, políticas e evidências institucionais sobre denúncia. — risco `read`
+- `workflow.institutional.context_atendimento_ao_trabalhador` — Contexto institucional — atendimento ao trabalhador — Reúne glossário, políticas e evidências institucionais sobre atendimento ao trabalhador. — risco `read`
+- `workflow.institutional.context_comunicacao_sindical` — Contexto institucional — comunicação sindical — Reúne glossário, políticas e evidências institucionais sobre comunicação sindical. — risco `read`
+- `workflow.institutional.context_convencao_coletiva` — Contexto institucional — convenção coletiva — Reúne glossário, políticas e evidências institucionais sobre convenção coletiva. — risco `read`
+- `workflow.institutional.context_data_base` — Contexto institucional — data-base — Reúne glossário, políticas e evidências institucionais sobre data-base. — risco `read`
+- `workflow.institutional.context_assembleia` — Contexto institucional — assembleia — Reúne glossário, políticas e evidências institucionais sobre assembleia. — risco `read`
+- `workflow.institutional.context_beneficios` — Contexto institucional — benefícios — Reúne glossário, políticas e evidências institucionais sobre benefícios. — risco `read`
+- `workflow.institutional.context_direitos_trabalhistas` — Contexto institucional — direitos trabalhistas — Reúne glossário, políticas e evidências institucionais sobre direitos trabalhistas. — risco `read`
+- `workflow.institutional.context_acidente_de_trabalho` — Contexto institucional — acidente de trabalho — Reúne glossário, políticas e evidências institucionais sobre acidente de trabalho. — risco `read`
+- `workflow.institutional.context_cipa` — Contexto institucional — CIPA — Reúne glossário, políticas e evidências institucionais sobre CIPA. — risco `read`
+- `workflow.institutional.context_saude_e_seguranca` — Contexto institucional — saúde e segurança — Reúne glossário, políticas e evidências institucionais sobre saúde e segurança. — risco `read`
+- `workflow.institutional.context_homologacao` — Contexto institucional — homologação — Reúne glossário, políticas e evidências institucionais sobre homologação. — risco `read`
+- `workflow.institutional.context_pejotizacao` — Contexto institucional — pejotização — Reúne glossário, políticas e evidências institucionais sobre pejotização. — risco `read`
+- `workflow.institutional.context_trabalho_sem_registro` — Contexto institucional — trabalho sem registro — Reúne glossário, políticas e evidências institucionais sobre trabalho sem registro. — risco `read`
+- `workflow.institutional.context_jornada` — Contexto institucional — jornada — Reúne glossário, políticas e evidências institucionais sobre jornada. — risco `read`
+- `workflow.institutional.context_ferias` — Contexto institucional — férias — Reúne glossário, políticas e evidências institucionais sobre férias. — risco `read`
+- `workflow.institutional.context_rescisao` — Contexto institucional — rescisão — Reúne glossário, políticas e evidências institucionais sobre rescisão. — risco `read`
+- `workflow.institutional.context_plr` — Contexto institucional — PLR — Reúne glossário, políticas e evidências institucionais sobre PLR. — risco `read`
+- `workflow.institutional.context_reajuste` — Contexto institucional — reajuste — Reúne glossário, políticas e evidências institucionais sobre reajuste. — risco `read`
+- `workflow.institutional.context_piso` — Contexto institucional — piso — Reúne glossário, políticas e evidências institucionais sobre piso. — risco `read`
+- `workflow.institutional.context_auxilio_creche` — Contexto institucional — auxílio-creche — Reúne glossário, políticas e evidências institucionais sobre auxílio-creche. — risco `read`
+- `workflow.institutional.context_vale_refeicao` — Contexto institucional — vale-refeição — Reúne glossário, políticas e evidências institucionais sobre vale-refeição. — risco `read`
+- `workflow.institutional.context_seguro_de_vida` — Contexto institucional — seguro de vida — Reúne glossário, políticas e evidências institucionais sobre seguro de vida. — risco `read`
+- `workflow.knowledge.health_institutional` — Saúde da base — institutional — Audita frescor, duplicidades e estatísticas da coleção institutional. — risco `read`
+- `workflow.knowledge.search_institutional` — Pesquisa completa — institutional — Pesquisa evidências e FAQ com consulta fornecida na coleção institutional. — risco `read`
+- `workflow.knowledge.health_cct` — Saúde da base — cct — Audita frescor, duplicidades e estatísticas da coleção cct. — risco `read`
+- `workflow.knowledge.search_cct` — Pesquisa completa — cct — Pesquisa evidências e FAQ com consulta fornecida na coleção cct. — risco `read`
+- `workflow.knowledge.health_procedures` — Saúde da base — procedures — Audita frescor, duplicidades e estatísticas da coleção procedures. — risco `read`
+- `workflow.knowledge.search_procedures` — Pesquisa completa — procedures — Pesquisa evidências e FAQ com consulta fornecida na coleção procedures. — risco `read`
+- `workflow.knowledge.health_training` — Saúde da base — training — Audita frescor, duplicidades e estatísticas da coleção training. — risco `read`
+- `workflow.knowledge.search_training` — Pesquisa completa — training — Pesquisa evidências e FAQ com consulta fornecida na coleção training. — risco `read`
+- `workflow.knowledge.health_site` — Saúde da base — site — Audita frescor, duplicidades e estatísticas da coleção site. — risco `read`
+- `workflow.knowledge.search_site` — Pesquisa completa — site — Pesquisa evidências e FAQ com consulta fornecida na coleção site. — risco `read`
+- `workflow.knowledge.health_communication` — Saúde da base — communication — Audita frescor, duplicidades e estatísticas da coleção communication. — risco `read`
+- `workflow.knowledge.search_communication` — Pesquisa completa — communication — Pesquisa evidências e FAQ com consulta fornecida na coleção communication. — risco `read`
+- `workflow.training.onboarding_geral` — Treinamento — onboarding geral — Monta painel da função e busca material/FAQ para onboarding geral. — risco `read`
+- `workflow.training.procedimentos_internos` — Treinamento — procedimentos internos — Monta painel da função e busca material/FAQ para procedimentos internos. — risco `read`
+- `workflow.training.atendimento` — Treinamento — atendimento — Monta painel da função e busca material/FAQ para atendimento. — risco `read`
+- `workflow.training.comunicacao` — Treinamento — comunicação — Monta painel da função e busca material/FAQ para comunicação. — risco `read`
+- `workflow.training.direitos_e_cct` — Treinamento — direitos e CCT — Monta painel da função e busca material/FAQ para direitos e CCT. — risco `read`
+- `workflow.training.seguranca_do_trabalho` — Treinamento — segurança do trabalho — Monta painel da função e busca material/FAQ para segurança do trabalho. — risco `read`
+- `workflow.training.site_e_conteudo` — Treinamento — site e conteúdo — Monta painel da função e busca material/FAQ para site e conteúdo. — risco `read`
+- `workflow.training.denuncias` — Treinamento — denúncias — Monta painel da função e busca material/FAQ para denúncias. — risco `read`
+- `workflow.training.associacao` — Treinamento — associação — Monta painel da função e busca material/FAQ para associação. — risco `read`
+- `workflow.training.rotina_administrativa` — Treinamento — rotina administrativa — Monta painel da função e busca material/FAQ para rotina administrativa. — risco `read`
+- `workflow.training.boas_praticas` — Treinamento — boas práticas — Monta painel da função e busca material/FAQ para boas práticas. — risco `read`
+- `workflow.training.revisao_periodica` — Treinamento — revisão periódica — Monta painel da função e busca material/FAQ para revisão periódica. — risco `read`
+- `workflow.content.prepare_instagram_carousel` — Preparar carousel — instagram — Reúne regras, templates e evidências para preparar carousel em instagram. — risco `read`
+- `workflow.content.prepare_instagram_static` — Preparar static — instagram — Reúne regras, templates e evidências para preparar static em instagram. — risco `read`
+- `workflow.content.prepare_instagram_reels` — Preparar reels — instagram — Reúne regras, templates e evidências para preparar reels em instagram. — risco `read`
+- `workflow.content.prepare_site_article` — Preparar article — site — Reúne regras, templates e evidências para preparar article em site. — risco `read`
+- `workflow.content.prepare_site_news` — Preparar news — site — Reúne regras, templates e evidências para preparar news em site. — risco `read`
+- `workflow.content.prepare_site_landing_page` — Preparar landing_page — site — Reúne regras, templates e evidências para preparar landing_page em site. — risco `read`
+- `workflow.content.prepare_whatsapp_message` — Preparar message — whatsapp — Reúne regras, templates e evidências para preparar message em whatsapp. — risco `read`
+- `workflow.content.prepare_email_newsletter` — Preparar newsletter — email — Reúne regras, templates e evidências para preparar newsletter em email. — risco `read`
+- `workflow.content.prepare_print_bulletin` — Preparar bulletin — print — Reúne regras, templates e evidências para preparar bulletin em print. — risco `read`
+- `workflow.content.prepare_internal_training` — Preparar training — internal — Reúne regras, templates e evidências para preparar training em internal. — risco `read`
+- `workflow.content.prepare_internal_procedure` — Preparar procedure — internal — Reúne regras, templates e evidências para preparar procedure em internal. — risco `read`
+- `workflow.content.prepare_general_campaign` — Preparar campaign — general — Reúne regras, templates e evidências para preparar campaign em general. — risco `read`
+- `workflow.governance.check_read` — Governança — verificar read — Verifica permissão do connector e registra contexto de segurança para nível read. — risco `read`
+- `workflow.governance.check_draft` — Governança — verificar draft — Verifica permissão do connector e registra contexto de segurança para nível draft. — risco `read`
+- `workflow.governance.check_write` — Governança — verificar write — Verifica permissão do connector e registra contexto de segurança para nível write. — risco `read`
+- `workflow.governance.check_publish` — Governança — verificar publish — Verifica permissão do connector e registra contexto de segurança para nível publish. — risco `read`
+- `workflow.governance.inventory_production` — Inventário de acessos — production — Inventaria connectors, permissões e auditoria para ambiente production. — risco `read`
+- `workflow.governance.inventory_staging` — Inventário de acessos — staging — Inventaria connectors, permissões e auditoria para ambiente staging. — risco `read`
+- `workflow.governance.inventory_test` — Inventário de acessos — test — Inventaria connectors, permissões e auditoria para ambiente test. — risco `read`
+- `workflow.governance.inventory_local` — Inventário de acessos — local — Inventaria connectors, permissões e auditoria para ambiente local. — risco `read`
+- `workflow.project.context_site` — Projeto/contexto — site — Pesquisa projetos, fontes e políticas relacionadas a site. — risco `read`
+- `workflow.project.context_redes_sociais` — Projeto/contexto — redes sociais — Pesquisa projetos, fontes e políticas relacionadas a redes sociais. — risco `read`
+- `workflow.project.context_assembleia` — Projeto/contexto — assembleia — Pesquisa projetos, fontes e políticas relacionadas a assembleia. — risco `read`
+- `workflow.project.context_cct` — Projeto/contexto — CCT — Pesquisa projetos, fontes e políticas relacionadas a CCT. — risco `read`
+- `workflow.project.context_campanha` — Projeto/contexto — campanha — Pesquisa projetos, fontes e políticas relacionadas a campanha. — risco `read`
+- `workflow.project.context_treinamento` — Projeto/contexto — treinamento — Pesquisa projetos, fontes e políticas relacionadas a treinamento. — risco `read`
+- `workflow.project.context_atendimento` — Projeto/contexto — atendimento — Pesquisa projetos, fontes e políticas relacionadas a atendimento. — risco `read`
+- `workflow.project.context_juridico` — Projeto/contexto — jurídico — Pesquisa projetos, fontes e políticas relacionadas a jurídico. — risco `read`
+- `workflow.ops.autonomy_health` — Saúde da autonomia — Resumo de scheduler, monitores, aprovações e notificações. — risco `read`
+- `workflow.ops.pending_attention` — Pendências que exigem atenção — Reúne automações atrasadas, aprovações e notificações não lidas. — risco `read`
+- `workflow.ops.failed_runs` — Falhas recentes de automações — Inspeciona execuções falhas e alertas relacionados. — risco `read`
+- `workflow.ops.next_24h` — Agenda autônoma das próximas 24h — Mostra jobs que devem executar nas próximas 24 horas. — risco `read`
+- `workflow.ops.next_week` — Agenda autônoma da próxima semana — Mostra jobs dos próximos sete dias. — risco `read`
+- `workflow.ops.monitor_changes` — Mudanças monitoradas pendentes — Lista eventos de mudança ainda não reconhecidos. — risco `read`
+- `workflow.ops.approval_review` — Revisão da fila de aprovação — Resumo da fila e regras de governança. — risco `read`
+- `workflow.ops.connector_overview` — Visão geral das integrações externas — Inventário e histórico dos connectors configurados. — risco `read`
+- `workflow.ops.team_quality` — Qualidade do assistente da equipe — Combina feedback, lacunas e volume de consultas. — risco `read`
+- `workflow.ops.portal_readiness` — Prontidão do portal da equipe — Verifica usuários, configurações, conhecimento e treinamento. — risco `read`
+- `workflow.ops.system_and_autonomy` — Sistema + autonomia — Cruza saúde do runtime e infraestrutura autônoma. — risco `read`
+- `workflow.ops.audit_snapshot` — Snapshot de auditoria operacional — Consulta auditoria de governança, connectors e automações. — risco `read`
+- `workflow.monitor.create_website_body` — Monitorar conteúdo de página — Cria monitor persistente: monitorar conteúdo de página. — risco `write`
+- `workflow.monitor.create_website_status` — Monitorar status HTTP — Cria monitor persistente: monitorar status http. — risco `write`
+- `workflow.monitor.create_website_headers` — Monitorar headers HTTP — Cria monitor persistente: monitorar headers http. — risco `write`
+- `workflow.monitor.create_rss` — Monitorar feed RSS/Atom — Cria monitor persistente: monitorar feed rss/atom. — risco `write`
+- `workflow.monitor.create_file_meta` — Monitorar arquivo por metadados — Cria monitor persistente: monitorar arquivo por metadados. — risco `write`
+- `workflow.monitor.create_file_hash` — Monitorar arquivo por hash — Cria monitor persistente: monitorar arquivo por hash. — risco `write`
+- `workflow.monitor.create_folder` — Monitorar pasta — Cria monitor persistente: monitorar pasta. — risco `write`
+- `workflow.monitor.create_folder_recursive` — Monitorar pasta recursivamente — Cria monitor persistente: monitorar pasta recursivamente. — risco `write`
+- `workflow.monitor.create_knowledge` — Monitorar coleção de conhecimento — Cria monitor persistente: monitorar coleção de conhecimento. — risco `write`
+- `workflow.monitor.create_wp_posts` — Monitorar posts do WordPress — Cria monitor persistente: monitorar posts do wordpress. — risco `write`
+- `workflow.monitor.create_wp_pages` — Monitorar páginas do WordPress — Cria monitor persistente: monitorar páginas do wordpress. — risco `write`
+- `workflow.monitor.create_wp_media` — Monitorar mídia do WordPress — Cria monitor persistente: monitorar mídia do wordpress. — risco `write`
+- `workflow.automation.monitor_15m` — Monitor sweep a cada 15 min — Monitor sweep a cada 15 min. — risco `write`
+- `workflow.automation.monitor_hourly` — Monitor sweep horário — Monitor sweep horário. — risco `write`
+- `workflow.automation.approvals_hourly` — Expirar aprovações a cada hora — Expirar aprovações a cada hora. — risco `write`
+- `workflow.automation.knowledge_daily` — Saúde diária de coleção — Saúde diária de coleção. — risco `write`
+- `workflow.automation.team_quality_daily` — Qualidade diária do portal — Qualidade diária do portal. — risco `write`
+- `workflow.automation.autonomy_health_daily` — Saúde diária da autonomia — Saúde diária da autonomia. — risco `write`
+- `workflow.automation.weekly_audit` — Auditoria operacional semanal — Auditoria operacional semanal. — risco `write`
+- `workflow.automation.weekly_team_gaps` — Revisão semanal de lacunas — Revisão semanal de lacunas. — risco `write`
+- `workflow.automation.once_action` — Agendar ação única — Agendar ação única. — risco `write`
+- `workflow.automation.daily_action` — Agendar ação diária — Agendar ação diária. — risco `write`
+- `workflow.team.access_review` — Revisar acessos de função — Mostra a role e seus acessos a conhecimento e treinamento. — risco `read`
+- `workflow.team.user_readiness` — Prontidão de usuário — Consulta usuário, função e permissões associadas. — risco `read`
+- `workflow.team.onboarding_dashboard` — Dashboard de onboarding por função — Combina trilhas, checklists, quizzes e cenários da função. — risco `read`
+- `workflow.team.feedback_review` — Revisão de feedback da equipe — Lista métricas e feedbacks abertos. — risco `read`
+- `workflow.team.gap_review` — Revisão de lacunas de conhecimento — Lista e resume as principais lacunas abertas. — risco `read`
+- `workflow.team.question_failures` — Consultas sem resposta — Lista consultas do portal que falharam e lacunas relacionadas. — risco `read`
+- `workflow.team.training_inventory` — Inventário de treinamento — Resumo completo de trilhas e estatísticas. — risco `read`
+- `workflow.team.portal_permissions` — Permissões do portal — Lista roles, usuários e configurações do portal. — risco `read`
+- `workflow.team.knowledge_and_training` — Conhecimento + treinamento — Cruza saúde da base institucional e conteúdo de treinamento. — risco `read`
+- `workflow.team.weekly_quality_pack` — Pacote semanal de qualidade da equipe — Feedback, lacunas, perguntas e treinamento em um único pacote. — risco `read`
+- `workflow.connector.inventory` — Inventário de connectors — Lista connectors, endpoints e estatísticas. — risco `read`
+- `workflow.connector.security_review` — Revisão de segurança dos connectors — Cruza connectors, permissões e safe mode. — risco `read`
+- `workflow.connector.failures` — Falhas de integrações externas — Lista chamadas externas malsucedidas e auditoria. — risco `read`
+- `workflow.connector.readiness` — Prontidão de connector — Valida perfil, segredos e endpoints de um connector. — risco `read`
+- `workflow.connector.endpoint_review` — Revisar endpoint antes de uso — Exibe endpoint e preview da requisição. — risco `read`
+- `workflow.governance.safe_snapshot` — Snapshot de modo seguro — Verifica safe mode, permissões e aprovações pendentes. — risco `read`
+- `workflow.governance.external_audit` — Auditoria de ações externas — Reúne histórico de connectors e auditoria de governança. — risco `read`
+- `workflow.governance.emergency_lock` — Bloqueio de emergência de connector — Desativa connector e cria alerta interno. — risco `high`
+- `workflow.institution.knowledge_health` — Saúde do conhecimento institucional — Verifica coleção, duplicados e itens possivelmente desatualizados. — risco `read`
+- `workflow.institution.cct_quality` — Qualidade da base de CCTs — Inventário, saúde e lacunas relacionadas a CCT. — risco `read`
+- `workflow.institution.content_queue` — Fila editorial institucional — Combina briefings, revisões e calendário. — risco `read`
+- `workflow.institution.content_and_sources` — Conteúdo + fontes institucionais — Consulta contexto editorial e fontes oficiais cadastradas. — risco `read`
+- `workflow.institution.training_gaps` — Treinamento orientado por lacunas — Cruza lacunas da equipe com trilhas existentes. — risco `read`
+- `workflow.institution.website_watch` — Prontidão de monitoramento do site — Reúne monitores web, automações e alertas. — risco `read`
+- `workflow.institution.publication_safety` — Segurança antes de publicação — Verifica safe mode, fila de aprovação e perfil WordPress. — risco `read`
+- `workflow.institution.ops_morning` — Painel operacional da manhã — Resumo diário de saúde, agenda, mudanças e conhecimento. — risco `read`
+- `workflow.notifications.attention` — Central de alertas — Resume notificações não lidas e aprovações. — risco `read`
+- `workflow.notifications.errors` — Alertas de erro — Filtra alertas e falhas recentes. — risco `read`
+- `workflow.notifications.monitoring` — Alertas de monitoramento — Lista notificações e eventos de monitor. — risco `read`
+- `workflow.notifications.approvals` — Alertas de aprovação — Lista notificações e itens aguardando autorização. — risco `read`
+- `workflow.notifications.automation` — Alertas de automação — Combina notificações da automação e histórico recente. — risco `read`

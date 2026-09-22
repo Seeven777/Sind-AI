@@ -1,0 +1,650 @@
+# Action Hub — Jarvis Autonomous Operations 0.9
+
+Total de ações: **611**.
+
+## Por engine
+
+- approvals: 14
+- automations: 24
+- browser: 47
+- connectors: 24
+- content: 68
+- content_ops: 38
+- document: 21
+- governance: 28
+- institutional: 49
+- institutional_knowledge: 20
+- knowledge: 11
+- monitors: 19
+- notifications: 13
+- observe: 8
+- research: 19
+- supervisor: 15
+- team: 37
+- training: 44
+- websearch: 4
+- website: 49
+- wordpress: 48
+- workspace: 11
+
+## Por risco
+
+- act: 19
+- critical: 22
+- high: 67
+- read: 382
+- write: 121
+
+## Catálogo completo
+
+- `browser.start` — Inicia o navegador dedicado do Jarvis. — risco `act`
+- `browser.stop` — Encerra o navegador dedicado do Jarvis. — risco `act`
+- `browser.status` — Mostra o estado atual do navegador Jarvis. — risco `read`
+- `browser.tabs.list` — Lista abas abertas no navegador Jarvis. — risco `read`
+- `browser.tabs.new` — Abre uma nova aba. — risco `act`
+- `browser.tabs.switch` — Muda para uma aba pelo índice. — risco `act` | obrigatórios: index
+- `browser.tabs.close` — Fecha uma aba. — risco `act`
+- `browser.navigate` — Navega para uma URL. — risco `act` | obrigatórios: url
+- `browser.reload` — Recarrega a página atual. — risco `act`
+- `browser.back` — Volta uma página no histórico. — risco `act`
+- `browser.forward` — Avança uma página no histórico. — risco `act`
+- `browser.current_url` — Retorna a URL da página atual. — risco `read`
+- `browser.title` — Retorna o título da página atual. — risco `read`
+- `browser.text` — Extrai texto visível de um seletor. — risco `read`
+- `browser.html` — Extrai HTML da página atual. — risco `read`
+- `browser.links` — Lista links da página atual. — risco `read`
+- `browser.buttons` — Lista botões e controles com função de botão. — risco `read`
+- `browser.inputs` — Lista campos de entrada, textareas e selects. — risco `read`
+- `browser.forms` — Lista formulários da página. — risco `read`
+- `browser.headings` — Lista headings H1-H6 da página. — risco `read`
+- `browser.images` — Lista imagens, alt e dimensões. — risco `read`
+- `browser.tables` — Resume tabelas HTML encontradas. — risco `read`
+- `browser.metadata` — Extrai metadados SEO e sociais da página. — risco `read`
+- `browser.jsonld` — Extrai dados estruturados JSON-LD. — risco `read`
+- `browser.click_text` — Clica no primeiro elemento que contém um texto. — risco `act` | obrigatórios: text
+- `browser.click_role` — Clica em um elemento por função ARIA e nome. — risco `act` | obrigatórios: role, name
+- `browser.click_selector` — Clica em um elemento por seletor CSS. — risco `act` | obrigatórios: selector
+- `browser.fill_label` — Preenche um campo localizado pelo label. — risco `write` | obrigatórios: label, value
+- `browser.fill_placeholder` — Preenche um campo localizado pelo placeholder. — risco `write` | obrigatórios: placeholder, value
+- `browser.fill_selector` — Preenche um campo por seletor CSS. — risco `write` | obrigatórios: selector, value
+- `browser.type_selector` — Digita gradualmente em um campo por seletor. — risco `write` | obrigatórios: selector, value
+- `browser.select_option` — Seleciona uma opção em um select. — risco `write` | obrigatórios: selector, value
+- `browser.check` — Marca checkbox/radio. — risco `write` | obrigatórios: selector
+- `browser.uncheck` — Desmarca checkbox/radio. — risco `write` | obrigatórios: selector
+- `browser.press` — Envia uma tecla para um elemento. — risco `write` | obrigatórios: selector, key
+- `browser.scroll` — Rola a página verticalmente. — risco `act`
+- `browser.wait_text` — Espera um texto aparecer. — risco `read` | obrigatórios: text
+- `browser.wait_selector` — Espera um seletor ficar visível. — risco `read` | obrigatórios: selector
+- `browser.wait_url` — Espera a URL corresponder a um padrão. — risco `read` | obrigatórios: pattern
+- `browser.exists` — Verifica se um seletor existe. — risco `read` | obrigatórios: selector
+- `browser.count` — Conta elementos que correspondem a um seletor. — risco `read` | obrigatórios: selector
+- `browser.text_of` — Lê o texto do primeiro elemento correspondente. — risco `read` | obrigatórios: selector
+- `browser.attribute` — Obtém um atributo HTML de um elemento. — risco `read` | obrigatórios: selector, name
+- `browser.screenshot` — Captura screenshot da página do navegador. — risco `read`
+- `browser.download_click` — Clica em um texto e salva o download resultante. — risco `write` | obrigatórios: text
+- `browser.upload_file` — Seleciona um arquivo local em input file. — risco `high` | obrigatórios: selector, path
+- `browser.session_summary` — Resume abas e estado da sessão do navegador. — risco `read`
+- `website.fetch` — Baixa uma página e retorna status, tempo e texto. — risco `read` | obrigatórios: url
+- `website.status` — Consulta status HTTP final. — risco `read` | obrigatórios: url
+- `website.response_time` — Mede tempo de resposta HTTP aproximado. — risco `read` | obrigatórios: url
+- `website.headers` — Lista cabeçalhos HTTP. — risco `read` | obrigatórios: url
+- `website.content_type` — Retorna Content-Type. — risco `read` | obrigatórios: url
+- `website.html_size` — Mede tamanho do HTML recebido. — risco `read` | obrigatórios: url
+- `website.title` — Extrai o título HTML. — risco `read` | obrigatórios: url
+- `website.meta_description` — Extrai meta description. — risco `read` | obrigatórios: url
+- `website.canonical` — Extrai URL canonical. — risco `read` | obrigatórios: url
+- `website.robots_meta` — Extrai meta robots. — risco `read` | obrigatórios: url
+- `website.noindex` — Verifica presença de noindex. — risco `read` | obrigatórios: url
+- `website.viewport` — Extrai meta viewport. — risco `read` | obrigatórios: url
+- `website.charset` — Identifica charset. — risco `read` | obrigatórios: url
+- `website.language` — Extrai idioma do HTML. — risco `read` | obrigatórios: url
+- `website.headings` — Lista headings da página. — risco `read` | obrigatórios: url
+- `website.h1_count` — Conta e lista H1. — risco `read` | obrigatórios: url
+- `website.images` — Lista imagens e atributos. — risco `read` | obrigatórios: url
+- `website.missing_alt` — Lista imagens sem atributo alt. — risco `read` | obrigatórios: url
+- `website.empty_alt` — Lista imagens com alt vazio. — risco `read` | obrigatórios: url
+- `website.links` — Lista todos os links HTTP(S). — risco `read` | obrigatórios: url
+- `website.internal_links` — Lista links internos. — risco `read` | obrigatórios: url
+- `website.external_links` — Lista links externos. — risco `read` | obrigatórios: url
+- `website.forms` — Lista formulários e quantidade de campos. — risco `read` | obrigatórios: url
+- `website.form_labels` — Identifica campos de formulário sem label/aria. — risco `read` | obrigatórios: url
+- `website.scripts` — Lista scripts externos. — risco `read` | obrigatórios: url
+- `website.stylesheets` — Lista folhas de estilo. — risco `read` | obrigatórios: url
+- `website.jsonld` — Extrai JSON-LD. — risco `read` | obrigatórios: url
+- `website.open_graph` — Extrai Open Graph. — risco `read` | obrigatórios: url
+- `website.twitter_cards` — Extrai Twitter Cards. — risco `read` | obrigatórios: url
+- `website.hreflang` — Lista hreflang. — risco `read` | obrigatórios: url
+- `website.favicon` — Localiza favicon. — risco `read` | obrigatórios: url
+- `website.rss_feeds` — Descobre feeds RSS/Atom declarados. — risco `read` | obrigatórios: url
+- `website.robots_txt` — Lê robots.txt. — risco `read` | obrigatórios: url
+- `website.sitemap_xml` — Lê sitemap.xml padrão. — risco `read` | obrigatórios: url
+- `website.word_count` — Conta palavras da página. — risco `read` | obrigatórios: url
+- `website.reading_time` — Estima tempo de leitura. — risco `read` | obrigatórios: url
+- `website.text_preview` — Extrai texto limpo da página. — risco `read` | obrigatórios: url
+- `website.emails` — Extrai e-mails encontrados. — risco `read` | obrigatórios: url
+- `website.phones` — Extrai telefones encontrados. — risco `read` | obrigatórios: url
+- `website.social_links` — Encontra links para redes sociais. — risco `read` | obrigatórios: url
+- `website.mixed_content` — Detecta recursos HTTP em página HTTPS. — risco `read` | obrigatórios: url
+- `website.security_headers` — Audita cabeçalhos de segurança. — risco `read` | obrigatórios: url
+- `website.cache_headers` — Mostra cabeçalhos de cache. — risco `read` | obrigatórios: url
+- `website.server_header` — Mostra cabeçalho Server. — risco `read` | obrigatórios: url
+- `website.content_encoding` — Mostra compressão HTTP usada. — risco `read` | obrigatórios: url
+- `website.mobile_ready` — Verifica viewport responsivo básico. — risco `read` | obrigatórios: url
+- `website.link_text_quality` — Detecta links com texto genérico ou vazio. — risco `read` | obrigatórios: url
+- `website.button_names` — Detecta botões sem nome acessível básico. — risco `read` | obrigatórios: url
+- `website.seo_summary` — Gera auditoria SEO compacta. — risco `read` | obrigatórios: url
+- `content.word_count` — Executa utilitário de conteúdo: word count. — risco `read` | obrigatórios: text
+- `content.char_count` — Executa utilitário de conteúdo: char count. — risco `read` | obrigatórios: text
+- `content.char_count_no_spaces` — Executa utilitário de conteúdo: char count no spaces. — risco `read` | obrigatórios: text
+- `content.sentence_count` — Executa utilitário de conteúdo: sentence count. — risco `read` | obrigatórios: text
+- `content.paragraph_count` — Executa utilitário de conteúdo: paragraph count. — risco `read` | obrigatórios: text
+- `content.line_count` — Executa utilitário de conteúdo: line count. — risco `read` | obrigatórios: text
+- `content.reading_time` — Executa utilitário de conteúdo: reading time. — risco `read` | obrigatórios: text
+- `content.normalize_spaces` — Executa utilitário de conteúdo: normalize spaces. — risco `read` | obrigatórios: text
+- `content.normalize_whitespace` — Executa utilitário de conteúdo: normalize whitespace. — risco `read` | obrigatórios: text
+- `content.trim_lines` — Executa utilitário de conteúdo: trim lines. — risco `read` | obrigatórios: text
+- `content.remove_blank_lines` — Executa utilitário de conteúdo: remove blank lines. — risco `read` | obrigatórios: text
+- `content.dedupe_lines` — Executa utilitário de conteúdo: dedupe lines. — risco `read` | obrigatórios: text
+- `content.sort_lines` — Executa utilitário de conteúdo: sort lines. — risco `read` | obrigatórios: text
+- `content.unique_words` — Executa utilitário de conteúdo: unique words. — risco `read` | obrigatórios: text
+- `content.top_words` — Executa utilitário de conteúdo: top words. — risco `read` | obrigatórios: text
+- `content.bigrams` — Executa utilitário de conteúdo: bigrams. — risco `read` | obrigatórios: text
+- `content.trigrams` — Executa utilitário de conteúdo: trigrams. — risco `read` | obrigatórios: text
+- `content.slugify` — Executa utilitário de conteúdo: slugify. — risco `read` | obrigatórios: text
+- `content.clean_filename` — Executa utilitário de conteúdo: clean filename. — risco `read` | obrigatórios: text
+- `content.lowercase` — Executa utilitário de conteúdo: lowercase. — risco `read` | obrigatórios: text
+- `content.uppercase` — Executa utilitário de conteúdo: uppercase. — risco `read` | obrigatórios: text
+- `content.title_case` — Executa utilitário de conteúdo: title case. — risco `read` | obrigatórios: text
+- `content.sentence_case` — Executa utilitário de conteúdo: sentence case. — risco `read` | obrigatórios: text
+- `content.strip_accents` — Executa utilitário de conteúdo: strip accents. — risco `read` | obrigatórios: text
+- `content.strip_html` — Executa utilitário de conteúdo: strip html. — risco `read` | obrigatórios: text
+- `content.html_escape` — Executa utilitário de conteúdo: html escape. — risco `read` | obrigatórios: text
+- `content.html_unescape` — Executa utilitário de conteúdo: html unescape. — risco `read` | obrigatórios: text
+- `content.url_encode` — Executa utilitário de conteúdo: url encode. — risco `read` | obrigatórios: text
+- `content.url_decode` — Executa utilitário de conteúdo: url decode. — risco `read` | obrigatórios: text
+- `content.base64_encode` — Executa utilitário de conteúdo: base64 encode. — risco `read` | obrigatórios: text
+- `content.base64_decode` — Executa utilitário de conteúdo: base64 decode. — risco `read` | obrigatórios: text
+- `content.sha256` — Executa utilitário de conteúdo: sha256. — risco `read` | obrigatórios: text
+- `content.md5` — Executa utilitário de conteúdo: md5. — risco `read` | obrigatórios: text
+- `content.extract_urls` — Executa utilitário de conteúdo: extract urls. — risco `read` | obrigatórios: text
+- `content.extract_emails` — Executa utilitário de conteúdo: extract emails. — risco `read` | obrigatórios: text
+- `content.extract_phones` — Executa utilitário de conteúdo: extract phones. — risco `read` | obrigatórios: text
+- `content.extract_numbers` — Executa utilitário de conteúdo: extract numbers. — risco `read` | obrigatórios: text
+- `content.extract_dates_br` — Executa utilitário de conteúdo: extract dates br. — risco `read` | obrigatórios: text
+- `content.extract_hashtags` — Executa utilitário de conteúdo: extract hashtags. — risco `read` | obrigatórios: text
+- `content.extract_mentions` — Executa utilitário de conteúdo: extract mentions. — risco `read` | obrigatórios: text
+- `content.hashtags_from_keywords` — Executa utilitário de conteúdo: hashtags from keywords. — risco `read` | obrigatórios: text
+- `content.find_replace` — Executa utilitário de conteúdo: find replace. — risco `read` | obrigatórios: text, find
+- `content.prefix_lines` — Executa utilitário de conteúdo: prefix lines. — risco `read` | obrigatórios: text
+- `content.number_lines` — Executa utilitário de conteúdo: number lines. — risco `read` | obrigatórios: text
+- `content.truncate` — Executa utilitário de conteúdo: truncate. — risco `read` | obrigatórios: text
+- `content.excerpt` — Executa utilitário de conteúdo: excerpt. — risco `read` | obrigatórios: text
+- `content.split_sentences` — Executa utilitário de conteúdo: split sentences. — risco `read` | obrigatórios: text
+- `content.split_paragraphs` — Executa utilitário de conteúdo: split paragraphs. — risco `read` | obrigatórios: text
+- `content.split_carousel` — Executa utilitário de conteúdo: split carousel. — risco `read` | obrigatórios: text
+- `content.instagram_limit` — Executa utilitário de conteúdo: instagram limit. — risco `read` | obrigatórios: text
+- `content.meta_title_check` — Executa utilitário de conteúdo: meta title check. — risco `read` | obrigatórios: text
+- `content.meta_description_check` — Executa utilitário de conteúdo: meta description check. — risco `read` | obrigatórios: text
+- `content.headline_length` — Executa utilitário de conteúdo: headline length. — risco `read` | obrigatórios: text
+- `content.keyword_density` — Executa utilitário de conteúdo: keyword density. — risco `read` | obrigatórios: text, keyword
+- `content.json_validate` — Executa utilitário de conteúdo: json validate. — risco `read` | obrigatórios: text
+- `content.json_pretty` — Executa utilitário de conteúdo: json pretty. — risco `read` | obrigatórios: text
+- `content.json_minify` — Executa utilitário de conteúdo: json minify. — risco `read` | obrigatórios: text
+- `content.csv_to_json` — Executa utilitário de conteúdo: csv to json. — risco `read` | obrigatórios: text
+- `content.json_to_csv` — Executa utilitário de conteúdo: json to csv. — risco `read` | obrigatórios: text
+- `content.similarity` — Executa utilitário de conteúdo: similarity. — risco `read` | obrigatórios: text, other
+- `content.diff` — Executa utilitário de conteúdo: diff. — risco `read` | obrigatórios: text, other
+- `content.add_utm` — Executa utilitário de conteúdo: add utm. — risco `read` | obrigatórios: text
+- `content.parse_query` — Executa utilitário de conteúdo: parse query. — risco `read` | obrigatórios: text
+- `content.outline_markdown` — Executa utilitário de conteúdo: outline markdown. — risco `read` | obrigatórios: text
+- `content.extract_bullets` — Executa utilitário de conteúdo: extract bullets. — risco `read` | obrigatórios: text
+- `content.extract_quotes` — Executa utilitário de conteúdo: extract quotes. — risco `read` | obrigatórios: text
+- `content.whitespace_report` — Executa utilitário de conteúdo: whitespace report. — risco `read` | obrigatórios: text
+- `content.social_caption_stats` — Executa utilitário de conteúdo: social caption stats. — risco `read` | obrigatórios: text
+- `knowledge.collections.list` — Lista coleções da base de conhecimento. — risco `read`
+- `knowledge.stats` — Mostra estatísticas da base de conhecimento. — risco `read`
+- `knowledge.ingest.text` — Adiciona texto à base de conhecimento. — risco `write` | obrigatórios: collection, title, text
+- `knowledge.ingest.file` — Indexa arquivo TXT/MD/HTML/PDF/DOCX. — risco `write` | obrigatórios: collection, path
+- `knowledge.ingest.url` — Indexa conteúdo de URL HTTPS. — risco `write` | obrigatórios: collection, url
+- `knowledge.search` — Pesquisa trechos relevantes em uma coleção. — risco `read` | obrigatórios: collection, query
+- `knowledge.documents.list` — Lista documentos de uma coleção. — risco `read` | obrigatórios: collection
+- `knowledge.document.info` — Mostra dados de um documento indexado. — risco `read` | obrigatórios: document_id
+- `knowledge.document.remove` — Remove um documento da base. — risco `high` | obrigatórios: document_id
+- `knowledge.collection.clear` — Apaga uma coleção inteira. — risco `high` | obrigatórios: collection
+- `knowledge.collection.export` — Exporta uma coleção para JSON. — risco `write` | obrigatórios: collection, path
+- `wordpress.profiles` — Lista perfis WordPress configurados. — risco `read`
+- `wordpress.discover` — Detecta REST API de um site WordPress. — risco `read` | obrigatórios: site_url
+- `wordpress.auth_status` — Verifica se um perfil possui credencial armazenada. — risco `read`
+- `wordpress.posts.list` — Lista posts. — risco `read`
+- `wordpress.posts.get` — Obtém um post por ID. — risco `read` | obrigatórios: id
+- `wordpress.posts.create_draft` — Cria post como rascunho. — risco `write` | obrigatórios: title, content
+- `wordpress.posts.update` — Atualiza campos de um post. — risco `write` | obrigatórios: id
+- `wordpress.posts.publish` — Publica um post existente. — risco `high` | obrigatórios: id
+- `wordpress.posts.unpublish` — Retorna post publicado para rascunho. — risco `high` | obrigatórios: id
+- `wordpress.posts.schedule` — Agenda publicação de um post. — risco `high` | obrigatórios: id, date
+- `wordpress.posts.trash` — Move um post para lixeira. — risco `high` | obrigatórios: id
+- `wordpress.posts.delete` — Exclui post permanentemente. — risco `critical` | obrigatórios: id
+- `wordpress.pages.list` — Lista páginas. — risco `read`
+- `wordpress.pages.get` — Obtém página por ID. — risco `read` | obrigatórios: id
+- `wordpress.pages.create_draft` — Cria página como rascunho. — risco `write` | obrigatórios: title, content
+- `wordpress.pages.update` — Atualiza página. — risco `write` | obrigatórios: id
+- `wordpress.pages.publish` — Publica uma página. — risco `high` | obrigatórios: id
+- `wordpress.pages.unpublish` — Retorna página para rascunho. — risco `high` | obrigatórios: id
+- `wordpress.pages.schedule` — Agenda uma página. — risco `high` | obrigatórios: id, date
+- `wordpress.pages.trash` — Move página para lixeira. — risco `high` | obrigatórios: id
+- `wordpress.pages.delete` — Exclui página permanentemente. — risco `critical` | obrigatórios: id
+- `wordpress.media.list` — Lista mídia. — risco `read`
+- `wordpress.media.get` — Obtém mídia por ID. — risco `read` | obrigatórios: id
+- `wordpress.media.upload` — Envia arquivo para biblioteca de mídia. — risco `high` | obrigatórios: path
+- `wordpress.media.update` — Atualiza metadados de mídia. — risco `write` | obrigatórios: id
+- `wordpress.media.delete` — Exclui mídia permanentemente. — risco `critical` | obrigatórios: id
+- `wordpress.media.feature_post` — Define imagem destacada de post. — risco `write` | obrigatórios: id, media_id
+- `wordpress.media.feature_page` — Define imagem destacada de página. — risco `write` | obrigatórios: id, media_id
+- `wordpress.categories.list` — Lista categorias. — risco `read`
+- `wordpress.categories.get` — Obtém categoria. — risco `read` | obrigatórios: id
+- `wordpress.categories.create` — Cria categoria. — risco `write` | obrigatórios: name
+- `wordpress.categories.update` — Atualiza categoria. — risco `write` | obrigatórios: id
+- `wordpress.categories.delete` — Exclui categoria. — risco `critical` | obrigatórios: id
+- `wordpress.tags.list` — Lista tags. — risco `read`
+- `wordpress.tags.get` — Obtém tag. — risco `read` | obrigatórios: id
+- `wordpress.tags.create` — Cria tag. — risco `write` | obrigatórios: name
+- `wordpress.tags.update` — Atualiza tag. — risco `write` | obrigatórios: id
+- `wordpress.tags.delete` — Exclui tag. — risco `critical` | obrigatórios: id
+- `wordpress.comments.list` — Lista comentários. — risco `read`
+- `wordpress.comments.get` — Obtém comentário. — risco `read` | obrigatórios: id
+- `wordpress.users.list` — Lista usuários visíveis pela API. — risco `read`
+- `wordpress.users.get` — Obtém usuário. — risco `read` | obrigatórios: id
+- `wordpress.types.list` — Lista tipos de conteúdo. — risco `read`
+- `wordpress.statuses.list` — Lista status de conteúdo. — risco `read`
+- `wordpress.taxonomies.list` — Lista taxonomias. — risco `read`
+- `wordpress.search` — Usa busca unificada da REST API. — risco `read` | obrigatórios: search
+- `wordpress.settings.get` — Lê configurações do site autenticado. — risco `read`
+- `wordpress.settings.update` — Atualiza configurações gerais do site. — risco `critical`
+- `observe.start` — Inicia gravação explícita de demonstração com texto digitado mascarado. — risco `act`
+- `observe.stop` — Encerra gravação e salva sessão. — risco `act`
+- `observe.status` — Mostra estado do recorder. — risco `read`
+- `observe.sessions.list` — Lista sessões de observação. — risco `read`
+- `observe.session.summary` — Resume uma sessão observada. — risco `read` | obrigatórios: session_id
+- `observe.candidate.build` — Transforma demonstração em candidato de Skill parametrizada. — risco `write` | obrigatórios: session_id
+- `observe.candidates.list` — Lista candidatos de Skills aprendidas. — risco `read`
+- `observe.candidate.approve` — Aprova um candidato observado e o transforma em Skill parametrizada persistente. — risco `high` | obrigatórios: session_id
+- `websearch.search` — Pesquisa a web pública sem chave usando busca HTML pública. — risco `read` | obrigatórios: query
+- `websearch.site` — Pesquisa resultados restritos a um domínio. — risco `read` | obrigatórios: domain, query
+- `websearch.exact` — Pesquisa uma frase exata na web. — risco `read` | obrigatórios: query
+- `websearch.recent` — Faz busca pública best-effort com indicação de período recente. — risco `read` | obrigatórios: query
+- `research.normalize_url` — Normaliza URL e remove redirects/rastreadores. — risco `read` | obrigatórios: url
+- `research.source_identity` — Classifica domínio, autoridade e tipo de fonte. — risco `read` | obrigatórios: url
+- `research.authority_score` — Calcula prioridade/autoridade da fonte. — risco `read` | obrigatórios: url
+- `research.domain` — Extrai domínio da URL. — risco `read` | obrigatórios: url
+- `research.query_terms` — Extrai termos úteis da consulta. — risco `read` | obrigatórios: query
+- `research.query_variants` — Gera variações de busca incluindo fontes oficiais. — risco `read` | obrigatórios: query
+- `research.search` — Pesquisa e ranqueia fontes por relevância/autoridade. — risco `read` | obrigatórios: query
+- `research.search_official` — Pesquisa com prioridade explícita para fontes oficiais. — risco `read` | obrigatórios: query
+- `research.rank_results` — Ranqueia resultados existentes por autoridade e relevância. — risco `read` | obrigatórios: query, items
+- `research.dedupe_results` — Remove resultados duplicados por URL final. — risco `read` | obrigatórios: items
+- `research.fetch_source` — Baixa e extrai uma fonte HTML/PDF. — risco `read` | obrigatórios: url
+- `research.evidence_card` — Transforma uma fonte em cartão compacto de evidências. — risco `read` | obrigatórios: url, query
+- `research.evidence_pack` — Monta pacote de evidências de múltiplas fontes. — risco `read` | obrigatórios: query
+- `research.compact_evidence` — Compacta evidências para caber no modelo local. — risco `read` | obrigatórios: bundle
+- `research.deterministic_summary` — Produz síntese extrativa sem depender do LLM. — risco `read` | obrigatórios: bundle
+- `research.compare_sources` — Compara termos compartilhados entre fontes. — risco `read` | obrigatórios: cards
+- `research.markdown_report` — Gera relatório Markdown auditável com URLs finais. — risco `read` | obrigatórios: query, bundle
+- `research.analyze_url` — Analisa uma URL e extrai sentenças relevantes ao tema. — risco `read` | obrigatórios: url, query
+- `research.recent` — Lista pesquisas recentes do Research Engine. — risco `read`
+- `document.inspect` — Inspeciona metadados básicos de arquivo. — risco `read` | obrigatórios: path
+- `document.sha256` — Calcula SHA-256 de arquivo. — risco `read` | obrigatórios: path
+- `document.md5` — Calcula MD5 de arquivo. — risco `read` | obrigatórios: path
+- `document.extract_text` — Extrai texto de TXT/MD/HTML/CSV/JSON/PDF/DOCX. — risco `read` | obrigatórios: path
+- `document.metrics` — Calcula métricas textuais de documento. — risco `read` | obrigatórios: path
+- `document.top_terms` — Lista termos frequentes do documento. — risco `read` | obrigatórios: path
+- `document.headings` — Extrai headings/títulos heurísticos. — risco `read` | obrigatórios: path
+- `document.search` — Pesquisa texto em documento. — risco `read` | obrigatórios: path, query
+- `document.pdf_info` — Lê número de páginas e metadados de PDF. — risco `read` | obrigatórios: path
+- `document.pdf_page` — Extrai uma página específica de PDF. — risco `read` | obrigatórios: path, page
+- `document.pdf_search` — Pesquisa termo/regex em PDF e retorna páginas. — risco `read` | obrigatórios: path, query
+- `document.docx_info` — Resume parágrafos, headings e tabelas de DOCX. — risco `read` | obrigatórios: path
+- `document.docx_tables` — Extrai tabelas de DOCX. — risco `read` | obrigatórios: path
+- `document.compare` — Compara dois documentos textualmente. — risco `read` | obrigatórios: path_a, path_b
+- `document.inventory` — Inventaria documentos de uma pasta. — risco `read` | obrigatórios: folder
+- `document.folder_summary` — Resume tipos e tamanho dos documentos de uma pasta. — risco `read` | obrigatórios: folder
+- `document.duplicates` — Detecta arquivos duplicados por hash. — risco `read` | obrigatórios: folder
+- `document.recent_files` — Lista arquivos mais recentes. — risco `read` | obrigatórios: folder
+- `document.large_files` — Lista maiores arquivos. — risco `read` | obrigatórios: folder
+- `document.batch_search` — Pesquisa conteúdo em vários documentos suportados. — risco `read` | obrigatórios: folder, query
+- `document.manifest` — Gera manifesto com metadados e hashes. — risco `read` | obrigatórios: folder
+- `supervisor.ollama_health` — Verifica Ollama e presença do modelo configurado. — risco `read`
+- `supervisor.dns_health` — Testa resolução DNS. — risco `read`
+- `supervisor.internet_health` — Testa conectividade HTTPS. — risco `read`
+- `supervisor.disk_health` — Verifica espaço livre no disco. — risco `read`
+- `supervisor.directory_health` — Verifica gravação no workspace e JarvisData. — risco `read`
+- `supervisor.browser_health` — Verifica estado do Browser Agent. — risco `read`
+- `supervisor.stale_tasks` — Lista tarefas órfãs/antigas ainda marcadas como ativas. — risco `read`
+- `supervisor.reconcile_tasks` — Marca tarefas órfãs como interrompidas. — risco `write`
+- `supervisor.recent_errors` — Lista erros recentes do Runtime. — risco `read`
+- `supervisor.budget` — Mostra orçamento de timeout/contexto do agente. — risco `read`
+- `supervisor.quick_health` — Executa diagnóstico local rápido. — risco `read`
+- `supervisor.full_health` — Executa diagnóstico completo incluindo rede/Ollama. — risco `read`
+- `supervisor.diagnostic_bundle` — Gera pacote de diagnóstico para depuração. — risco `read`
+- `supervisor.sqlite_health` — Verifica integridade de banco SQLite. — risco `read` | obrigatórios: path
+- `supervisor.catalog_health` — Valida catálogo JSON e IDs únicos. — risco `read` | obrigatórios: path, key
+- `workspace.inventory` — Inventaria arquivos do workspace. — risco `read`
+- `workspace.summary` — Resume quantidade, tamanho e extensões. — risco `read`
+- `workspace.recent` — Lista arquivos alterados nas últimas horas. — risco `read`
+- `workspace.by_extension` — Agrupa arquivos por extensão. — risco `read`
+- `workspace.project_candidates` — Detecta possíveis projetos por marcadores técnicos. — risco `read`
+- `workspace.empty_dirs` — Lista diretórios vazios. — risco `read`
+- `workspace.filename_search` — Pesquisa nomes de arquivo no workspace. — risco `read` | obrigatórios: query
+- `workspace.size_buckets` — Agrupa arquivos por faixa de tamanho. — risco `read`
+- `workspace.disk_space` — Mostra espaço de disco do workspace. — risco `read`
+- `workspace.tree` — Gera árvore do workspace em profundidade limitada. — risco `read`
+- `workspace.manifest` — Salva manifesto JSON do workspace. — risco `write`
+- `institutional.profile.get` — Lê o perfil institucional. — risco `read`
+- `institutional.profile.set` — Define um campo do perfil institucional. — risco `write` | obrigatórios: key, value
+- `institutional.profile.delete` — Remove um campo do perfil institucional. — risco `high` | obrigatórios: key
+- `institutional.profile.export` — Exporta o perfil institucional em JSON. — risco `write` | obrigatórios: path
+- `institutional.department.create` — Cria um departamento/setor. — risco `write` | obrigatórios: name
+- `institutional.department.list` — Lista departamentos. — risco `read`
+- `institutional.department.get` — Obtém departamento por ID. — risco `read` | obrigatórios: id
+- `institutional.department.search` — Pesquisa departamentos. — risco `read` | obrigatórios: query
+- `institutional.department.update` — Atualiza departamento. — risco `write` | obrigatórios: id
+- `institutional.department.archive` — Arquiva departamento. — risco `high` | obrigatórios: id
+- `institutional.role.create` — Cria função/cargo interno. — risco `write` | obrigatórios: name
+- `institutional.role.list` — Lista funções/cargos. — risco `read`
+- `institutional.role.get` — Obtém função por ID. — risco `read` | obrigatórios: id
+- `institutional.role.search` — Pesquisa funções e responsabilidades. — risco `read` | obrigatórios: query
+- `institutional.role.update` — Atualiza função/cargo. — risco `write` | obrigatórios: id
+- `institutional.role.archive` — Arquiva função/cargo. — risco `high` | obrigatórios: id
+- `institutional.glossary.create` — Adiciona termo institucional ao glossário. — risco `write` | obrigatórios: term, definition
+- `institutional.glossary.list` — Lista glossário institucional. — risco `read`
+- `institutional.glossary.get` — Obtém termo por ID. — risco `read` | obrigatórios: id
+- `institutional.glossary.search` — Pesquisa termos e definições. — risco `read` | obrigatórios: query
+- `institutional.glossary.update` — Atualiza termo do glossário. — risco `write` | obrigatórios: id
+- `institutional.glossary.remove` — Remove termo do glossário. — risco `high` | obrigatórios: id
+- `institutional.policy.create` — Registra política/procedimento institucional. — risco `write` | obrigatórios: title, body
+- `institutional.policy.list` — Lista políticas institucionais. — risco `read`
+- `institutional.policy.get` — Obtém política por ID. — risco `read` | obrigatórios: id
+- `institutional.policy.search` — Pesquisa políticas. — risco `read` | obrigatórios: query
+- `institutional.policy.update` — Atualiza política. — risco `write` | obrigatórios: id
+- `institutional.policy.archive` — Arquiva política. — risco `high` | obrigatórios: id
+- `institutional.style.create` — Registra regra de linguagem/estilo. — risco `write` | obrigatórios: name, rule
+- `institutional.style.list` — Lista regras de estilo. — risco `read`
+- `institutional.style.get` — Obtém regra de estilo. — risco `read` | obrigatórios: id
+- `institutional.style.search` — Pesquisa regras de estilo. — risco `read` | obrigatórios: query
+- `institutional.style.update` — Atualiza regra de estilo. — risco `write` | obrigatórios: id
+- `institutional.style.remove` — Remove regra de estilo. — risco `high` | obrigatórios: id
+- `institutional.source.create` — Registra fonte institucional ou oficial. — risco `write` | obrigatórios: name
+- `institutional.source.list` — Lista fontes registradas. — risco `read`
+- `institutional.source.get` — Obtém fonte por ID. — risco `read` | obrigatórios: id
+- `institutional.source.search` — Pesquisa fontes institucionais. — risco `read` | obrigatórios: query
+- `institutional.source.update` — Atualiza fonte registrada. — risco `write` | obrigatórios: id
+- `institutional.source.archive` — Arquiva fonte. — risco `high` | obrigatórios: id
+- `institutional.source.authority` — Consulta nível de autoridade de uma fonte. — risco `read` | obrigatórios: id
+- `institutional.project.create` — Cria projeto institucional. — risco `write` | obrigatórios: name
+- `institutional.project.list` — Lista projetos. — risco `read`
+- `institutional.project.get` — Obtém projeto por ID. — risco `read` | obrigatórios: id
+- `institutional.project.search` — Pesquisa projetos. — risco `read` | obrigatórios: query
+- `institutional.project.update` — Atualiza projeto institucional. — risco `write` | obrigatórios: id
+- `institutional.project.archive` — Arquiva projeto. — risco `high` | obrigatórios: id
+- `institutional.context.bundle` — Monta contexto institucional compacto para o agente. — risco `read`
+- `institutional.stats` — Mostra estatísticas do contexto institucional. — risco `read`
+- `institutional_knowledge.cct.import` — Importa CCT/documento coletivo, indexa e separa cláusulas. — risco `write` | obrigatórios: path
+- `institutional_knowledge.folder.import` — Indexa recursivamente documentos de uma pasta na base institucional. — risco `write` | obrigatórios: folder
+- `institutional_knowledge.cct.list` — Lista CCTs importadas. — risco `read`
+- `institutional_knowledge.cct.info` — Obtém dados de uma CCT. — risco `read` | obrigatórios: cct_id
+- `institutional_knowledge.clause.list` — Lista cláusulas de uma CCT. — risco `read` | obrigatórios: cct_id
+- `institutional_knowledge.clause.get` — Obtém cláusula específica. — risco `read` | obrigatórios: clause_id
+- `institutional_knowledge.clause.search` — Pesquisa cláusulas por termo. — risco `read` | obrigatórios: query
+- `institutional_knowledge.cct.compare` — Compara cláusulas entre duas CCTs. — risco `read` | obrigatórios: cct_a, cct_b
+- `institutional_knowledge.evidence.pack` — Monta pacote de evidências citáveis da base institucional. — risco `read` | obrigatórios: query
+- `institutional_knowledge.search.all` — Pesquisa em todas as coleções institucionais. — risco `read` | obrigatórios: query
+- `institutional_knowledge.document.provenance` — Mostra origem/proveniência de documento indexado. — risco `read` | obrigatórios: document_id
+- `institutional_knowledge.collection.health` — Mostra saúde/frescor de uma coleção. — risco `read` | obrigatórios: collection
+- `institutional_knowledge.collection.stale` — Lista documentos potencialmente antigos. — risco `read` | obrigatórios: collection
+- `institutional_knowledge.collection.duplicates` — Procura fontes duplicadas na coleção. — risco `read` | obrigatórios: collection
+- `institutional_knowledge.faq.create` — Cria FAQ institucional. — risco `write` | obrigatórios: question, answer
+- `institutional_knowledge.faq.list` — Lista FAQs. — risco `read`
+- `institutional_knowledge.faq.search` — Pesquisa FAQs institucionais. — risco `read` | obrigatórios: query
+- `institutional_knowledge.faq.update` — Atualiza FAQ. — risco `write` | obrigatórios: id
+- `institutional_knowledge.faq.remove` — Remove FAQ. — risco `high` | obrigatórios: id
+- `institutional_knowledge.stats` — Estatísticas do conhecimento institucional. — risco `read`
+- `training.track.create` — Cria trilha de treinamento. — risco `write` | obrigatórios: name
+- `training.track.list` — Lista trilhas de treinamento. — risco `read`
+- `training.track.get` — Obtém trilha e seus módulos. — risco `read` | obrigatórios: id
+- `training.track.update` — Atualiza trilha. — risco `write` | obrigatórios: id
+- `training.track.archive` — Arquiva trilha. — risco `high` | obrigatórios: id
+- `training.track.search` — Pesquisa trilhas. — risco `read` | obrigatórios: query
+- `training.module.add` — Adiciona módulo a uma trilha. — risco `write` | obrigatórios: track_id, title
+- `training.module.list` — Lista módulos de trilha. — risco `read` | obrigatórios: track_id
+- `training.module.get` — Obtém módulo. — risco `read` | obrigatórios: id
+- `training.module.update` — Atualiza módulo. — risco `write` | obrigatórios: id
+- `training.module.remove` — Remove módulo. — risco `high` | obrigatórios: id
+- `training.module.material` — Busca material/evidências para um módulo. — risco `read` | obrigatórios: id
+- `training.quiz.create` — Cria quiz de treinamento. — risco `write` | obrigatórios: name
+- `training.quiz.list` — Lista quizzes. — risco `read`
+- `training.quiz.get` — Obtém quiz e perguntas. — risco `read` | obrigatórios: id
+- `training.quiz.update` — Atualiza quiz. — risco `write` | obrigatórios: id
+- `training.quiz.archive` — Arquiva quiz. — risco `high` | obrigatórios: id
+- `training.question.add` — Adiciona pergunta a quiz. — risco `write` | obrigatórios: quiz_id, question, answer
+- `training.question.update` — Atualiza pergunta. — risco `write` | obrigatórios: id
+- `training.question.remove` — Remove pergunta. — risco `high` | obrigatórios: id
+- `training.quiz.answer_key` — Retorna gabarito de quiz. — risco `read` | obrigatórios: id
+- `training.checklist.create` — Cria checklist de onboarding. — risco `write` | obrigatórios: name
+- `training.checklist.list` — Lista checklists. — risco `read`
+- `training.checklist.get` — Obtém checklist e itens. — risco `read` | obrigatórios: id
+- `training.checklist.update` — Atualiza checklist. — risco `write` | obrigatórios: id
+- `training.checklist.archive` — Arquiva checklist. — risco `high` | obrigatórios: id
+- `training.checklist_item.add` — Adiciona item ao checklist. — risco `write` | obrigatórios: checklist_id, text
+- `training.checklist_item.update` — Atualiza item de checklist. — risco `write` | obrigatórios: id
+- `training.checklist_item.remove` — Remove item de checklist. — risco `high` | obrigatórios: id
+- `training.learner.create` — Cria perfil local de aprendiz. — risco `write` | obrigatórios: alias
+- `training.learner.list` — Lista aprendizes locais. — risco `read`
+- `training.learner.get` — Obtém aprendiz. — risco `read` | obrigatórios: id
+- `training.learner.update` — Atualiza aprendiz. — risco `write` | obrigatórios: id
+- `training.progress.set` — Registra progresso de treinamento. — risco `write` | obrigatórios: learner_id, item_type, item_id
+- `training.progress.get` — Lista progresso de aprendiz. — risco `read` | obrigatórios: learner_id
+- `training.progress.summary` — Resume progresso de aprendiz. — risco `read` | obrigatórios: learner_id
+- `training.scenario.create` — Cria cenário de treinamento. — risco `write` | obrigatórios: title, prompt
+- `training.scenario.list` — Lista cenários. — risco `read`
+- `training.scenario.get` — Obtém cenário. — risco `read` | obrigatórios: id
+- `training.scenario.search` — Pesquisa cenários. — risco `read` | obrigatórios: query
+- `training.scenario.update` — Atualiza cenário. — risco `write` | obrigatórios: id
+- `training.scenario.archive` — Arquiva cenário. — risco `high` | obrigatórios: id
+- `training.role.dashboard` — Monta painel de treinamento por função. — risco `read` | obrigatórios: role
+- `training.stats` — Estatísticas do sistema de treinamento. — risco `read`
+- `content_ops.template.create` — Cria template editorial. — risco `write` | obrigatórios: name, content_type, body
+- `content_ops.template.list` — Lista templates editoriais. — risco `read`
+- `content_ops.template.get` — Obtém template. — risco `read` | obrigatórios: id
+- `content_ops.template.search` — Pesquisa templates. — risco `read` | obrigatórios: query
+- `content_ops.template.update` — Atualiza template. — risco `write` | obrigatórios: id
+- `content_ops.template.archive` — Arquiva template. — risco `high` | obrigatórios: id
+- `content_ops.template.render` — Renderiza template com variáveis. — risco `read` | obrigatórios: id
+- `content_ops.brief.create` — Cria briefing de conteúdo. — risco `write` | obrigatórios: title, topic
+- `content_ops.brief.list` — Lista briefings. — risco `read`
+- `content_ops.brief.get` — Obtém briefing. — risco `read` | obrigatórios: id
+- `content_ops.brief.search` — Pesquisa briefings. — risco `read` | obrigatórios: query
+- `content_ops.brief.update` — Atualiza briefing. — risco `write` | obrigatórios: id
+- `content_ops.brief.status` — Altera status do briefing. — risco `write` | obrigatórios: id, status
+- `content_ops.brief.sources` — Audita fontes do briefing. — risco `read` | obrigatórios: id
+- `content_ops.draft.create` — Registra rascunho editorial versionado. — risco `write` | obrigatórios: title, body
+- `content_ops.draft.list` — Lista rascunhos. — risco `read`
+- `content_ops.draft.get` — Obtém rascunho. — risco `read` | obrigatórios: id
+- `content_ops.draft.versions` — Lista versões de um briefing. — risco `read` | obrigatórios: brief_id
+- `content_ops.draft.update` — Atualiza rascunho. — risco `write` | obrigatórios: id
+- `content_ops.draft.check` — Mede/valida estrutura do rascunho. — risco `read` | obrigatórios: id
+- `content_ops.draft.compare` — Compara dois rascunhos. — risco `read` | obrigatórios: draft_a, draft_b
+- `content_ops.review.submit` — Envia rascunho para revisão. — risco `write` | obrigatórios: draft_id
+- `content_ops.review.list` — Lista revisões. — risco `read`
+- `content_ops.review.get` — Obtém revisão. — risco `read` | obrigatórios: id
+- `content_ops.review.approve` — Aprova revisão. — risco `high` | obrigatórios: id
+- `content_ops.review.changes` — Solicita alterações em revisão. — risco `write` | obrigatórios: id
+- `content_ops.review.reject` — Rejeita revisão. — risco `high` | obrigatórios: id
+- `content_ops.package.create` — Cria pacote de publicação no workspace. — risco `write` | obrigatórios: name
+- `content_ops.package.list` — Lista pacotes editoriais. — risco `read`
+- `content_ops.package.get` — Obtém pacote editorial. — risco `read` | obrigatórios: id
+- `content_ops.package.status` — Altera status do pacote. — risco `write` | obrigatórios: id, status
+- `content_ops.calendar.add` — Agenda item no calendário editorial local. — risco `write` | obrigatórios: title, scheduled_for
+- `content_ops.calendar.list` — Lista calendário editorial. — risco `read`
+- `content_ops.calendar.range` — Lista calendário por intervalo. — risco `read` | obrigatórios: start, end
+- `content_ops.calendar.update` — Atualiza item do calendário. — risco `write` | obrigatórios: id
+- `content_ops.calendar.remove` — Remove item do calendário. — risco `high` | obrigatórios: id
+- `content_ops.editorial.context` — Monta regras editoriais aplicáveis. — risco `read`
+- `content_ops.stats` — Estatísticas do pipeline editorial. — risco `read`
+- `governance.connector.create` — Registra connector profissional sem credenciais. — risco `write` | obrigatórios: name, connector_type
+- `governance.connector.list` — Lista connectors registrados. — risco `read`
+- `governance.connector.get` — Obtém connector e escopos. — risco `read` | obrigatórios: id
+- `governance.connector.search` — Pesquisa connectors. — risco `read` | obrigatórios: query
+- `governance.connector.update` — Atualiza connector. — risco `write` | obrigatórios: id
+- `governance.connector.enable` — Habilita connector. — risco `high` | obrigatórios: id
+- `governance.connector.disable` — Desabilita connector. — risco `high` | obrigatórios: id
+- `governance.connector.remove` — Remove connector e permissões. — risco `critical` | obrigatórios: id
+- `governance.permission.set` — Define escopo e nível autorizado. — risco `high` | obrigatórios: connector_id, scope
+- `governance.permission.list` — Lista permissões de connector. — risco `read` | obrigatórios: connector_id
+- `governance.permission.remove` — Remove permissão. — risco `critical` | obrigatórios: id
+- `governance.permission.check` — Verifica se ação está autorizada. — risco `read` | obrigatórios: connector_id, scope
+- `governance.permission.matrix` — Monta matriz de acesso profissional. — risco `read`
+- `governance.rule.create` — Cria regra de aprovação. — risco `high` | obrigatórios: name, pattern
+- `governance.rule.list` — Lista regras de aprovação. — risco `read`
+- `governance.rule.get` — Obtém regra. — risco `read` | obrigatórios: id
+- `governance.rule.update` — Atualiza regra de aprovação. — risco `high` | obrigatórios: id
+- `governance.rule.remove` — Remove regra. — risco `critical` | obrigatórios: id
+- `governance.rule.match` — Testa regras contra uma ação. — risco `read` | obrigatórios: action
+- `governance.mode.get` — Lê modos de segurança. — risco `read`
+- `governance.mode.set` — Define modo de governança. — risco `high` | obrigatórios: key, value
+- `governance.safe_mode.on` — Ativa modo seguro. — risco `write`
+- `governance.safe_mode.off` — Desativa modo seguro. — risco `critical`
+- `governance.audit.add` — Registra evento de auditoria. — risco `write` | obrigatórios: action
+- `governance.audit.list` — Lista auditoria. — risco `read`
+- `governance.audit.search` — Pesquisa auditoria. — risco `read` | obrigatórios: query
+- `governance.audit.export` — Exporta auditoria para JSON. — risco `write` | obrigatórios: path
+- `governance.stats` — Estatísticas de governança e acessos. — risco `read`
+- `automation.create` — Cria uma automação persistente. — risco `write` | obrigatórios: name, schedule_type, target_type, target_id, schedule
+- `automation.list` — Lista automações. — risco `read`
+- `automation.get` — Obtém uma automação. — risco `read`
+- `automation.update` — Atualiza configuração de automação. — risco `write` | obrigatórios: job_id
+- `automation.delete` — Exclui automação e histórico. — risco `critical` | obrigatórios: job_id
+- `automation.enable` — Ativa automação. — risco `write` | obrigatórios: job_id
+- `automation.disable` — Desativa automação. — risco `write` | obrigatórios: job_id
+- `automation.pause` — Pausa automação. — risco `write` | obrigatórios: job_id
+- `automation.resume` — Retoma automação. — risco `write` | obrigatórios: job_id
+- `automation.duplicate` — Duplica automação. — risco `write` | obrigatórios: job_id, new_name
+- `automation.due` — Lista automações vencidas agora. — risco `read`
+- `automation.upcoming` — Lista próximas automações. — risco `read`
+- `automation.overdue` — Lista automações atrasadas. — risco `read`
+- `automation.run_now` — Executa automação imediatamente. — risco `high` | obrigatórios: job_id
+- `automation.reset_failure` — Reabilita automação que falhou. — risco `write` | obrigatórios: job_id
+- `automation.history` — Lista execuções de automações. — risco `read`
+- `automation.clear_history` — Limpa histórico antigo de automações. — risco `high`
+- `automation.stats` — Mostra estatísticas de automações. — risco `read`
+- `automation.export` — Exporta automações para JSON. — risco `write` | obrigatórios: path
+- `automation.import` — Importa automações de JSON. — risco `high` | obrigatórios: path
+- `automation.tick` — Executa um ciclo manual do scheduler. — risco `act`
+- `automation.worker_start` — Inicia worker de automações. — risco `write`
+- `automation.worker_stop` — Para worker de automações. — risco `write`
+- `automation.worker_status` — Consulta estado do worker de automações. — risco `read`
+- `monitor.create` — Cria monitor persistente. — risco `write` | obrigatórios: name, monitor_type, config
+- `monitor.get` — Obtém monitor. — risco `read`
+- `monitor.list` — Lista monitores. — risco `read`
+- `monitor.update` — Atualiza monitor. — risco `write` | obrigatórios: monitor_id
+- `monitor.enable` — Ativa monitor. — risco `write` | obrigatórios: monitor_id
+- `monitor.disable` — Desativa monitor. — risco `write` | obrigatórios: monitor_id
+- `monitor.mute` — Silencia monitor. — risco `write` | obrigatórios: monitor_id
+- `monitor.unmute` — Retoma alertas do monitor. — risco `write` | obrigatórios: monitor_id
+- `monitor.delete` — Exclui monitor e eventos. — risco `critical` | obrigatórios: monitor_id
+- `monitor.check` — Verifica monitor agora. — risco `act` | obrigatórios: monitor_id
+- `monitor.check_all` — Verifica todos os monitores ativos. — risco `act`
+- `monitor.events` — Lista eventos de mudança. — risco `read`
+- `monitor.acknowledge` — Marca evento como reconhecido. — risco `write` | obrigatórios: event_id
+- `monitor.acknowledge_all` — Reconhece eventos pendentes. — risco `write`
+- `monitor.clear_events` — Limpa eventos de monitor. — risco `high`
+- `monitor.snapshot` — Mostra estado e eventos recentes de monitor. — risco `read` | obrigatórios: monitor_id
+- `monitor.stats` — Estatísticas de monitoramento. — risco `read`
+- `monitor.export` — Exporta monitores. — risco `write` | obrigatórios: path
+- `monitor.import` — Importa monitores. — risco `high` | obrigatórios: path
+- `approval.create` — Cria solicitação de aprovação. — risco `write` | obrigatórios: title, source_type
+- `approval.get` — Obtém aprovação. — risco `read` | obrigatórios: approval_id
+- `approval.list` — Lista aprovações. — risco `read`
+- `approval.pending` — Lista aprovações pendentes. — risco `read`
+- `approval.approve` — Aprova e opcionalmente executa item. — risco `high` | obrigatórios: approval_id
+- `approval.reject` — Rejeita item pendente. — risco `high` | obrigatórios: approval_id
+- `approval.cancel` — Cancela aprovação. — risco `high` | obrigatórios: approval_id
+- `approval.reopen` — Reabre aprovação resolvida. — risco `high` | obrigatórios: approval_id
+- `approval.expire_due` — Expira aprovações vencidas. — risco `act`
+- `approval.delete` — Remove aprovação já resolvida. — risco `critical` | obrigatórios: approval_id
+- `approval.clear_resolved` — Limpa aprovações antigas resolvidas. — risco `high`
+- `approval.stats` — Estatísticas da fila de aprovação. — risco `read`
+- `approval.search` — Pesquisa aprovações. — risco `read` | obrigatórios: query
+- `approval.export` — Exporta aprovações. — risco `write` | obrigatórios: path
+- `connector.create` — Cria perfil de API externa HTTPS. — risco `high` | obrigatórios: name, base_url
+- `connector.get` — Obtém connector. — risco `read`
+- `connector.list` — Lista connectors. — risco `read`
+- `connector.update` — Atualiza connector. — risco `high` | obrigatórios: connector_id
+- `connector.enable` — Ativa connector. — risco `high` | obrigatórios: connector_id
+- `connector.disable` — Desativa connector. — risco `write` | obrigatórios: connector_id
+- `connector.delete` — Exclui connector e seus endpoints. — risco `critical` | obrigatórios: connector_id
+- `connector.test` — Testa conexão GET segura. — risco `read` | obrigatórios: connector_id
+- `connector.secret_set` — Armazena segredo no keyring do sistema. — risco `critical` | obrigatórios: connector_id, key, value
+- `connector.secret_status` — Verifica quais segredos estão configurados sem revelar valores. — risco `read` | obrigatórios: connector_id
+- `connector.secret_delete` — Remove segredo do keyring. — risco `critical` | obrigatórios: connector_id, key
+- `connector.endpoint_create` — Cria endpoint permitido no connector. — risco `high` | obrigatórios: connector_id, name, method, path
+- `connector.endpoint_get` — Obtém endpoint configurado. — risco `read` | obrigatórios: endpoint_id
+- `connector.endpoint_list` — Lista endpoints. — risco `read`
+- `connector.endpoint_update` — Atualiza endpoint. — risco `high` | obrigatórios: endpoint_id
+- `connector.endpoint_enable` — Ativa endpoint. — risco `high` | obrigatórios: endpoint_id
+- `connector.endpoint_disable` — Desativa endpoint. — risco `write` | obrigatórios: endpoint_id
+- `connector.endpoint_delete` — Exclui endpoint. — risco `critical` | obrigatórios: endpoint_id
+- `connector.preview` — Mostra requisição renderizada sem revelar segredos. — risco `read` | obrigatórios: endpoint_id
+- `connector.execute` — Executa endpoint configurado. — risco `high` | obrigatórios: endpoint_id
+- `connector.history` — Histórico de chamadas de connectors. — risco `read`
+- `connector.clear_history` — Limpa histórico de connector. — risco `high`
+- `connector.stats` — Estatísticas de connectors. — risco `read`
+- `connector.export` — Exporta perfis/endpoints sem segredos. — risco `write` | obrigatórios: path
+- `team.role.create` — Cria função de equipe. — risco `write` | obrigatórios: name
+- `team.role.get` — Obtém função. — risco `read` | obrigatórios: id
+- `team.role.list` — Lista funções. — risco `read`
+- `team.role.update` — Atualiza função. — risco `write` | obrigatórios: id
+- `team.role.delete` — Exclui função sem usuários. — risco `critical` | obrigatórios: id
+- `team.user.create` — Cria usuário interno. — risco `high` | obrigatórios: username, display_name
+- `team.user.get` — Obtém usuário. — risco `read` | obrigatórios: id
+- `team.user.list` — Lista usuários. — risco `read`
+- `team.user.update` — Atualiza usuário. — risco `high` | obrigatórios: id
+- `team.user.enable` — Ativa usuário. — risco `high` | obrigatórios: id
+- `team.user.disable` — Desativa usuário. — risco `high` | obrigatórios: id
+- `team.user.delete` — Exclui usuário. — risco `critical` | obrigatórios: id
+- `team.password.set` — Define senha local do usuário. — risco `critical` | obrigatórios: user_id, password
+- `team.password.clear` — Remove senha local. — risco `critical` | obrigatórios: user_id
+- `team.collection.grant` — Libera coleção de conhecimento para função. — risco `high` | obrigatórios: role_id, collection
+- `team.collection.list` — Lista coleções liberadas para função. — risco `read` | obrigatórios: role_id
+- `team.collection.remove` — Remove acesso a coleção. — risco `high` | obrigatórios: role_id, collection
+- `team.track.grant` — Libera trilha de treinamento para função. — risco `high` | obrigatórios: role_id, track_id
+- `team.track.list` — Lista trilhas liberadas para função. — risco `read` | obrigatórios: role_id
+- `team.track.remove` — Remove acesso a trilha. — risco `high` | obrigatórios: role_id, track_id
+- `team.feedback.add` — Registra feedback sobre resposta. — risco `write`
+- `team.feedback.get` — Obtém feedback. — risco `read` | obrigatórios: id
+- `team.feedback.list` — Lista feedbacks. — risco `read`
+- `team.feedback.resolve` — Resolve feedback. — risco `write` | obrigatórios: id
+- `team.feedback.stats` — Estatísticas de feedback. — risco `read`
+- `team.gap.add` — Registra lacuna de conhecimento. — risco `write` | obrigatórios: question
+- `team.gap.get` — Obtém lacuna. — risco `read` | obrigatórios: id
+- `team.gap.list` — Lista lacunas. — risco `read`
+- `team.gap.search` — Pesquisa lacunas. — risco `read` | obrigatórios: query
+- `team.gap.resolve` — Resolve lacuna. — risco `write` | obrigatórios: id
+- `team.gap.reopen` — Reabre lacuna. — risco `write` | obrigatórios: id
+- `team.gap.stats` — Estatísticas de lacunas. — risco `read`
+- `team.asklog.add` — Registra consulta do portal. — risco `write` | obrigatórios: question
+- `team.asklog.list` — Lista consultas da equipe. — risco `read`
+- `team.setting.get` — Lê configuração do portal. — risco `read`
+- `team.setting.set` — Define configuração do portal. — risco `high` | obrigatórios: key, value
+- `team.stats` — Estatísticas do assistente de equipe. — risco `read`
+- `notification.add` — Cria notificação interna. — risco `write` | obrigatórios: title, message
+- `notification.get` — Obtém notificação. — risco `read` | obrigatórios: id
+- `notification.list` — Lista notificações. — risco `read`
+- `notification.unread` — Lista notificações não lidas. — risco `read`
+- `notification.read` — Marca notificação como lida. — risco `write` | obrigatórios: id
+- `notification.unread.set` — Marca como não lida. — risco `write` | obrigatórios: id
+- `notification.read_all` — Marca todas como lidas. — risco `write`
+- `notification.dismiss` — Dispensa notificação. — risco `write` | obrigatórios: id
+- `notification.delete` — Exclui notificação. — risco `critical` | obrigatórios: id
+- `notification.clear` — Limpa notificações por status. — risco `high`
+- `notification.search` — Pesquisa notificações. — risco `read` | obrigatórios: query
+- `notification.stats` — Estatísticas de notificações. — risco `read`
+- `notification.export` — Exporta notificações. — risco `write` | obrigatórios: path
