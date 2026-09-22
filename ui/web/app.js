@@ -247,7 +247,7 @@ function diagnoseMobile(){
     if(!box||!text)return;
     box.classList.remove('ok','warn');box.classList.add(d.ok?'ok':'warn');
     const details=[];
-    if(d.running)details.push('Servidor mobile: ativo');
+    if(d.running)details.push('Servidor mobile: ativo');if(d.index_exists===false)details.push('Interface mobile: AUSENTE');else if(d.index_exists===true)details.push('Interface mobile: OK');
     if(d.loopback_ok)details.push('Teste local: OK');
     if(d.network_profile)details.push(`Perfil da rede: ${d.network_profile}`);
     details.push(`Firewall Jarvis: ${d.firewall_rule?'liberado':'não detectado'}`);

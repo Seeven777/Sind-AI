@@ -26,7 +26,7 @@ class MobileCompanion:
         self.base_dir = Path(base_dir)
         self.host = str(config.get("mobile_companion_host", "0.0.0.0"))
         self.port = int(config.get("mobile_companion_port", 8770))
-        self.web_root = self.base_dir / "mobile" / "web"
+        self.web_root = Path(__file__).resolve().parent / "web"
         self.data_root = Path.home() / str(config.get("persistent_root_name", "JarvisData")) / "mobile"
         self.data_root.mkdir(parents=True, exist_ok=True)
         self.pairing_file = self.data_root / "pairing.json"
@@ -39,6 +39,7 @@ class MobileCompanion:
         self._run_lock = threading.Lock()
         self._pair_attempts = {}
         self._pin = self._load_or_create_pin()
+        self._ip_cache = {"at": 0.0, "items": []}
 
     def _load_or_create_pin(self):
         try:
@@ -60,8 +61,33 @@ class MobileCompanion:
             self._sessions.clear()
         return {"ok": True, "pin": self._pin}
 
-    def local_ips(self):
+    def _run_hidden(self, cmd, timeout=4):
+        """Run a Windows helper without flashing a console window."""
+        kwargs = {
+            "capture_output": True,
+            "text": True,
+            "timeout": timeout,
+        }
+        if __import__("os").name == "nt":
+            try:
+                kwargs["creationflags"] = subprocess.CREATE_NO_WINDOW
+            except Exception:
+                pass
+            try:
+                si = subprocess.STARTUPINFO()
+                si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+                kwargs["startupinfo"] = si
+            except Exception:
+                pass
+        return subprocess.run(cmd, **kwargs)
+
+    def local_ips(self, refresh=False):
         """Return useful private IPv4 candidates, preferring real LAN interfaces."""
+        now = time.time()
+        cached = self._ip_cache.get("items", [])
+        if cached and not refresh and now - float(self._ip_cache.get("at", 0)) < 60:
+            return list(cached)
+
         candidates = []
 
         def add(value):
@@ -77,8 +103,6 @@ class MobileCompanion:
             except Exception:
                 pass
 
-        # Windows: enumerate active IPv4 interfaces. This avoids accidentally
-        # advertising a VPN/virtual adapter address as the only mobile URL.
         if __import__("os").name == "nt":
             try:
                 cmd = [
@@ -87,13 +111,12 @@ class MobileCompanion:
                     "Where-Object {$_.IPAddress -notlike '127.*' -and $_.AddressState -eq 'Preferred'} | "
                     "Select-Object -ExpandProperty IPAddress"
                 ]
-                proc = subprocess.run(cmd, capture_output=True, text=True, timeout=4)
+                proc = self._run_hidden(cmd, timeout=4)
                 for line in proc.stdout.splitlines():
                     add(line)
             except Exception:
                 pass
 
-        # Ask the OS which interface would normally reach the network.
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             s.settimeout(0.5)
@@ -109,7 +132,6 @@ class MobileCompanion:
         except Exception:
             pass
 
-        # Prefer common RFC1918 LAN ranges over link-local addresses.
         def priority(value):
             ip = ipaddress.ip_address(value)
             if value.startswith("192.168."):
@@ -122,7 +144,9 @@ class MobileCompanion:
                 return (9, value)
             return (5, value)
 
-        return sorted(candidates, key=priority)
+        result = sorted(candidates, key=priority)
+        self._ip_cache = {"at": now, "items": result}
+        return list(result)
 
     def local_ip(self):
         ips = self.local_ips()
@@ -149,20 +173,20 @@ class MobileCompanion:
         firewall_rule = False
         if __import__("os").name == "nt":
             try:
-                proc = subprocess.run(
+                proc = self._run_hidden(
                     ["powershell","-NoProfile","-Command",
                      "(Get-NetConnectionProfile | Where-Object {$_.IPv4Connectivity -ne 'Disconnected'} | "
                      "Select-Object -First 1 -ExpandProperty NetworkCategory)"],
-                    capture_output=True, text=True, timeout=4
+                    timeout=4
                 )
                 profile = proc.stdout.strip()
             except Exception:
                 pass
             try:
-                proc = subprocess.run(
+                proc = self._run_hidden(
                     ["powershell","-NoProfile","-Command",
                      "if(Get-NetFirewallRule -DisplayName 'Jarvis Mobile Companion' -ErrorAction SilentlyContinue){'yes'}else{'no'}"],
-                    capture_output=True, text=True, timeout=4
+                    timeout=4
                 )
                 firewall_rule = proc.stdout.strip().lower() == "yes"
             except Exception:
@@ -177,8 +201,11 @@ class MobileCompanion:
             issues.append("A rede do Windows está marcada como Pública; a regra segura do Jarvis aceita apenas redes Privadas.")
         if running and __import__("os").name == "nt" and not firewall_rule:
             issues.append("A regra do Firewall do Windows ainda não foi criada.")
-        if not self.local_ips():
+        ips = self.local_ips(refresh=True)
+        if not ips:
             issues.append("Nenhum endereço IPv4 privado foi detectado.")
+        if not (self.web_root / "index.html").is_file():
+            issues.append(f"Interface mobile ausente em: {self.web_root}")
 
         return {
             "ok": not issues,
@@ -186,7 +213,9 @@ class MobileCompanion:
             "loopback_ok": loopback_ok,
             "network_profile": profile,
             "firewall_rule": firewall_rule,
-            "urls": self.urls(),
+            "urls": [f"http://{ip}:{self.port}/" for ip in ips] or self.urls(),
+            "web_root": str(self.web_root),
+            "index_exists": (self.web_root / "index.html").is_file(),
             "issues": issues,
         }
 
@@ -206,12 +235,42 @@ class MobileCompanion:
     def start(self):
         if self._server and self._thread and self._thread.is_alive():
             return self.status()
+
+        if not (self.web_root / "index.html").is_file():
+            return {
+                "ok": False,
+                "running": False,
+                "error": f"Interface mobile não encontrada em {self.web_root}",
+                "web_root": str(self.web_root),
+            }
+
         handler = self._build_handler()
-        self._server = ThreadingHTTPServer((self.host, self.port), handler)
-        self.port = int(self._server.server_address[1])
+        requested = int(self.config.get("mobile_companion_port", self.port))
+        last_error = None
+        for candidate in range(requested, requested + 11):
+            try:
+                self._server = ThreadingHTTPServer((self.host, candidate), handler)
+                self.port = int(self._server.server_address[1])
+                break
+            except OSError as exc:
+                last_error = exc
+                self._server = None
+
+        if not self._server:
+            return {
+                "ok": False,
+                "running": False,
+                "error": f"Não foi possível abrir as portas {requested}-{requested+10}: {last_error}",
+            }
+
         self._server.daemon_threads = True
-        self._thread = threading.Thread(target=self._server.serve_forever, name="JarvisMobileCompanion", daemon=True)
+        self._thread = threading.Thread(
+            target=self._server.serve_forever,
+            name="JarvisMobileCompanion",
+            daemon=True
+        )
         self._thread.start()
+        self._ip_cache = {"at": 0.0, "items": []}
         return self.status()
 
     def stop(self):
@@ -276,7 +335,7 @@ class MobileCompanion:
         companion = self
 
         class Handler(BaseHTTPRequestHandler):
-            server_version = "JarvisMobile/1.2"
+            server_version = "JarvisMobile/1.3.1"
 
             def log_message(self, fmt, *args):
                 pass
@@ -351,6 +410,19 @@ class MobileCompanion:
                 if not self._client_allowed():
                     return self._json(403, {"ok": False, "error": "Acesso permitido somente pela rede local."})
                 path = urlparse(self.path).path
+                if path == "/favicon.ico":
+                    self.send_response(204)
+                    self._security_headers()
+                    self.end_headers()
+                    return
+                if path == "/health":
+                    return self._json(200, {
+                        "ok": True,
+                        "service": "Jarvis Mobile Companion",
+                        "port": companion.port,
+                        "web_root": str(companion.web_root),
+                        "index_exists": (companion.web_root / "index.html").is_file(),
+                    })
                 if path == "/api/status":
                     return self._json(200, {"ok": True, "name": "Jarvis", "paired": self._authorized(), "requires_pin": True})
                 if path.startswith("/api/"):
@@ -371,7 +443,23 @@ class MobileCompanion:
                     return self._json(404, {"ok": False, "error": "Rota não encontrada."})
 
                 if path == "/":
-                    return self._file("index.html")
+                    index_file = companion.web_root / "index.html"
+                    if index_file.is_file():
+                        return self._file("index.html")
+                    raw = (
+                        "<!doctype html><meta charset='utf-8'><title>Jarvis Mobile</title>"
+                        "<body style='font-family:Segoe UI;background:#07090f;color:#fff;padding:32px'>"
+                        "<h1>Jarvis Mobile não encontrou a interface web.</h1>"
+                        f"<p>Diretório esperado: <code>{companion.web_root}</code></p>"
+                        "<p>Atualize/reinstale o Jarvis e tente novamente.</p></body>"
+                    ).encode("utf-8")
+                    self.send_response(500)
+                    self.send_header("Content-Type", "text/html; charset=utf-8")
+                    self.send_header("Content-Length", str(len(raw)))
+                    self._security_headers()
+                    self.end_headers()
+                    self.wfile.write(raw)
+                    return
                 return self._file(path)
 
             def do_POST(self):
