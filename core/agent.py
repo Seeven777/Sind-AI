@@ -65,6 +65,11 @@ from attachments.manager import AttachmentManager
 from self_improvement.queue import ImprovementQueue
 from hardware.profiler import HardwareProfiler
 from public_data.engine import PublicDataEngine
+from swarm.registry import AgentRegistry
+from swarm.blackboard import SwarmBlackboard
+from swarm.apprenticeship import ApprenticeshipEngine
+from swarm.orchestrator import SwarmOrchestrator
+from swarm.demonstration import DemonstrationTeacher
 
 from tools.apps import open_app, open_folder
 from tools.browser import open_url
@@ -227,6 +232,8 @@ class JarvisAgent:
         self.reflections = ReflectionEngine(reflections_db)
         self.improvements = ImprovementQueue(improvements_db)
         self.attachments = AttachmentManager(attachments_db, self.knowledge, self.projects)
+        swarm_blackboard_db = persistent_path("swarm_blackboard_db", "cognitive/swarm_blackboard.db")
+        apprenticeship_db = persistent_path("apprenticeship_db", "cognitive/apprenticeship.db")
         self.hardware = HardwareProfiler()
         self.context_orchestrator = ContextOrchestrator(
             self.conversations, self.learning, self.memory, self.semantic,
@@ -278,9 +285,19 @@ class JarvisAgent:
             reasoning_timeout=config.get("agent_llm_timeout_seconds", 40),
             fallback_timeout=config.get("fast_model_fallback_timeout_seconds", 22),
         )
+        self.swarm_registry = AgentRegistry()
+        self.swarm_blackboard = SwarmBlackboard(swarm_blackboard_db)
+        self.apprenticeship = ApprenticeshipEngine(apprenticeship_db, models=self.models)
+        self.swarm = SwarmOrchestrator(
+            self.models, self.swarm_registry, self.swarm_blackboard,
+            apprenticeship=self.apprenticeship, config=self.config
+        )
+        self.demonstration_teacher = DemonstrationTeacher(self.observe, self.skills)
         self.self_awareness = SelfAwareness(
             self.services, self.actions, self.workflows, self.capabilities,
-            self.models, self.hardware, self.knowledge, connectors=self.connectors
+            self.models, self.hardware, self.knowledge, connectors=self.connectors,
+            swarm=self.swarm, apprenticeship=self.apprenticeship,
+            demonstration=self.demonstration_teacher
         )
         self.service_runtime = InstitutionalServiceRuntime(
             self.services, self.browser_agent, self.models
@@ -404,6 +421,9 @@ class JarvisAgent:
             names.add("project_context")
         if any(k in text for k in ["automação","automacao","agende","rotina","monitor","acompanhe","me avise","notifique","aprovação","aprovacao","integração","integracao","wordpress","portal","equipe","connector","workflow"]): names.update({"search_actions","execute_action","search_workflows","execute_workflow"})
         if any(k in text for k in ["skill","aprenda esta rotina","aprenda essa rotina"]): names.update({"run_skill","suggest_learned_skills"})
+        if self.skills.relevant_skills(user_text, limit=3): names.add("run_skill")
+        if hasattr(self, "apprenticeship") and self.apprenticeship.relevant(user_text, limit=2):
+            names.update({"search_actions","execute_action","search_workflows","execute_workflow"})
         if any(k in text for k in ["api","openapi","swagger","capability","capacidade pública","capacidade publica"]): names.update({"search_capabilities","execute_capability","discover_public_apis","discover_public_interfaces"})
         if not names and any(k in text for k in complex_verbs): names.update({"search_actions","execute_action"})
         priority=["set_task_plan","find_public_sources","query_public_data","discover_public_interfaces","search_web","fetch_public_url","institutional_service","project_context","list_knowledge_collections","search_knowledge","institutional_evidence","institutional_context","search_actions","execute_action","search_workflows","execute_workflow","search_capabilities","execute_capability","discover_public_apis","open_url","open_app","create_file","read_file","list_files","open_folder","list_windows","select_window","inspect_selected_window","click_control","type_text","press_key","get_clipboard","set_clipboard","take_screenshot","run_skill","suggest_learned_skills"]
@@ -438,6 +458,9 @@ class JarvisAgent:
         lesson_text = "\n".join(f"- {x.get('lesson')}" for x in lessons) if lessons else "- nenhuma"
         reflection_text = "\n".join(f"- {x.get('insight')}" for x in reflections) if reflections else "- nenhuma"
         project_context = self.projects.context(user_text, max_chars=1200).get("text","")
+        procedure_context = self.apprenticeship.context(user_text, limit=2, max_chars=2200).get("text", "") if hasattr(self, "apprenticeship") else ""
+        skill_context = self.skills.relevant_context(user_text, limit=3).get("text", "")
+        swarm_stats = self.swarm.stats() if hasattr(self, "swarm") else {}
         return f"""Você é Jarvis, um GPT pessoal local.
 Converse naturalmente em português e mantenha continuidade. Entenda o objetivo e decida sozinho se deve responder, pesquisar, consultar conhecimento ou agir.
 
@@ -455,11 +478,15 @@ PRINCÍPIOS
 - Jarvis Mobile é somente uma interface remota do Jarvis que roda no computador host.
 - Se o usuário estiver no celular, não afirme que controla aplicativos do telefone; ações de desktop continuam acontecendo no computador host.
 - Aprenda com preferências/correções explícitas e reutilize-as somente quando relevantes.
+- Se faltar uma capacidade, não trate isso como impossibilidade definitiva: identifique o acesso, ferramenta ou procedimento faltante e explique como o usuário pode ensinar/conectar essa capacidade.
+- Quando houver um procedimento ensinado relevante, trate-o como instrução operacional do usuário, respeitando governança e confirmações.
+- Em tarefas complexas, use o trabalho do Swarm/Blackboard como orientação; não exponha discussões internas dos agentes.
 
 CONTEXTO
 - Conversas persistentes: {conversation_stats.get('sessions',0)}; mensagens: {conversation_stats.get('messages',0)}.
 - Fontes públicas catalogadas: {public_stats.get('sources',0)}; oficiais: {public_stats.get('official',0)}.
 - Serviços cotidianos SindPetshop-SP mapeados: {service_stats.get('services',0)}.
+- Swarm Intelligence: {swarm_stats.get('agents',0)} papéis; {swarm_stats.get('sessions',0)} coordenações registradas.
 - Workspace: {self.workspace}
 - Janela selecionada: {self.deep_access.snapshot().get('title') or 'nenhuma'}
 
@@ -471,6 +498,12 @@ REFLEXÕES RELEVANTES
 
 PROJETO ATUAL
 {project_context or "- nenhum projeto ativo"}
+
+PROCEDIMENTOS ENSINADOS RELEVANTES
+{procedure_context or "- nenhum"}
+
+SKILLS APRENDIDAS RELEVANTES
+{skill_context or "- nenhuma"}
 {mem}
 """
 
@@ -1869,6 +1902,18 @@ PROJETO ATUAL
         if status:
             status("Processando")
 
+        # Ensino por demonstração: aprende uma rotina observando ações de UI.
+        demonstration = self.demonstration_teacher.handle(user_text)
+        if demonstration.get("handled"):
+            self._last_response_metadata = {"grounded": True, "demonstration_teaching": True}
+            return demonstration.get("answer") or "Demonstração atualizada."
+
+        # Modo de ensino/aprendizado persistente vem antes da execução.
+        teaching = self.apprenticeship.handle(user_text)
+        if teaching.get("handled"):
+            self._last_response_metadata = {"grounded": True, "apprenticeship": True}
+            return teaching.get("answer") or "Ensino atualizado."
+
         # Intenções compostas de alta confiança não podem cair no Qwen.
         fast_intent = parse_fast_intent(user_text)
         if fast_intent:
@@ -2000,11 +2045,32 @@ PROJETO ATUAL
             n, a = direct
             return self.summarize(n, self.dispatch(n, a, confirm_callback=confirm_callback, source="fast_path"))
 
-        # Conversa e perguntas informativas passam por um runtime leve. Não viram
-        # tarefas do Agent Runtime e não usam o modelo de raciocínio quando isso
-        # não é necessário.
+        # Conversa e perguntas informativas usam runtime leve; demandas realmente
+        # complexas podem acionar o Swarm mesmo sem ferramentas externas.
         selected_tools = self._tools_for_prompt(user_text)
+        swarm_candidate = self.swarm.should_swarm(user_text, selected_tools)
         if self.conversation_answer.should_handle(user_text, selected_tools):
+            if swarm_candidate:
+                if status:
+                    status("Orquestrando especialistas")
+                base_context = self.context_orchestrator.build(
+                    user_text, max_chars=int(self.config.get("swarm_context_chars", 5200))
+                ).get("text", "")
+                result = self.swarm.solve(user_text, base_context=base_context, status=status)
+                self._last_response_metadata = {
+                    "model": self.models.reason_model_name(),
+                    "grounded": True,
+                    "swarm": True,
+                    "swarm_roles": result.get("roles", []),
+                    "swarm_session_id": result.get("session_id"),
+                }
+                self.swarm.finish(result, status="completed", success=True)
+                self.diagnostics.event(
+                    "swarm_answer", prompt=user_text, roles=result.get("roles", []),
+                    session_id=result.get("session_id")
+                )
+                return result.get("answer") or "Não consegui sintetizar uma resposta."
+
             if status:
                 status("Conversando")
             result = self.conversation_answer.answer(user_text)
@@ -2043,7 +2109,24 @@ PROJETO ATUAL
                     semantic_context = [{"role":"system","content":"Memórias semanticamente relacionadas (use apenas se relevantes):\n" + compact}]
             except Exception:
                 semantic_context = []
-        messages = [{"role":"system","content":self.system_prompt(user_text)}] + semantic_context + conversation_context + [{"role":"user","content":user_text}]
+        swarm_bundle = None
+        swarm_context_messages = []
+        if swarm_candidate:
+            if status:
+                status("Orquestrando especialistas")
+            base_context = self.context_orchestrator.build(
+                user_text, max_chars=int(self.config.get("swarm_context_chars", 5200))
+            ).get("text", "")
+            swarm_bundle = self.swarm.prepare(user_text, base_context=base_context, status=status)
+            swarm_context_messages = [{
+                "role": "system",
+                "content": (
+                    "SWARM BLACKBOARD — orientação interna para esta tarefa. Não exponha a discussão entre agentes ao usuário.\n"
+                    + swarm_bundle.get("context", "")
+                )
+            }]
+
+        messages = [{"role":"system","content":self.system_prompt(user_text)}] + swarm_context_messages + semantic_context + conversation_context + [{"role":"user","content":user_text}]
 
         max_rounds = int(self.config.get("agent_max_rounds", 4))
         total_tool_calls = 0
@@ -2094,6 +2177,18 @@ PROJETO ATUAL
                     if not ans and last_summaries:
                         ans = "\n".join(last_summaries[-3:])
                     ans = ans or "Não recebi uma resposta válida."
+                    if swarm_bundle:
+                        ans = self.swarm.review(
+                            user_text, ans, bundle=swarm_bundle,
+                            tool_summaries=last_summaries, status=status
+                        )
+                        self.swarm.blackboard.add(swarm_bundle["session_id"], "executor", "answer", ans)
+                        self.swarm.finish(swarm_bundle, status="completed", success=True)
+                        self._last_response_metadata.update({
+                            "swarm": True,
+                            "swarm_roles": swarm_bundle.get("roles", []),
+                            "swarm_session_id": swarm_bundle.get("session_id"),
+                        })
                     self.tasks.finish(task_id, ans, status="completed")
                     if total_tool_calls >= 2:
                         try:
@@ -2180,11 +2275,18 @@ PROJETO ATUAL
                 + "\n".join(last_summaries[-3:])
             )
             self.tasks.finish(task_id, final, status="paused")
+            if swarm_bundle:
+                self.swarm.finish(swarm_bundle, status="paused", success=False)
             self.diagnostics.event("task_paused", task_id=task_id, tool_calls=total_tool_calls)
             self._active_task_id = None
             return final
         except Exception as exc:
             self.tasks.finish(task_id, str(exc), status="failed")
+            if 'swarm_bundle' in locals() and swarm_bundle:
+                try:
+                    self.swarm.finish(swarm_bundle, status="failed", success=False)
+                except Exception:
+                    pass
             self.diagnostics.error(
                 "agent_run", exc, task_id=task_id, prompt=user_text,
                 elapsed_ms=round((time.monotonic()-started_at)*1000,1),

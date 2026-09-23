@@ -190,13 +190,16 @@ function showWelcome(){
 function renderContext(){
   const active=snapshot?.active_task;const conv=snapshot?.cognitive?.conversations||{};const learning=snapshot?.cognitive?.learning||{};const kb=snapshot?.knowledge||{};
   const reflections=snapshot?.cognitive?.reflections||{};const proj=snapshot?.projects?.current;
+  const swarm=snapshot?.swarm?.stats||{};const apprenticeship=snapshot?.apprenticeship||{};
   $('taskCard').innerHTML=active?`<strong>${esc(active.goal||'Tarefa ativa')}</strong><span>${esc(active.status||'running')}</span>`:`<strong>Nenhuma tarefa ativa</strong><span>Jarvis está disponível para conversar ou agir.</span>`;
   $('projectContext').innerHTML=proj?`<strong>${esc(proj.name)}</strong><span>${esc(proj.description||'Projeto ativo nesta conversa.')}</span>`:`<strong>Sem projeto ativo</strong><span>Você pode agrupar conversas e documentos em um projeto quando quiser.</span>`;
   $('cognitiveStats').innerHTML=`
     <div class="mini"><small>CONVERSAS</small><b>${conv.sessions||0}</b></div>
     <div class="mini"><small>KNOWLEDGE</small><b>${kb.documents||0}</b></div>
     <div class="mini"><small>LIÇÕES</small><b>${learning.active_lessons||0}</b></div>
-    <div class="mini"><small>REFLEXÕES</small><b>${reflections.active||0}</b></div>`;
+    <div class="mini"><small>REFLEXÕES</small><b>${reflections.active||0}</b></div>
+    <div class="mini"><small>AGENTES</small><b>${swarm.agents||0}</b></div>
+    <div class="mini"><small>ROTINAS</small><b>${apprenticeship.procedures||0}</b></div>`;
   const lessons=snapshot?.cognitive?.lessons||[];
   $('lessonList').innerHTML=lessons.slice(0,7).map(x=>`<div class="simple-item"><b>${esc(x.kind||'lesson')}</b><span>${esc(x.lesson||'')}</span></div>`).join('')||'<div class="simple-item"><span>Nenhuma preferência/correção aprendida ainda.</span></div>';
   const refl=snapshot?.cognitive?.reflection_items||[];

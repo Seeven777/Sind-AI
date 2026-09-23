@@ -246,6 +246,37 @@ class SkillStore:
 
         return {"ok": True, "name": skill["name"]}
 
+
+    def relevant_skills(self, query, limit=5):
+        q = str(query or "").lower()
+        tokens = set(re.findall(r"[a-z0-9_]{3,}", slugify(q)))
+        scored = []
+        for item in self.list_skills():
+            hay = " ".join([
+                str(item.get("name", "")), str(item.get("slug", "")),
+                str(item.get("description", "")), " ".join(item.get("inputs", []) or []),
+            ]).lower()
+            score = 0
+            name = str(item.get("name", "")).lower()
+            if name and name in q:
+                score += 12
+            score += sum(1 for tok in tokens if tok and tok in slugify(hay))
+            if score >= 2:
+                scored.append((score, item))
+        scored.sort(key=lambda x: (-x[0], x[1].get("name", "")))
+        return [item for _, item in scored[:int(limit)]]
+
+    def relevant_context(self, query, limit=3):
+        items = self.relevant_skills(query, limit=limit)
+        if not items:
+            return {"items": [], "text": ""}
+        lines = []
+        for item in items:
+            inputs = item.get("inputs") or []
+            inp = f" | entradas: {', '.join(inputs)}" if inputs else ""
+            lines.append(f"- {item.get('name')} ({item.get('steps')} passos){inp}: {item.get('description','')}")
+        return {"items": items, "text": "SKILLS APRENDIDAS RELEVANTES:\n" + "\n".join(lines)}
+
     def catalog_for_prompt(self, limit=30):
         items = self.list_skills()[:limit]
         if not items:

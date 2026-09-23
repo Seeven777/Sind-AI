@@ -1,7 +1,7 @@
 class SelfAwareness:
     """Grounded self-knowledge from the actual runtime, not model imagination."""
 
-    def __init__(self, services, actions, workflows, capabilities, models, hardware, knowledge, connectors=None):
+    def __init__(self, services, actions, workflows, capabilities, models, hardware, knowledge, connectors=None, swarm=None, apprenticeship=None, demonstration=None):
         self.services = services
         self.actions = actions
         self.workflows = workflows
@@ -10,6 +10,9 @@ class SelfAwareness:
         self.hardware = hardware
         self.knowledge = knowledge
         self.connectors = connectors
+        self.swarm = swarm
+        self.apprenticeship = apprenticeship
+        self.demonstration = demonstration
 
     def matches(self, text):
         t = str(text or "").lower().strip()
@@ -17,7 +20,8 @@ class SelfAwareness:
             "o que você consegue", "o que voce consegue", "o que você sabe fazer", "o que voce sabe fazer",
             "quais ferramentas", "quais sistemas", "quais serviços", "quais servicos",
             "você consegue acessar", "voce consegue acessar", "você tem acesso", "voce tem acesso",
-            "quais recursos", "suas capacidades", "suas ferramentas",
+            "quais recursos", "suas capacidades", "suas ferramentas", "quais agentes", "seus agentes",
+            "como eu te ensino", "como te ensinar", "você consegue aprender", "voce consegue aprender",
         )
         return any(x in t for x in patterns)
 
@@ -37,6 +41,9 @@ class SelfAwareness:
             "capabilities": self.capabilities.stats(),
             "knowledge": self.knowledge.stats(),
             "connectors": connectors,
+            "swarm": self.swarm.stats() if self.swarm else {},
+            "apprenticeship": self.apprenticeship.stats() if self.apprenticeship else {},
+            "demonstration": self.demonstration.status() if self.demonstration else {},
         }
 
     def _service_lines(self):
@@ -67,6 +74,21 @@ class SelfAwareness:
 
     def answer(self, text):
         t = str(text or "").lower()
+
+        if "agentes" in t or "seus agentes" in t:
+            roles = self.swarm.registry.list() if self.swarm else []
+            if roles:
+                lines = [f"- **{x['name']}** — {x['purpose']}" for x in roles]
+                return "Meu Swarm local possui estes papéis especialistas:\n\n" + "\n".join(lines) + "\n\nEu escolho os especialistas automaticamente; você continua conversando apenas com o Jarvis."
+
+        if any(x in t for x in ("como eu te ensino", "como te ensinar", "consegue aprender", "consigo te ensinar")):
+            return (
+                "Posso aprender novas rotinas de duas formas persistentes:\n\n"
+                "1. **Por explicação:** diga `Quero te ensinar como ...`, explique os passos e finalize com `finalizar ensino`.\n"
+                "2. **Por demonstração:** diga `Observe enquanto eu faço ...`, execute a rotina no computador e finalize com `terminei a demonstração`. A demonstração vira uma Skill reutilizável; texto digitado é mascarado por privacidade.\n\n"
+                "O aprendizado fica local em `JarvisData` e continua sujeito às mesmas confirmações e permissões."
+            )
+
         service = self._explicit_service(text)
         if service and any(k in t for k in ("acessar", "acesso", "ferramenta", "serviço", "servico", "sistema", "consegue", "pode")):
             caps = ", ".join(service.get("capabilities", []))
@@ -91,6 +113,8 @@ class SelfAwareness:
             f"- **{snap['workflows'].get('workflows', 0)} Workflows** compostos.\n"
             f"- **{snap['capabilities'].get('capabilities', 0)} capacidades públicas** catalogadas.\n"
             f"- **{snap['services'].get('count', 0)} serviços cotidianos do SindPetshop-SP** mapeados.\n"
+            f"- **{snap.get('swarm',{}).get('agents',0)} papéis especialistas** disponíveis no Swarm Intelligence.\n"
+            f"- **{snap.get('apprenticeship',{}).get('procedures',0)} rotinas ensinadas** persistentes.\n"
             f"- Modelos locais: `{snap['models'].get('fast_model')}` para conversa e `{snap['models'].get('reasoning_model')}` para raciocínio.\n"
             "- Posso combinar memória, Knowledge Base, web/dados públicos, arquivos, navegador, desktop, automações e conectores autorizados.\n\n"
             "Quando você pergunta se eu consigo fazer algo, a resposta vem deste estado real do sistema — não de uma suposição do modelo."

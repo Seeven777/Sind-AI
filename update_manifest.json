@@ -1,8 +1,8 @@
 {
   "product": "Jarvis Personal GPT",
-  "version": "1.4.1",
+  "version": "1.5",
   "channel": "main",
   "min_python": "3.12",
   "data_schema": 1,
-  "notes": "Correções de usabilidade: rolagem robusta, botão voltar ao fim, preservação da posição de leitura, sanitização de raciocínio interno e Fast Path do WhatsApp."
+  "notes": "Swarm Intelligence + Apprenticeship: planejamento, especialistas sequenciais, blackboard compartilhado, revisão e rotinas ensinadas pelo usuário."
 }
