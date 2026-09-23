@@ -1,9 +1,38 @@
 import json
+import re
 import socket
 import time
 import urllib.error
 import urllib.parse
 import urllib.request
+
+
+def sanitize_assistant_content(content):
+    """
+    Never expose model chain-of-thought / <think> blocks to the product UI.
+
+    Qwen can occasionally return a closing </think> even when `think:false`
+    was requested. In that case the useful answer is the text after the final
+    closing tag.
+    """
+    s = str(content or "")
+    if not s:
+        return ""
+
+    lower = s.lower()
+    closing = "</think>"
+    if closing in lower:
+        idx = lower.rfind(closing)
+        s = s[idx + len(closing):]
+
+    s = re.sub(r"<think\b[^>]*>.*?</think>", "", s, flags=re.I | re.S)
+    s = re.sub(r"</?think\b[^>]*>", "", s, flags=re.I)
+
+    # If the model starts an unclosed think block, do not leak it.
+    if re.match(r"^\s*<think\b", str(content or ""), flags=re.I) and "</think>" not in lower:
+        return ""
+
+    return s.strip()
 
 
 class OllamaClient:
@@ -49,6 +78,9 @@ class OllamaClient:
 
             with response_ctx as response:
                 data = json.loads(response.read().decode("utf-8"))
+                message = data.get("message")
+                if isinstance(message, dict) and "content" in message:
+                    message["content"] = sanitize_assistant_content(message.get("content"))
                 data["_jarvis_model"] = selected_model
                 return data
         except (socket.timeout, TimeoutError) as exc:

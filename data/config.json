@@ -22,7 +22,7 @@
   "agent_max_rounds": 6,
   "agent_max_tool_calls": 16,
   "agent_tool_result_chars": 3000,
-  "release_name": "Jarvis Personal GPT 1.4 — Long-Running Runtime",
+  "release_name": "Jarvis Personal GPT 1.4.1 — UX Stability",
   "persistent_root_name": "JarvisData",
   "action_catalog": "actions/catalog.json",
   "browser_profile_dir": "browser/profile",
@@ -78,7 +78,7 @@
   "ui_markdown": true,
   "ui_message_actions": true,
   "auto_reflection_enabled": true,
-  "release_version": "1.4",
+  "release_version": "1.4.1",
   "mobile_companion_enabled": true,
   "mobile_companion_autostart": false,
   "mobile_companion_host": "0.0.0.0",
@@ -89,5 +89,7 @@
   "update_auto_check": true,
   "update_check_interval_seconds": 14400,
   "update_install_mode": "prompt",
-  "ui_task_heartbeat_seconds": 2
+  "ui_task_heartbeat_seconds": 2,
+  "ui_auto_follow_threshold_px": 180,
+  "ui_long_message_collapse_chars": 14000
 }

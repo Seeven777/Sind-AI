@@ -60,7 +60,7 @@
       </div>
     </header>
 
-    <section class="chat-scroll" id="chatScroll">
+    <section class="chat-scroll" id="chatScroll" tabindex="0" aria-label="Histórico da conversa">
       <div class="conversation" id="conversation">
         <div class="welcome" id="welcome">
           <div class="welcome-visual">
@@ -80,6 +80,8 @@
         </div>
       </div>
     </section>
+
+    <button class="jump-bottom hidden" id="jumpBottomBtn" title="Ir para o fim da conversa">↓ <span>Última mensagem</span></button>
 
     <section class="composer-wrap">
       <div class="attachment-strip" id="attachmentStrip"></div>

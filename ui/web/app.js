@@ -18,6 +18,21 @@ function mdInline(s){
   x=x.replace(/(^|[\s>])(https?:\/\/[^\s<]+)/g,(m,prefix,url)=>`${prefix}<a href="${safeUrl(url)}" target="_blank">${esc(url)}</a>`);
   return x;
 }
+function cleanAssistantText(value){
+  let s=String(value??'');
+  if(!s)return '';
+  const lower=s.toLowerCase();
+  const close='</think>';
+  const idx=lower.lastIndexOf(close);
+  if(idx>=0)s=s.slice(idx+close.length);
+  s=s.replace(/<think\b[^>]*>[\s\S]*?<\/think>/gi,'');
+  s=s.replace(/<\/?think\b[^>]*>/gi,'');
+  if(/^\s*<think\b/i.test(String(value??''))&&!lower.includes(close)){
+    return 'O modelo ainda estava processando internamente e não produziu uma resposta final válida.';
+  }
+  return s.trim();
+}
+
 function renderMarkdown(text){
   const raw=String(text??'').replace(/\r\n/g,'\n');
   const codeBlocks=[];
@@ -66,11 +81,26 @@ function setBusy(value,detail=''){
   if(!busy)$('statusText').textContent='pronto';
 }
 function hideWelcome(){const w=$('welcome');if(w)w.style.display='none'}
+function chatEl(){return $('chatScroll')}
+function distanceFromBottom(){
+  const c=chatEl();if(!c)return 0;
+  return Math.max(0,c.scrollHeight-c.scrollTop-c.clientHeight);
+}
+function nearBottom(threshold=180){return distanceFromBottom()<=threshold}
+function scrollChatToBottom(smooth=true){
+  const c=chatEl();if(!c)return;
+  c.scrollTo({top:c.scrollHeight,behavior:smooth?'smooth':'auto'});
+}
+function updateJumpBottom(){
+  const btn=$('jumpBottomBtn');if(!btn)return;
+  btn.classList.toggle('hidden',nearBottom(120));
+}
 function addMessage(role,text,ok=true,time=null,meta={}){
+  const shouldFollow=role==='user'||nearBottom();
   hideWelcome();
   const el=document.createElement('div');el.className=`message ${role}`;
   const main=document.createElement('div');main.className='message-main';
-  const raw=String(text??'');
+  const raw=role==='assistant'?cleanAssistantText(text):String(text??'');
   const sources=Array.isArray(meta?.sources)?meta.sources:[];
   const sourceHtml=sources.length?`<div class="message-sources">${sources.slice(0,5).map((s,i)=>{
     const url=s.url||s.link||'';const label=s.title||s.name||(()=>{try{return new URL(url).hostname}catch{return `Fonte ${i+1}`}})();
@@ -101,11 +131,15 @@ function addMessage(role,text,ok=true,time=null,meta={}){
   }
 
   $('conversation').appendChild(el);
-  $('chatScroll').scrollTop=$('chatScroll').scrollHeight;
+  if(shouldFollow)requestAnimationFrame(()=>scrollChatToBottom(false));
+  else updateJumpBottom();
 }
 function showThinking(text='Processando'){
+  const shouldFollow=nearBottom();
   removeThinking();const el=document.createElement('div');el.id='thinking';el.className='thinking';el.textContent=text;
-  $('conversation').appendChild(el);$('chatScroll').scrollTop=$('chatScroll').scrollHeight;
+  $('conversation').appendChild(el);
+  if(shouldFollow)requestAnimationFrame(()=>scrollChatToBottom(false));
+  else updateJumpBottom();
 }
 function removeThinking(){const x=$('thinking');if(x)x.remove()}
 
@@ -144,6 +178,7 @@ function openConversation(id){
       addMessage(m.role==='assistant'?'assistant':'user',m.content,!metadata?.error,(m.created_at||'').slice(11,16),metadata);
     });
     if(!(d.messages||[]).length)showWelcome();
+    requestAnimationFrame(()=>scrollChatToBottom(false));
     fetchSnapshot();
   });
 }
@@ -358,6 +393,34 @@ function toggleInspector(force=null){
 function openOverlay(id){$(id)?.classList.remove('hidden')}
 function closeOverlay(id){$(id)?.classList.add('hidden')}
 
+function bindChatScrolling(){
+  const c=chatEl();if(!c)return;
+
+  c.addEventListener('scroll',updateJumpBottom,{passive:true});
+
+  // Qt WebEngine normally handles wheel scrolling, but this fallback makes
+  // the conversation panel reliable even when focus is inside nested content.
+  c.addEventListener('wheel',e=>{
+    if(Math.abs(e.deltaY)<=Math.abs(e.deltaX))return;
+    if(c.scrollHeight<=c.clientHeight)return;
+    e.preventDefault();
+    c.scrollTop+=e.deltaY;
+  },{passive:false});
+
+  c.addEventListener('click',()=>c.focus({preventScroll:true}));
+
+  c.addEventListener('keydown',e=>{
+    const page=Math.max(220,c.clientHeight*0.82);
+    if(e.key==='PageDown'){e.preventDefault();c.scrollBy({top:page,behavior:'smooth'})}
+    else if(e.key==='PageUp'){e.preventDefault();c.scrollBy({top:-page,behavior:'smooth'})}
+    else if(e.key==='Home'&&e.ctrlKey){e.preventDefault();c.scrollTo({top:0,behavior:'smooth'})}
+    else if(e.key==='End'&&e.ctrlKey){e.preventDefault();scrollChatToBottom(true)}
+  });
+
+  $('jumpBottomBtn').onclick=()=>scrollChatToBottom(true);
+  updateJumpBottom();
+}
+
 function initBridge(){
   if(typeof QWebChannel==='undefined'||typeof qt==='undefined'){setTimeout(initBridge,250);return}
   new QWebChannel(qt.webChannelTransport,channel=>{
@@ -403,7 +466,7 @@ document.addEventListener('keydown',e=>{
   if(e.ctrlKey&&e.key.toLowerCase()==='n'){e.preventDefault();$('newChatBtn').click()}
   if(e.key==='Escape'){document.querySelectorAll('.overlay').forEach(x=>x.classList.add('hidden'))}
 });
-bindPromptButtons();toggleInspector(false);initBridge();
+bindPromptButtons();bindChatScrolling();toggleInspector(false);initBridge();
 
 $('updateCheckBtn').onclick=checkUpdate;
 $('updateInstallBtn').onclick=installUpdate;

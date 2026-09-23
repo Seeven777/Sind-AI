@@ -15,6 +15,8 @@ def fast_path(text, desktop):
         return "open_app", {"app": "notepad"}
     if "abra" in l and "calculadora" in l:
         return "open_app", {"app": "calc"}
+    if any(x in l for x in ["whatsapp", "whats app"]) and any(x in l for x in ["abra", "abrir", "abre", "inicie", "iniciar"]):
+        return "open_app", {"app": "whatsapp"}
     if "abra" in l and ("área de trabalho" in l or "area de trabalho" in l):
         return "open_folder", {"path": str(desktop)}
     if any(x in l for x in ["tire um screenshot", "tire uma captura", "capture a tela"]):

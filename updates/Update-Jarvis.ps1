@@ -29,7 +29,7 @@ function Clear-Runtime([string]$Path) {
 }
 function Get-Remote {
   $headers = @{
-    "User-Agent" = "SindAI-Jarvis-Updater/1.4"
+    "User-Agent" = "SindAI-Jarvis-Updater/1.4.1"
     "Accept" = "application/vnd.github+json"
     "X-GitHub-Api-Version" = "2022-11-28"
   }

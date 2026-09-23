@@ -1,8 +1,8 @@
 {
   "product": "Jarvis Personal GPT",
-  "version": "1.4",
+  "version": "1.4.1",
   "channel": "main",
   "min_python": "3.12",
   "data_schema": 1,
-  "notes": "Tarefas sem deadline artificial por padrão, heartbeat visual contínuo e progresso com tempo decorrido."
+  "notes": "Correções de usabilidade: rolagem robusta, botão voltar ao fim, preservação da posição de leitura, sanitização de raciocínio interno e Fast Path do WhatsApp."
 }
