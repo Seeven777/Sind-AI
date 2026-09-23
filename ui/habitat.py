@@ -309,6 +309,33 @@ class JarvisBridge(QObject):
             return json.dumps({"ok": False, "error": str(exc)}, ensure_ascii=False)
 
     @Slot(str, result=str)
+    def searchPlaybooks(self, query):
+        try:
+            return json.dumps(
+                self.window.agent.workplace.search(query, limit=20),
+                ensure_ascii=False, default=str
+            )
+        except Exception as exc:
+            return json.dumps({"ok": False, "error": str(exc)}, ensure_ascii=False)
+
+    @Slot(str, str, result=str)
+    def startPlaybook(self, playbook_id, request):
+        try:
+            result = self.window.agent.workplace.start_long_horizon(
+                playbook_id,
+                request=request,
+                project_id=self.window.agent.projects.current_id(),
+                session_id=self.window.agent.conversations.current_session_id,
+                priority=65,
+            )
+            self.snapshotChanged.emit(
+                json.dumps(self.window.build_snapshot(), ensure_ascii=False, default=str)
+            )
+            return json.dumps(result, ensure_ascii=False, default=str)
+        except Exception as exc:
+            return json.dumps({"ok": False, "error": str(exc)}, ensure_ascii=False)
+
+    @Slot(str, result=str)
     def searchPublicSources(self, query):
         try:
             return json.dumps(self.window.agent.public_data.recommend(query, limit=12), ensure_ascii=False)
@@ -863,6 +890,23 @@ class HabitatWindow(QMainWindow):
         except Exception:
             skills = []
 
+        try:
+            recent = self.agent.conversations.recent_messages(limit=12)
+            recent_text = " ".join(
+                str(x.get("content", "")) for x in recent if x.get("role") == "user"
+            )[-5000:]
+            project = self.agent.projects.current().get("data") or {}
+            workplace_query = " ".join([
+                str(project.get("name", "")),
+                str(project.get("description", "")),
+                recent_text,
+            ]).strip()
+            workplace_suggestions = self.agent.workplace.suggestions(
+                workplace_query or "rotina de trabalho", limit=6
+            ).get("items", [])
+        except Exception:
+            workplace_suggestions = []
+
         return {
             "model": f"{self.agent.models.fast_model_name()} ↔ {self.agent.models.reason_model_name()}",
             "context": self.config.get("num_ctx", 4096),
@@ -899,6 +943,11 @@ class HabitatWindow(QMainWindow):
                 "stats": self.agent.long_horizon.stats(),
                 "worker": self.agent.long_horizon.worker_status(),
                 "items": self.agent.long_horizon.list(limit=20).get("items", []),
+            },
+            "workplace": {
+                "stats": self.agent.workplace.stats(),
+                "suggestions": workplace_suggestions,
+                "categories": self.agent.workplace.categories,
             },
             "monitors": {
                 "stats": self.agent.monitors.stats(),

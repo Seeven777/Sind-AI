@@ -1,8 +1,8 @@
 {
   "product": "Jarvis Personal GPT",
-  "version": "1.7",
+  "version": "1.8",
   "channel": "main",
   "min_python": "3.12",
   "data_schema": 1,
-  "notes": "Long-Horizon Autonomy, checkpoints e retomada; abas persistentes para todas as ferramentas do SindPetshop-SP; exclusão de chats no desktop e mobile."
+  "notes": "Workplace Intelligence: 144 playbooks operacionais, roteamento institucional, sugestões contextuais, playbook search/launch e execução integrada ao Long-Horizon."
 }

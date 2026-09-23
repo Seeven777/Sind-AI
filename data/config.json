@@ -22,7 +22,7 @@
   "agent_max_rounds": 6,
   "agent_max_tool_calls": 16,
   "agent_tool_result_chars": 3000,
-  "release_name": "Jarvis Personal GPT 1.7 — Long-Horizon + Institutional Workspace",
+  "release_name": "Jarvis Personal GPT 1.8 — Workplace Intelligence",
   "persistent_root_name": "JarvisData",
   "action_catalog": "actions/catalog.json",
   "browser_profile_dir": "browser/profile",
@@ -78,7 +78,7 @@
   "ui_markdown": true,
   "ui_message_actions": true,
   "auto_reflection_enabled": true,
-  "release_version": "1.7",
+  "release_version": "1.8",
   "mobile_companion_enabled": true,
   "mobile_companion_autostart": false,
   "mobile_companion_host": "0.0.0.0",
@@ -116,5 +116,11 @@
   "long_horizon_max_steps": 8,
   "long_horizon_auto_resume": true,
   "long_horizon_retry_base_seconds": 8,
-  "long_horizon_auto_handoff_on_agent_limit": true
+  "long_horizon_auto_handoff_on_agent_limit": true,
+  "workplace_playbooks": "workplace/playbooks.json",
+  "workplace_auto_context": true,
+  "workplace_max_context_playbooks": 3,
+  "workplace_default_long_horizon_steps": 5,
+  "workplace_free_only": true,
+  "workplace_preopen_services": 2
 }

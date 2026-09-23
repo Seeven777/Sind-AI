@@ -1,87 +1,27 @@
-# Jarvis Personal GPT 1.7 — Capability Acquisition
+# Jarvis Personal GPT 1.8 — Workplace Intelligence
 
-GPT pessoal local, gratuito como base, adaptável ao hardware e orientado a conversa.
+Jarvis 1.8 mantém as camadas anteriores — Personal GPT, Swarm Intelligence, Apprenticeship, Capability Acquisition, Long-Horizon Autonomy e Institutional Workspace — e adiciona uma biblioteca operacional de **144 playbooks** para a rotina do SindPetshop-SP.
 
-## Princípio
+## O que muda
 
-O Jarvis não é um catálogo de comandos. Ele conversa, mantém contexto, aprende preferências/correções, pesquisa a web, consulta dados públicos, lê documentos, usa desktop/navegador e aciona infraestrutura interna quando necessário.
+- 144 rotinas locais em 12 áreas;
+- busca e recomendação de playbooks por linguagem natural;
+- contexto automático de playbooks relevantes no prompt do Jarvis;
+- preferência pelas abas institucionais já autenticadas;
+- execução de playbooks como Jobs persistentes com checkpoints;
+- ranking que aprende com uso e conclusão das rotinas;
+- sugestões contextuais no Inspector;
+- pesquisa/execução de playbooks pelo Centro de Controle;
+- métricas do Workplace Intelligence no desktop e mobile;
+- atalho de briefing diário;
+- política `free/local-first` em toda a biblioteca.
 
-A versão 1.7 preserva **Swarm Intelligence** e **Apprenticeship** e adiciona **Capability Acquisition**: quando falta uma competência, o Jarvis registra a lacuna, procura primitivas existentes, tenta compor uma Skill, busca APIs públicas seguras e, se necessário, solicita ensino/demonstração. Veja `CAPABILITY_ACQUISITION.md`, `SWARM_INTELLIGENCE.md` e `TEACHING.md`.
+Consulte `WORKPLACE_INTELLIGENCE.md` para a lista completa dos 144 playbooks.
 
-## Experiência principal
+## Política de custo
 
-A interface foi reduzida a:
+A 1.8 não adiciona dependências pagas. Os playbooks usam modelos locais, ferramentas do próprio Jarvis, abas institucionais, Knowledge Base, fontes públicas gratuitas e conectores já autorizados.
 
-- conversas;
-- projeto atual;
-- campo de chat;
-- contexto opcional;
-- Jarvis Mobile;
-- centro de controle secundário.
+## Execução
 
-Actions, Workflows, monitores e conectores continuam por baixo.
-
-## Mobile Companion
-
-A versão 1.2 permite usar o mesmo Jarvis pelo celular na rede local:
-
-1. abra o Jarvis no PC;
-2. clique em **Jarvis Mobile**;
-3. ative o acesso;
-4. abra no celular o endereço exibido;
-5. digite o PIN de pareamento.
-
-O telefone é apenas a interface. Ollama, memória, arquivos e ferramentas continuam no PC.
-
-Veja `MOBILE.md`.
-
-## Vercel
-
-A Vercel hospeda somente o launcher/PWA estático. O runtime Python continua local.
-
-O portal pode ser instalado no Android/iPhone como app web e possui uma área específica para Mobile Companion.
-
-Veja `VERCEL_DEPLOY.md`.
-
-## Serviços SindPetshop-SP mapeados
-
-- Dashboard de Insights
-- Agenda Sind
-- Facebook
-- LinkedIn
-- Instagram
-- TikTok
-- Sistema interno
-- Slack
-- sindpetshop.org.br / WordPress
-
-## Instalação Windows
-
-1. `install.bat`
-2. se necessário: `install_fast_model.bat`
-3. `run_doctor.bat`
-4. `run_personal_gpt_test.bat`
-5. `run_capability_acquisition_test.bat`
-6. `run_swarm_test.bat`
-7. `run_mobile_companion_test.bat`
-8. `run_cognitive_test.bat`
-9. `run_self_test.bat`
-10. `run_foundation_test.bat`
-11. `run_model_router_test.bat`
-12. `run_routing_test.bat`
-13. `run_health_test.bat`
-14. `run_browser_test.bat`
-15. `run_jarvis.bat`
-
-## Persistência
-
-Dados do usuário permanecem em `~/JarvisData`, fora da pasta da release.
-
-## Segurança
-
-- nenhum token/senha real acompanha o pacote;
-- credenciais ficam no keyring quando aplicável;
-- ações high/critical continuam sob governança;
-- Mobile Companion é desligado por padrão e usa PIN/token;
-- firewall mobile deve ficar restrito a redes privadas;
-- não exponha a porta 8770 diretamente à internet.
+Pedidos comuns continuam leves. O Jarvis consulta playbooks como contexto somente quando relevantes. A execução explícita de um playbook usa o Long-Horizon Runtime para poder criar checkpoints, pausar, retomar e sobreviver ao reinício.

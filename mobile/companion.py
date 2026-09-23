@@ -325,6 +325,8 @@ class MobileCompanion:
                 "single": model_status.get("single_model_mode"),
             },
             "hardware": self.agent.hardware.profile(),
+            "workplace": self.agent.workplace.stats() if hasattr(self.agent, "workplace") else {},
+            "long_horizon": self.agent.long_horizon.stats() if hasattr(self.agent, "long_horizon") else {},
             "mobile": {"url": self.url(), "lan_only": True},
         }
 

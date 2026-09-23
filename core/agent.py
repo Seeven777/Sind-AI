@@ -74,6 +74,8 @@ from acquisition.engine import CapabilityAcquisitionEngine
 from acquisition.commands import parse_acquisition_command
 from long_horizon.engine import LongHorizonEngine
 from long_horizon.commands import parse_long_horizon_command
+from workplace.engine import WorkplaceIntelligence
+from workplace.commands import parse_workplace_command
 
 from tools.apps import open_app, open_folder
 from tools.browser import open_url
@@ -320,6 +322,14 @@ class JarvisAgent:
         self.long_horizon.set_planner(self._plan_long_horizon_job)
         self.long_horizon.set_executor(self._execute_long_horizon_step)
         self.long_horizon.set_notifier(self._long_horizon_notification)
+        workplace_db = persistent_path("workplace_db", "cognitive/workplace_intelligence.db")
+        self.workplace = WorkplaceIntelligence(
+            self.base_dir / self.config.get("workplace_playbooks", "workplace/playbooks.json"),
+            workplace_db,
+            services=self.services,
+            long_horizon=self.long_horizon,
+            config=self.config,
+        )
         self.self_awareness = SelfAwareness(
             self.services, self.actions, self.workflows, self.capabilities,
             self.models, self.hardware, self.knowledge, connectors=self.connectors,
@@ -327,6 +337,7 @@ class JarvisAgent:
             demonstration=self.demonstration_teacher,
             acquisition=self.acquisition,
             long_horizon=self.long_horizon,
+            workplace=self.workplace,
         )
         self.service_runtime = InstitutionalServiceRuntime(
             self.services, self.browser_agent, self.models
@@ -420,6 +431,9 @@ class JarvisAgent:
             {"type":"function","function":{"name":"search_workflows","description":"Pesquisa workflows compostos e reutilizáveis. Prefira um workflow quando uma tarefa exigir várias ações relacionadas.","parameters":{"type":"object","properties":{"query":{"type":"string"},"limit":{"type":"integer"}},"required":["query"]}}},
             {"type":"function","function":{"name":"execute_workflow","description":"Executa um workflow encontrado por search_workflows.","parameters":{"type":"object","properties":{"workflow_id":{"type":"string"},"params":{"type":"object"}},"required":["workflow_id"]}}},
             {"type":"function","function":{"name":"workflow_stats","description":"Mostra quantidade e grupos dos workflows disponíveis.","parameters":{"type":"object","properties":{}}}},
+            {"type":"function","function":{"name":"search_workplace_playbooks","description":"Pesquisa a biblioteca de rotinas operacionais do SindPetshop-SP. Use antes de improvisar processos recorrentes de conteúdo, analytics, site, pesquisa, CCT, campanhas, equipe, documentos, automação ou qualidade.","parameters":{"type":"object","properties":{"query":{"type":"string"},"limit":{"type":"integer"},"category":{"type":"string"}},"required":["query"]}}},
+            {"type":"function","function":{"name":"run_workplace_playbook","description":"Inicia um playbook operacional como Job persistente com checkpoints, serviços institucionais e plano já estruturado.","parameters":{"type":"object","properties":{"playbook_id":{"type":"string"},"request":{"type":"string"},"priority":{"type":"integer"}},"required":["playbook_id"]}}},
+            {"type":"function","function":{"name":"workplace_stats","description":"Mostra o estado da biblioteca Workplace Intelligence e uso dos playbooks.","parameters":{"type":"object","properties":{}}}},
             {"type":"function","function":{"name":"create_long_job","description":"Cria um job persistente em segundo plano para objetivos que podem exigir muitas etapas, horas ou retomada após reinício. Não use para tarefas simples.","parameters":{"type":"object","properties":{"goal":{"type":"string"},"auto_resume":{"type":"boolean"},"priority":{"type":"integer"}},"required":["goal"]}}},
             {"type":"function","function":{"name":"list_long_jobs","description":"Lista jobs persistentes e seu progresso.","parameters":{"type":"object","properties":{"status":{"type":"string"},"limit":{"type":"integer"}}}}},
             {"type":"function","function":{"name":"long_job_status","description":"Obtém plano, progresso e estado de um job persistente.","parameters":{"type":"object","properties":{"job_id":{"type":"integer"}},"required":["job_id"]}}},
@@ -459,6 +473,13 @@ class JarvisAgent:
         if any(k in text for k in ["sindpetshop","cct","convenção","convencao","procedimento interno","política interna","politica interna","treinamento","onboarding","base de conhecimento","documentos internos"]): names.update({"list_knowledge_collections","search_knowledge","institutional_evidence","institutional_context"})
         if any(k in text for k in ["instagram","facebook","linkedin","tiktok","slack","dashboard","insights","agenda sind","sindapp","site do sindicato","sistema interno"]):
             names.add("institutional_service")
+        if any(k in text for k in [
+            "conteúdo","conteudo","campanha","publicação","publicacao","instagram","facebook","linkedin","tiktok",
+            "dashboard","insights","métrica","metrica","cct","convenção","convencao","assembleia","data-base","data base",
+            "onboarding","treinamento","reunião","reuniao","documento","relatório","relatorio","site","wordpress",
+            "automação","automacao","monitor","qualidade","revisão","revisao","equipe","slack"
+        ]):
+            names.update({"search_workplace_playbooks","run_workplace_playbook"})
         if any(k in text for k in ["projeto","campanha","contexto do projeto","nova campanha","retome o projeto","retomar projeto"]):
             names.add("project_context")
         if any(k in text for k in ["automação","automacao","agende","rotina","monitor","acompanhe","me avise","notifique","aprovação","aprovacao","integração","integracao","wordpress","portal","equipe","connector","workflow"]): names.update({"search_actions","execute_action","search_workflows","execute_workflow"})
@@ -470,7 +491,7 @@ class JarvisAgent:
         if any(k in text for k in ["aprenda sozinho","descubra como","adquira capacidade","não sabe fazer","nao sabe fazer","não consigo fazer","nao consigo fazer","o que falta para","nova capacidade","nova competência","nova competencia"]):
             names.update({"resolve_capability","acquire_capability","search_actions","search_workflows","search_capabilities"})
         if not names and any(k in text for k in complex_verbs): names.update({"search_actions","execute_action","resolve_capability"})
-        priority=["create_long_job","long_job_status","list_long_jobs","set_task_plan","resolve_capability","acquire_capability","find_public_sources","query_public_data","discover_public_interfaces","search_web","fetch_public_url","institutional_service","project_context","list_knowledge_collections","search_knowledge","institutional_evidence","institutional_context","search_actions","execute_action","search_workflows","execute_workflow","search_capabilities","execute_capability","discover_public_apis","open_url","open_app","create_file","read_file","list_files","open_folder","list_windows","select_window","inspect_selected_window","click_control","type_text","press_key","get_clipboard","set_clipboard","take_screenshot","run_skill","suggest_learned_skills"]
+        priority=["search_workplace_playbooks","run_workplace_playbook","create_long_job","long_job_status","list_long_jobs","set_task_plan","resolve_capability","acquire_capability","find_public_sources","query_public_data","discover_public_interfaces","search_web","fetch_public_url","institutional_service","project_context","list_knowledge_collections","search_knowledge","institutional_evidence","institutional_context","search_actions","execute_action","search_workflows","execute_workflow","search_capabilities","execute_capability","discover_public_apis","open_url","open_app","create_file","read_file","list_files","open_folder","list_windows","select_window","inspect_selected_window","click_control","type_text","press_key","get_clipboard","set_clipboard","take_screenshot","run_skill","suggest_learned_skills"]
         ordered=[n for n in priority if n in names and n in self.tool_schema_by_name]
         return [self.tool_schema_by_name[n] for n in ordered[:10]]
 
@@ -508,6 +529,8 @@ class JarvisAgent:
         acquisition_context = self.acquisition.context(user_text, max_chars=1800).get("text", "") if hasattr(self, "acquisition") else ""
         acquisition_stats = self.acquisition.stats() if hasattr(self, "acquisition") else {}
         swarm_stats = self.swarm.stats() if hasattr(self, "swarm") else {}
+        workplace_stats = self.workplace.stats() if hasattr(self, "workplace") else {}
+        workplace_context = self.workplace.context(user_text, max_chars=3600).get("text", "") if hasattr(self, "workplace") else ""
         return f"""Você é Jarvis, um GPT pessoal local.
 Converse naturalmente em português e mantenha continuidade. Entenda o objetivo e decida sozinho se deve responder, pesquisar, consultar conhecimento ou agir.
 
@@ -532,6 +555,8 @@ PRINCÍPIOS
 - Se descoberta automática não encontrar executor confiável, peça ensino por explicação ou demonstração e reutilize o aprendizado depois.
 - Quando houver um procedimento ensinado relevante, trate-o como instrução operacional do usuário, respeitando governança e confirmações.
 - Em tarefas complexas, use o trabalho do Swarm/Blackboard como orientação; não exponha discussões internas dos agentes.
+- Antes de improvisar uma rotina recorrente de trabalho, considere os playbooks do Workplace Intelligence; eles codificam formas preferidas de usar serviços, agentes e checkpoints.
+- Playbooks são orientação operacional, não autorização para ignorar confirmações, limites de acesso ou evidências.
 
 CONTEXTO
 - Conversas persistentes: {conversation_stats.get('sessions',0)}; mensagens: {conversation_stats.get('messages',0)}.
@@ -540,7 +565,8 @@ CONTEXTO
 - Swarm Intelligence: {swarm_stats.get('agents',0)} papéis; {swarm_stats.get('sessions',0)} coordenações registradas.
 - Capability Acquisition: {sum(acquisition_stats.get('gaps',{}).values()) if acquisition_stats else 0} lacuna(s) registradas; {acquisition_stats.get('candidates',{}).get('installed',0) if acquisition_stats else 0} aquisição(ões) instalada(s).
 - Long-Horizon: {long_stats.get('jobs',0)} job(s) persistentes; {long_stats.get('active',0)} ativo(s).
-- Para objetivos extensos, use create_long_job em vez de abandonar a tarefa ao atingir um limite estrutural.
+- Workplace Intelligence: {workplace_stats.get('playbooks',0)} playbooks em {workplace_stats.get('categories',0)} áreas; {workplace_stats.get('long_horizon',0)} preparados para execução longa.
+- Para objetivos extensos, use create_long_job ou run_workplace_playbook em vez de abandonar a tarefa ao atingir um limite estrutural.
 - Workspace: {self.workspace}
 - Janela selecionada: {self.deep_access.snapshot().get('title') or 'nenhuma'}
 
@@ -561,6 +587,9 @@ SKILLS APRENDIDAS RELEVANTES
 
 AQUISIÇÃO DE CAPACIDADE RELEVANTE
 {acquisition_context or "- nenhuma lacuna/candidato relacionado"}
+
+PLAYBOOKS DE TRABALHO RELEVANTES
+{workplace_context or "- nenhum playbook específico necessário"}
 {mem}
 """
 
@@ -1011,6 +1040,17 @@ Entregue uma conclusão curta desta etapa para ser armazenada no checkpoint.
 
     def _long_horizon_notification(self, job, result):
         status = str(result.get("status") or job.get("status") or "")
+        try:
+            metadata = dict(job.get("metadata") or {})
+            playbook_id = metadata.get("playbook_id")
+            if playbook_id:
+                self.workplace.record_outcome(
+                    playbook_id=playbook_id,
+                    status="completed" if status == "completed" else ("waiting" if status == "waiting_user" else "failed"),
+                    note=str(result.get("error") or job.get("final_result") or job.get("last_error") or "")[:4000],
+                )
+        except Exception:
+            pass
         if status == "completed":
             title = f"Job concluído: {job.get('goal','')[:70]}"
             message = "A tarefa de longo prazo terminou. Abra Atividade para ver os checkpoints."
@@ -1031,6 +1071,57 @@ Entregue uma conclusão curta desta etapa para ser armazenada no checkpoint.
             )
         except Exception:
             pass
+
+    def _run_workplace_command(self, cmd, status=None, confirm_callback=None):
+        action = cmd.get("action")
+        if action == "list":
+            stats = self.workplace.stats()
+            cats = sorted(self.workplace.categories)
+            return (
+                f"Workplace Intelligence possui {stats.get('playbooks',0)} playbooks em {stats.get('categories',0)} áreas.\n"
+                + "Categorias: " + ", ".join(cats)
+                + "\n\nDiga `Qual playbook para ...` para eu encontrar a rotina mais adequada."
+            )
+
+        query = str(cmd.get("query") or "").strip()
+        found = self.workplace.search(query, limit=6).get("items", [])
+        if not found:
+            return f"Não encontrei playbook relacionado a: {query}"
+
+        if action == "search":
+            return "Playbooks mais próximos:\n" + "\n".join(
+                f"• **{x.get('name')}** — `{x.get('id')}` — {x.get('description')}"
+                for x in found
+            )
+
+        item = found[0]
+        if action == "get":
+            return (
+                f"**{item.get('name')}** (`{item.get('id')}`)\n\n"
+                f"{item.get('description')}\n\n"
+                f"Serviços: {', '.join(item.get('services',[])) or 'nenhum'}. "
+                f"Agentes: {', '.join(item.get('agents',[])) or 'nenhum'}."
+            )
+
+        if action == "run":
+            if status:
+                status(f"Workplace Intelligence: iniciando {item.get('name')}")
+            result = self.workplace.start_long_horizon(
+                item.get("id"),
+                request=query,
+                project_id=self.projects.current_id(),
+                session_id=self.conversations.current_session_id,
+                priority=65,
+            )
+            if not result.get("ok"):
+                return result.get("error") or "Não consegui iniciar o playbook."
+            job = result.get("data") or {}
+            return (
+                f"Iniciei o playbook **{item.get('name')}** como Job persistente #{job.get('id')}. "
+                "As abas institucionais relevantes foram priorizadas e o trabalho seguirá em checkpoints."
+            )
+
+        return "Comando de Workplace Intelligence desconhecido."
 
     def _run_long_horizon_command(self, cmd, status=None, confirm_callback=None):
         action = cmd.get("action")
@@ -1474,6 +1565,25 @@ Entregue uma conclusão curta desta etapa para ser armazenada no checkpoint.
             return self.institutional_knowledge.execute(
                 "evidence_pack", query=args.get("query", ""), limit=args.get("limit", 10)
             )
+
+        if name == "search_workplace_playbooks":
+            return self.workplace.search(
+                args.get("query", ""),
+                limit=int(args.get("limit", 8)),
+                category=args.get("category") or None,
+            )
+
+        if name == "run_workplace_playbook":
+            return self.workplace.start_long_horizon(
+                args.get("playbook_id", ""),
+                request=args.get("request", ""),
+                project_id=self.projects.current_id(),
+                session_id=self.conversations.current_session_id,
+                priority=int(args.get("priority", 60)),
+            )
+
+        if name == "workplace_stats":
+            return self.workplace.stats()
 
         if name == "create_long_job":
             return self.long_horizon.create(
@@ -2372,6 +2482,12 @@ Entregue uma conclusão curta desta etapa para ser armazenada no checkpoint.
                     return "Instalação cancelada."
                 if status: status(f"Capability Factory: instalando candidato #{cid}")
                 return self.summarize("install_capability_candidate", self.acquisition.install_candidate(cid))
+
+        workplace_cmd = parse_workplace_command(user_text)
+        if workplace_cmd:
+            return self._run_workplace_command(
+                workplace_cmd, status=status, confirm_callback=confirm_callback
+            )
 
         long_cmd = parse_long_horizon_command(user_text)
         if long_cmd:

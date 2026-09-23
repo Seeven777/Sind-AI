@@ -214,7 +214,7 @@ function deleteConversation(id,title){
 }
 
 function showWelcome(){
-  $('conversation').innerHTML=`<div class="welcome" id="welcome"><div class="welcome-orb">✦</div><h1>O que você precisa?</h1><p>Converse normalmente. O Jarvis lembra contexto, consulta dados, pesquisa e usa ferramentas quando isso realmente ajuda.</p><div class="welcome-hints"><button data-prompt="Quero começar um novo projeto. Me ajude a organizar o contexto.">Novo projeto</button><button data-prompt="Pesquise fontes oficiais sobre um assunto que eu indicar.">Pesquisar</button><button data-prompt="O que você lembra das nossas conversas recentes?">Lembrar</button></div></div>`;
+  $('conversation').innerHTML=`<div class="welcome" id="welcome"><div class="welcome-orb">✦</div><h1>O que você precisa?</h1><p>Converse normalmente. O Jarvis lembra contexto, consulta dados, pesquisa e usa ferramentas quando isso realmente ajuda.</p><div class="welcome-hints"><button data-prompt="Quero começar um novo projeto. Me ajude a organizar o contexto.">Novo projeto</button><button data-prompt="Pesquise fontes oficiais sobre um assunto que eu indicar.">Pesquisar</button><button data-prompt="Faça um briefing do meu dia usando agenda, pendências, jobs e contexto atual.">Briefing do dia</button><button data-prompt="O que você lembra das nossas conversas recentes?">Lembrar</button></div></div>`;
   bindPromptButtons();
 }
 
@@ -237,6 +237,9 @@ function renderContext(){
   $('reflectionList').innerHTML=refl.slice(0,7).map(x=>`<div class="simple-item"><b>${esc(x.kind||'reflection')}</b><span>${esc(x.insight||'')}</span></div>`).join('')||'<div class="simple-item"><span>Nenhuma reflexão relevante ainda.</span></div>';
   const at=snapshot?.attachments?.items||[];
   $('attachmentList').innerHTML=at.slice(0,8).map(x=>`<div class="simple-item"><b>${esc(x.name)}</b><span>${esc(x.status||'')}</span></div>`).join('')||'<div class="simple-item"><span>Nenhum anexo nesta conversa/projeto.</span></div>';
+  const wp=snapshot?.workplace?.suggestions||[];
+  $('workplaceSuggestionList').innerHTML=wp.slice(0,6).map(x=>`<button class="suggestion-item" data-playbook-id="${esc(x.id)}" data-playbook-name="${esc(x.name)}"><b>${esc(x.name)}</b><span>${esc(x.description||'')}</span><em>iniciar ›</em></button>`).join('')||'<div class="simple-item"><span>Nenhuma rotina específica sugerida agora.</span></div>';
+  document.querySelectorAll('[data-playbook-id]').forEach(btn=>btn.onclick=()=>startPlaybook(btn.dataset.playbookId,btn.dataset.playbookName||''));
 }
 function renderSources(){
   const pd=snapshot?.public_data||{};const stats=pd.stats||{};const sources=pd.sources||[];
@@ -411,7 +414,7 @@ function longJobAction(id,action){
 
 function renderControlCenter(){
   if(!snapshot)return;
-  const a=snapshot.actions||{},w=snapshot.workflows||{},c=snapshot.capabilities||{},p=snapshot.public_data?.stats||{},k=snapshot.knowledge||{},auto=snapshot.automations?.stats||{},lh=snapshot.long_horizon?.stats||{},con=snapshot.connectors?.stats||{},r=snapshot.cognitive?.reflections||{},proj=snapshot.projects?.stats||{},acq=snapshot.acquisition?.stats||{};
+  const a=snapshot.actions||{},w=snapshot.workflows||{},c=snapshot.capabilities||{},p=snapshot.public_data?.stats||{},k=snapshot.knowledge||{},auto=snapshot.automations?.stats||{},lh=snapshot.long_horizon?.stats||{},wp=snapshot.workplace?.stats||{},con=snapshot.connectors?.stats||{},r=snapshot.cognitive?.reflections||{},proj=snapshot.projects?.stats||{},acq=snapshot.acquisition?.stats||{};
   const tiles=[
     ['CONVERSATION',snapshot.cognitive?.conversations?.messages||0,'mensagens persistentes'],
     ['PROJECTS',proj.projects||0,'contextos ativos'],
@@ -421,12 +424,36 @@ function renderControlCenter(){
     ['WORKFLOWS',w.workflows||0,'fluxos compostos'],
     ['AUTONOMY',auto.jobs||0,'automações'],
     ['LONG HORIZON',lh.active||0,'jobs ativos'],
+    ['PLAYBOOKS',wp.playbooks||0,'rotinas operacionais'],
     ['ACQUISITION',(acq.candidates?.installed||0),'competências adquiridas'],
     ['GAPS',Object.values(acq.gaps||{}).reduce((a,b)=>a+b,0),'lacunas registradas'],
     ['REFLECTION',r.active||0,'aprendizados em análise'],
   ];
   $('controlGrid').innerHTML=tiles.map(x=>`<div class="control-tile"><small>${x[0]}</small><b>${x[1]}</b><span>${x[2]}</span></div>`).join('');
 }
+function searchPlaybooks(){
+  const q=$('playbookQuery').value.trim();if(!q||!bridge)return;
+  $('playbookSearchResults').innerHTML='<div class="advanced-note">Procurando rotinas…</div>';
+  bridge.searchPlaybooks(q,raw=>{
+    let d={};try{d=JSON.parse(raw)}catch{}
+    const items=d.items||[];
+    $('playbookSearchResults').innerHTML=items.map(x=>`<div class="playbook-card"><div><small>${esc((x.category||'workplace').toUpperCase())}</small><b>${esc(x.name)}</b><span>${esc(x.description||'')}</span><em>${esc((x.services||[]).join(' • '))}</em></div><button data-start-playbook="${esc(x.id)}" data-playbook-title="${esc(x.name)}">Iniciar</button></div>`).join('')||'<div class="advanced-note">Nenhum playbook correspondente.</div>';
+    document.querySelectorAll('[data-start-playbook]').forEach(btn=>btn.onclick=()=>startPlaybook(btn.dataset.startPlaybook,btn.dataset.playbookTitle||''));
+  });
+}
+function startPlaybook(id,name){
+  if(!bridge||!id)return;
+  const request=(name?`Executar a rotina ${name}. `:'')+(lastUserPrompt||'');
+  bridge.startPlaybook(id,request,raw=>{
+    let d={};try{d=JSON.parse(raw)}catch{}
+    if(!d.ok){alert(d.error||'Não foi possível iniciar o playbook.');return}
+    const job=d.data||{};
+    closeOverlay('controlOverlay');
+    addMessage('assistant',`Iniciei **${name||d.playbook?.name||'o playbook'}** como Job persistente #${job.id||'—'}. Acompanhe em Contexto → Atividade.`);
+    fetchSnapshot();
+  });
+}
+
 function searchSources(){
   const q=$('sourceQuery').value.trim();if(!q||!bridge)return;
   $('sourceSearchResults').innerHTML='<div class="advanced-note">Pesquisando catálogo…</div>';
@@ -513,6 +540,7 @@ $('controlBtn').onclick=()=>{openOverlay('controlOverlay');renderControlCenter()
 document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>closeOverlay(b.dataset.close));
 document.querySelectorAll('.overlay').forEach(x=>x.onclick=e=>{if(e.target===x)x.classList.add('hidden')});
 $('sourceSearchBtn').onclick=searchSources;$('sourceQuery').addEventListener('keydown',e=>{if(e.key==='Enter')searchSources()});
+$('playbookSearchBtn').onclick=searchPlaybooks;$('playbookQuery').addEventListener('keydown',e=>{if(e.key==='Enter')searchPlaybooks()});
 $('contextToggle').onclick=()=>toggleInspector();$('closeInspector').onclick=()=>toggleInspector(false);
 $('compactBtn').onclick=()=>{document.body.classList.toggle('compact');if(bridge)bridge.setMode(document.body.classList.contains('compact')?'compact':'habitat')};
 document.querySelectorAll('[data-window]').forEach(b=>b.onclick=()=>bridge&&bridge.windowAction(b.dataset.window));

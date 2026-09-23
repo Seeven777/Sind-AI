@@ -1,7 +1,7 @@
 class SelfAwareness:
     """Grounded self-knowledge from the actual runtime, not model imagination."""
 
-    def __init__(self, services, actions, workflows, capabilities, models, hardware, knowledge, connectors=None, swarm=None, apprenticeship=None, demonstration=None, acquisition=None, long_horizon=None):
+    def __init__(self, services, actions, workflows, capabilities, models, hardware, knowledge, connectors=None, swarm=None, apprenticeship=None, demonstration=None, acquisition=None, long_horizon=None, workplace=None):
         self.services = services
         self.actions = actions
         self.workflows = workflows
@@ -15,6 +15,7 @@ class SelfAwareness:
         self.demonstration = demonstration
         self.acquisition = acquisition
         self.long_horizon = long_horizon
+        self.workplace = workplace
 
     def matches(self, text):
         t = str(text or "").lower().strip()
@@ -26,6 +27,7 @@ class SelfAwareness:
             "como eu te ensino", "como te ensinar", "você consegue aprender", "voce consegue aprender",
             "como você aprende sozinho", "como voce aprende sozinho", "adquirir novas capacidades", "lacunas de capacidade",
             "tarefas de longo prazo", "jobs persistentes", "trabalhar por horas", "continuar depois de reiniciar",
+            "playbooks", "rotinas de trabalho", "workplace intelligence", "biblioteca de rotinas",
         )
         return any(x in t for x in patterns)
 
@@ -50,6 +52,7 @@ class SelfAwareness:
             "demonstration": self.demonstration.status() if self.demonstration else {},
             "acquisition": self.acquisition.stats() if self.acquisition else {},
             "long_horizon": self.long_horizon.stats() if self.long_horizon else {},
+            "workplace": self.workplace.stats() if self.workplace else {},
         }
 
     def _service_lines(self):
@@ -80,6 +83,16 @@ class SelfAwareness:
 
     def answer(self, text):
         t = str(text or "").lower()
+
+        if any(k in t for k in ("playbooks", "rotinas de trabalho", "workplace intelligence", "biblioteca de rotinas")):
+            stats = self.workplace.stats() if self.workplace else {}
+            return (
+                f"Meu **Workplace Intelligence** possui **{stats.get('playbooks',0)} playbooks** em "
+                f"**{stats.get('categories',0)} áreas de trabalho**. Eles cobrem conteúdo, analytics, redes, site, "
+                "pesquisa, CCT, campanhas, equipe, operações, documentos, automação e qualidade.\n\n"
+                "Eu uso esses playbooks como orientação antes de improvisar rotinas recorrentes e posso iniciá-los "
+                "como Jobs persistentes com checkpoints."
+            )
 
         if any(k in t for k in ("tarefas de longo prazo", "jobs persistentes", "trabalhar por horas", "continuar depois de reiniciar")):
             stats = self.long_horizon.stats() if self.long_horizon else {}
@@ -135,6 +148,7 @@ class SelfAwareness:
             f"- **{sum(snap.get('acquisition',{}).get('gaps',{}).values()) if snap.get('acquisition') else 0} lacunas de capacidade** registradas pelo Capability Acquisition Engine.\n"
             f"- **{snap.get('acquisition',{}).get('candidates',{}).get('installed',0) if snap.get('acquisition') else 0} competências adquiridas** instaladas por descoberta/composição.\n"
             f"- **{snap.get('long_horizon',{}).get('active',0)} jobs persistentes ativos** no Long-Horizon Runtime.\n"
+            f"- **{snap.get('workplace',{}).get('playbooks',0)} playbooks institucionais** no Workplace Intelligence.\n"
             f"- Modelos locais: `{snap['models'].get('fast_model')}` para conversa e `{snap['models'].get('reasoning_model')}` para raciocínio.\n"
             "- Posso combinar memória, Knowledge Base, web/dados públicos, arquivos, navegador, desktop, automações e conectores autorizados.\n\n"
             "Quando você pergunta se eu consigo fazer algo, a resposta vem deste estado real do sistema — não de uma suposição do modelo."

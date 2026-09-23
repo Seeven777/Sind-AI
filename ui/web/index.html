@@ -76,6 +76,7 @@
             <button data-prompt="Quero começar um novo projeto. Me ajude a organizar o contexto."><span>◇</span><b>Novo projeto</b><small>Organizar contexto e decisões</small></button>
             <button data-prompt="Pesquise fontes oficiais sobre um assunto que eu indicar."><span>⌕</span><b>Pesquisar</b><small>Web e dados públicos</small></button>
             <button data-prompt="O que você lembra das nossas conversas recentes?"><span>◌</span><b>Lembrar</b><small>Recuperar contexto anterior</small></button>
+            <button data-prompt="Faça um briefing do meu dia usando agenda, pendências, jobs e contexto atual."><span>◎</span><b>Briefing do dia</b><small>Prioridades e próximos passos</small></button>
           </div>
         </div>
       </div>
@@ -121,6 +122,7 @@
         <div class="panel-block"><div class="block-title">Aprendizado <span>memória ativa</span></div><div id="lessonList" class="simple-list"></div></div>
         <div class="panel-block"><div class="block-title">Reflexões <span>melhoria contínua</span></div><div id="reflectionList" class="simple-list"></div></div>
         <div class="panel-block"><div class="block-title">Anexos <span>contexto documental</span></div><div id="attachmentList" class="simple-list"></div></div>
+        <div class="panel-block"><div class="block-title">Próximas rotinas <span>workplace intelligence</span></div><div id="workplaceSuggestionList" class="simple-list"></div></div>
       </section>
       <section class="panel" id="panel-sources">
         <div class="panel-intro"><small>PUBLIC DATA</small><h2>Fontes disponíveis</h2><p>O Jarvis escolhe fontes oficiais e dados estruturados conforme a tarefa.</p></div>
@@ -205,6 +207,7 @@
   <div class="modal control-modal">
     <div class="modal-head"><div><small>INTERNAL SYSTEM</small><h2>Centro de controle</h2><p>A infraestrutura fica acessível sem dominar a experiência principal.</p></div><button data-close="controlOverlay">×</button></div>
     <div class="control-grid" id="controlGrid"></div>
+    <div class="control-section"><div class="section-heading"><div><small>WORKPLACE INTELLIGENCE</small><h3>Playbooks de trabalho</h3></div></div><p class="advanced-note">144 rotinas locais para conteúdo, analytics, redes, site, pesquisa, CCT, campanhas, equipe, operações, documentos, automação e qualidade.</p><div class="source-search"><input id="playbookQuery" placeholder="Ex.: analisar Instagram, campanha de data-base, onboarding"><button id="playbookSearchBtn">Buscar</button></div><div class="control-results" id="playbookSearchResults"></div></div>
     <div class="control-section"><div class="section-heading"><div><small>PUBLIC DATA SCOUT</small><h3>Explorar fontes públicas</h3></div></div><div class="source-search"><input id="sourceQuery" placeholder="Ex.: emprego em São Paulo, CNPJ, processos judiciais"><button id="sourceSearchBtn">Buscar</button></div><div class="control-results" id="sourceSearchResults"></div></div>
     <div class="control-section"><div class="section-heading"><div><small>INTERNAL BROKERS</small><h3>Diagnóstico técnico</h3></div></div><p class="advanced-note">Actions, Workflows, automações, monitores e conectores continuam ativos por baixo. O Jarvis deve escolhê-los sozinho; use esta área apenas para inspeção.</p></div>
   </div>

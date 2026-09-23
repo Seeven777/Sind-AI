@@ -79,3 +79,8 @@ A exposição em LAN (`0.0.0.0`) é opcional e só deve ocorrer após revisão d
 A inteligência deve continuar crescendo prioritariamente por software
 determinístico, memória, conhecimento, ferramentas, automações e integrações,
 não por exigir modelos cada vez maiores.
+
+
+## Workplace Intelligence 1.8
+
+Todos os 144 playbooks usam `free_only=true`. A camada não requer API paga, assinatura adicional ou modelo hospedado. Integrações externas continuam condicionadas às credenciais/serviços que a organização já possui; o playbook em si não adiciona custo.
