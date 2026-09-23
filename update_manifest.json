@@ -1,8 +1,8 @@
 {
   "product": "Jarvis Personal GPT",
-  "version": "1.6",
+  "version": "1.7",
   "channel": "main",
   "min_python": "3.12",
   "data_schema": 1,
-  "notes": "Capability Acquisition Engine: detecta lacunas, procura caminhos, compõe Skills declarativas, valida e aprende com falhas."
+  "notes": "Long-Horizon Autonomy, checkpoints e retomada; abas persistentes para todas as ferramentas do SindPetshop-SP; exclusão de chats no desktop e mobile."
 }

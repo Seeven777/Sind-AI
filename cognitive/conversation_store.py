@@ -164,6 +164,48 @@ class ConversationStore:
                               (int(limit),)).fetchall()
         return {"ok":True,"items":[dict(r) for r in rows],"count":len(rows),"current":self.current_session_id}
 
+
+    def delete_session(self, session_id):
+        """Exclui permanentemente uma conversa e suas mensagens/índice FTS."""
+        sid = int(session_id)
+        with self._connect() as conn:
+            row = conn.execute(
+                "SELECT id,title FROM conversation_sessions WHERE id=?",
+                (sid,)
+            ).fetchone()
+            if not row:
+                return {"ok": False, "error": "Conversa não encontrada."}
+
+            message_rows = conn.execute(
+                "SELECT id FROM conversation_messages WHERE session_id=?",
+                (sid,)
+            ).fetchall()
+            message_ids = [int(x["id"]) for x in message_rows]
+
+            try:
+                conn.execute("DELETE FROM conversation_fts WHERE session_id=?", (sid,))
+            except sqlite3.OperationalError:
+                # FTS é opcional.
+                pass
+
+            conn.execute("DELETE FROM conversation_messages WHERE session_id=?", (sid,))
+            conn.execute("DELETE FROM conversation_sessions WHERE id=?", (sid,))
+
+        if self.current_session_id == sid:
+            next_id = self._latest_session_id()
+            if next_id:
+                self.current_session_id = next_id
+            else:
+                created = self.new_session()
+                self.current_session_id = int(created["session_id"])
+
+        return {
+            "ok": True,
+            "deleted_session_id": sid,
+            "deleted_messages": len(message_ids),
+            "current": self.current_session_id,
+        }
+
     def stats(self):
         with self._connect() as conn:
             sessions=conn.execute("SELECT COUNT(*) n FROM conversation_sessions WHERE archived=0").fetchone()["n"]

@@ -533,6 +533,14 @@ class MobileCompanion:
                     result = companion.agent.conversations.set_current(sid)
                     return self._json(200 if result.get("ok") else 404, result)
 
+                if path == "/api/conversation/delete":
+                    try:
+                        sid = int(body.get("session_id"))
+                    except Exception:
+                        return self._json(400, {"ok": False, "error": "session_id inválido."})
+                    result = companion.agent.delete_conversation(sid)
+                    return self._json(200 if result.get("ok") else 404, result)
+
                 if path == "/api/upload":
                     name = Path(str(body.get("name", "arquivo"))).name
                     encoded = str(body.get("data", ""))

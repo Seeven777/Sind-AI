@@ -163,8 +163,18 @@ function renderSessions(){
   const info=snapshot?.cognitive?.sessions||{};const items=info.items||[];const current=info.current;
   const q=($('conversationSearch').value||'').trim().toLowerCase();
   const filtered=q?items.filter(s=>String(s.title||'').toLowerCase().includes(q)):items;
-  $('conversationList').innerHTML=filtered.map(s=>`<button class="conversation-item ${Number(s.id)===Number(current)?'active':''}" data-session="${s.id}" title="${esc(s.title)}">${esc(s.title||'Nova conversa')}</button>`).join('')||'<div class="conversation-item">Nenhuma conversa</div>';
+  $('conversationList').innerHTML=filtered.map(s=>`
+    <div class="conversation-row ${Number(s.id)===Number(current)?'active':''}">
+      <button class="conversation-item ${Number(s.id)===Number(current)?'active':''}" data-session="${s.id}" title="${esc(s.title)}">
+        <span>${esc(s.title||'Nova conversa')}</span><small>${s.message_count||0}</small>
+      </button>
+      <button class="conversation-delete" data-delete-session="${s.id}" data-delete-title="${esc(s.title||'Nova conversa')}" title="Excluir conversa">×</button>
+    </div>`).join('')||'<div class="conversation-item empty">Nenhuma conversa</div>';
   document.querySelectorAll('[data-session]').forEach(btn=>btn.onclick=()=>openConversation(Number(btn.dataset.session)));
+  document.querySelectorAll('[data-delete-session]').forEach(btn=>btn.onclick=e=>{
+    e.stopPropagation();
+    deleteConversation(Number(btn.dataset.deleteSession),btn.dataset.deleteTitle||'esta conversa');
+  });
 }
 function openConversation(id){
   if(!bridge)return;
@@ -182,6 +192,27 @@ function openConversation(id){
     fetchSnapshot();
   });
 }
+function deleteConversation(id,title){
+  if(!bridge||busy)return;
+  const ok=confirm(`Excluir permanentemente “${title}”?\\n\\nAs mensagens serão removidas do histórico. Anexos exclusivos desta conversa também serão removidos da Knowledge Base. Anexos ligados a um projeto serão preservados.`);
+  if(!ok)return;
+  bridge.deleteConversation(id,raw=>{
+    let d={};try{d=JSON.parse(raw)}catch{}
+    if(!d.ok){alert(d.error||'Não foi possível excluir a conversa.');return}
+    if(d.deleted_was_current){
+      $('conversation').innerHTML='';
+      (d.messages||[]).forEach(m=>{
+        let metadata=m.metadata||{};
+        if(typeof metadata==='string'){try{metadata=JSON.parse(metadata)}catch{metadata={}}}
+        addMessage(m.role==='assistant'?'assistant':'user',m.content,!metadata?.error,(m.created_at||'').slice(11,16),metadata);
+      });
+      if(!(d.messages||[]).length)showWelcome();
+      requestAnimationFrame(()=>scrollChatToBottom(false));
+    }
+    fetchSnapshot();
+  });
+}
+
 function showWelcome(){
   $('conversation').innerHTML=`<div class="welcome" id="welcome"><div class="welcome-orb">✦</div><h1>O que você precisa?</h1><p>Converse normalmente. O Jarvis lembra contexto, consulta dados, pesquisa e usa ferramentas quando isso realmente ajuda.</p><div class="welcome-hints"><button data-prompt="Quero começar um novo projeto. Me ajude a organizar o contexto.">Novo projeto</button><button data-prompt="Pesquise fontes oficiais sobre um assunto que eu indicar.">Pesquisar</button><button data-prompt="O que você lembra das nossas conversas recentes?">Lembrar</button></div></div>`;
   bindPromptButtons();
@@ -213,8 +244,18 @@ function renderSources(){
   $('sourceList').innerHTML=sources.slice(0,14).map(x=>`<div class="simple-item"><b>${esc(x.name)}</b><span>${esc((x.topics||[]).slice(0,4).join(' • '))}</span></div>`).join('');
 }
 function renderActivity(){
-  const tasks=snapshot?.recent_tasks||[];const alerts=snapshot?.notifications?.unread||[];const improvements=snapshot?.improvements?.items||[];
+  const tasks=snapshot?.recent_tasks||[];const alerts=snapshot?.notifications?.unread||[];const improvements=snapshot?.improvements?.items||[];const jobs=snapshot?.long_horizon?.items||[];
   $('activityList').innerHTML=tasks.slice(0,8).map(x=>`<div class="simple-item"><b>#${x.id} • ${esc((x.status||'').toUpperCase())}</b><span>${esc(x.goal||'')}</span></div>`).join('')||'<div class="simple-item"><span>Nenhuma atividade recente.</span></div>';
+  $('longJobList').innerHTML=jobs.slice(0,8).map(x=>{
+    const p=x.progress||{};
+    const controls=x.status==='paused'?`<button data-long-job="${x.id}" data-long-action="resume">Retomar</button>`:
+      x.status==='waiting_user'?`<button data-long-job="${x.id}" data-long-action="resume">Revisar/retomar</button>`:
+      ['completed','cancelled','failed'].includes(x.status)?'':
+      `<button data-long-job="${x.id}" data-long-action="pause">Pausar</button>`;
+    const cancel=!['completed','cancelled'].includes(x.status)?`<button data-long-job="${x.id}" data-long-action="cancel">Cancelar</button>`:'';
+    return `<div class="simple-item long-job-item"><b>#${x.id} • ${esc((x.status||'').toUpperCase())} • ${p.percent||0}%</b><span>${esc(x.goal||'')}</span><div class="long-job-progress"><i style="width:${Math.max(0,Math.min(100,p.percent||0))}%"></i></div><div class="long-job-actions">${controls}${cancel}</div></div>`;
+  }).join('')||'<div class="simple-item"><span>Nenhum job persistente.</span></div>';
+  document.querySelectorAll('[data-long-job]').forEach(btn=>btn.onclick=()=>longJobAction(Number(btn.dataset.longJob),btn.dataset.longAction));
   $('alertList').innerHTML=alerts.slice(0,8).map(x=>`<div class="simple-item"><b>${esc(x.title||'Alerta')}</b><span>${esc(x.message||'')}</span></div>`).join('')||'<div class="simple-item"><span>Nenhum alerta pendente.</span></div>';
   $('improvementList').innerHTML=improvements.slice(0,8).map(x=>`<div class="simple-item"><b>${esc(x.title||x.kind)}</b><span>${esc(x.description||'')}</span></div>`).join('')||'<div class="simple-item"><span>Nenhuma melhoria sugerida pendente.</span></div>';
 }
@@ -359,9 +400,18 @@ function changeUpdateChannel(value){
   bridge.setUpdateChannel(value,()=>setTimeout(fetchSnapshot,800));
 }
 
+function longJobAction(id,action){
+  if(!bridge)return;
+  bridge.longJobAction(id,action,raw=>{
+    let d={};try{d=JSON.parse(raw)}catch{}
+    if(!d.ok&&d.error)alert(d.error);
+    fetchSnapshot();
+  });
+}
+
 function renderControlCenter(){
   if(!snapshot)return;
-  const a=snapshot.actions||{},w=snapshot.workflows||{},c=snapshot.capabilities||{},p=snapshot.public_data?.stats||{},k=snapshot.knowledge||{},auto=snapshot.automations?.stats||{},con=snapshot.connectors?.stats||{},r=snapshot.cognitive?.reflections||{},proj=snapshot.projects?.stats||{},acq=snapshot.acquisition?.stats||{};
+  const a=snapshot.actions||{},w=snapshot.workflows||{},c=snapshot.capabilities||{},p=snapshot.public_data?.stats||{},k=snapshot.knowledge||{},auto=snapshot.automations?.stats||{},lh=snapshot.long_horizon?.stats||{},con=snapshot.connectors?.stats||{},r=snapshot.cognitive?.reflections||{},proj=snapshot.projects?.stats||{},acq=snapshot.acquisition?.stats||{};
   const tiles=[
     ['CONVERSATION',snapshot.cognitive?.conversations?.messages||0,'mensagens persistentes'],
     ['PROJECTS',proj.projects||0,'contextos ativos'],
@@ -370,6 +420,7 @@ function renderControlCenter(){
     ['ACTIONS',a.actions||0,'ferramentas internas'],
     ['WORKFLOWS',w.workflows||0,'fluxos compostos'],
     ['AUTONOMY',auto.jobs||0,'automações'],
+    ['LONG HORIZON',lh.active||0,'jobs ativos'],
     ['ACQUISITION',(acq.candidates?.installed||0),'competências adquiridas'],
     ['GAPS',Object.values(acq.gaps||{}).reduce((a,b)=>a+b,0),'lacunas registradas'],
     ['REFLECTION',r.active||0,'aprendizados em análise'],

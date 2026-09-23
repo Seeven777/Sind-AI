@@ -1,7 +1,7 @@
 class SelfAwareness:
     """Grounded self-knowledge from the actual runtime, not model imagination."""
 
-    def __init__(self, services, actions, workflows, capabilities, models, hardware, knowledge, connectors=None, swarm=None, apprenticeship=None, demonstration=None, acquisition=None):
+    def __init__(self, services, actions, workflows, capabilities, models, hardware, knowledge, connectors=None, swarm=None, apprenticeship=None, demonstration=None, acquisition=None, long_horizon=None):
         self.services = services
         self.actions = actions
         self.workflows = workflows
@@ -14,6 +14,7 @@ class SelfAwareness:
         self.apprenticeship = apprenticeship
         self.demonstration = demonstration
         self.acquisition = acquisition
+        self.long_horizon = long_horizon
 
     def matches(self, text):
         t = str(text or "").lower().strip()
@@ -24,6 +25,7 @@ class SelfAwareness:
             "quais recursos", "suas capacidades", "suas ferramentas", "quais agentes", "seus agentes",
             "como eu te ensino", "como te ensinar", "você consegue aprender", "voce consegue aprender",
             "como você aprende sozinho", "como voce aprende sozinho", "adquirir novas capacidades", "lacunas de capacidade",
+            "tarefas de longo prazo", "jobs persistentes", "trabalhar por horas", "continuar depois de reiniciar",
         )
         return any(x in t for x in patterns)
 
@@ -47,6 +49,7 @@ class SelfAwareness:
             "apprenticeship": self.apprenticeship.stats() if self.apprenticeship else {},
             "demonstration": self.demonstration.status() if self.demonstration else {},
             "acquisition": self.acquisition.stats() if self.acquisition else {},
+            "long_horizon": self.long_horizon.stats() if self.long_horizon else {},
         }
 
     def _service_lines(self):
@@ -78,6 +81,15 @@ class SelfAwareness:
     def answer(self, text):
         t = str(text or "").lower()
 
+        if any(k in t for k in ("tarefas de longo prazo", "jobs persistentes", "trabalhar por horas", "continuar depois de reiniciar")):
+            stats = self.long_horizon.stats() if self.long_horizon else {}
+            return (
+                "Consigo manter **jobs persistentes de longo prazo** em checkpoints. "
+                "Etapas seguras podem ser retomadas depois de reiniciar o Jarvis; etapas com possível efeito externo "
+                "pedem revisão antes de serem repetidas.\n\n"
+                f"Estado atual: **{stats.get('jobs',0)} job(s)** registrados e **{stats.get('active',0)} ativo(s)**."
+            )
+
         if "agentes" in t or "seus agentes" in t:
             roles = self.swarm.registry.list() if self.swarm else []
             if roles:
@@ -107,7 +119,8 @@ class SelfAwareness:
             return (
                 "Estas são as ferramentas/serviços cotidianos do SindPetshop-SP que estão mapeados no meu runtime e quando eu os usaria:\n\n"
                 + "\n".join(self._service_lines())
-                + "\n\nEu escolho entre eles pelo objetivo da tarefa. Eles não precisam virar abas da interface."
+                + "\n\nCada serviço cotidiano também possui uma aba persistente no Jarvis Desktop. "
+                  "Quando possível, uso essa própria aba — inclusive a sessão já autenticada — antes de abrir Google ou outro navegador externo."
             )
 
         snap = self.snapshot()
@@ -121,6 +134,7 @@ class SelfAwareness:
             f"- **{snap.get('apprenticeship',{}).get('procedures',0)} rotinas ensinadas** persistentes.\n"
             f"- **{sum(snap.get('acquisition',{}).get('gaps',{}).values()) if snap.get('acquisition') else 0} lacunas de capacidade** registradas pelo Capability Acquisition Engine.\n"
             f"- **{snap.get('acquisition',{}).get('candidates',{}).get('installed',0) if snap.get('acquisition') else 0} competências adquiridas** instaladas por descoberta/composição.\n"
+            f"- **{snap.get('long_horizon',{}).get('active',0)} jobs persistentes ativos** no Long-Horizon Runtime.\n"
             f"- Modelos locais: `{snap['models'].get('fast_model')}` para conversa e `{snap['models'].get('reasoning_model')}` para raciocínio.\n"
             "- Posso combinar memória, Knowledge Base, web/dados públicos, arquivos, navegador, desktop, automações e conectores autorizados.\n\n"
             "Quando você pergunta se eu consigo fazer algo, a resposta vem deste estado real do sistema — não de uma suposição do modelo."

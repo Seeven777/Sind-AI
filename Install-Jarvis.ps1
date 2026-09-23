@@ -21,7 +21,7 @@ function Has-Command($Name) { return [bool](Get-Command $Name -ErrorAction Silen
 
 if ($env:OS -ne "Windows_NT") { throw "Este instalador desta release e para Windows 10/11." }
 
-Write-Host "Sind AI - Jarvis Personal GPT 1.6" -ForegroundColor Magenta
+Write-Host "Sind AI - Jarvis Personal GPT 1.7" -ForegroundColor Magenta
 Write-Host "Instalacao local-first. A Vercel nao executa o modelo nem armazena as conversas."
 
 # Python
@@ -64,14 +64,14 @@ $source = Get-ChildItem $tempRoot -Directory | Where-Object { Test-Path (Join-Pa
 if (-not $source) {
   $source = Get-ChildItem $tempRoot -Directory -Recurse | Where-Object { Test-Path (Join-Path $_.FullName "jarvis_desktop.py") } | Select-Object -First 1
 }
-if (-not $source) { throw "O pacote baixado nao contem jarvis_desktop.py. Confirme se a branch '$Branch' já recebeu a versão 1.6." }
+if (-not $source) { throw "O pacote baixado nao contem jarvis_desktop.py. Confirme se a branch '$Branch' já recebeu a versão 1.7." }
 
 
 # Resolve the exact commit being installed so the updater can compare future pushes.
 $commitSha = ""
 try {
   $headers = @{
-    "User-Agent" = "SindAI-Jarvis-Installer/1.6"
+    "User-Agent" = "SindAI-Jarvis-Installer/1.7"
     "Accept" = "application/vnd.github+json"
     "X-GitHub-Api-Version" = "2022-11-28"
   }

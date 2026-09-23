@@ -12,6 +12,38 @@ class InstitutionalServices:
         data = json.loads(self.registry_path.read_text(encoding="utf-8"))
         self.items = data.get("services", [])
         self.by_id = {x["id"]: x for x in self.items}
+        self._tab_opener = None
+        self._tab_action = None
+
+
+    def set_tab_adapter(self, opener=None, action=None):
+        """Conecta o registry às abas embutidas da UI sem acoplá-lo ao Qt."""
+        self._tab_opener = opener
+        self._tab_action = action
+        return {"ok": True, "embedded_tabs": bool(opener)}
+
+    def tab_action(self, query, operation="inspect", **kwargs):
+        resolved = self.resolve(query)
+        if not resolved.get("ok"):
+            return resolved
+        item = resolved["data"]
+        if not self._tab_action:
+            return {
+                "ok": False,
+                "error": "As abas institucionais ainda não estão conectadas à interface.",
+                "service": item["id"],
+            }
+        try:
+            result = self._tab_action(item["id"], operation, kwargs)
+            if isinstance(result, dict):
+                result.setdefault("service", item["id"])
+                result.setdefault("name", item["name"])
+                result.setdefault("url", item["url"])
+                result.setdefault("embedded", True)
+                return result
+            return {"ok": True, "result": result, "service": item["id"], "name": item["name"], "url": item["url"]}
+        except Exception as exc:
+            return {"ok": False, "error": str(exc), "service": item["id"]}
 
     def list(self, kind=None, daily=None):
         items = list(self.items)
@@ -49,9 +81,26 @@ class InstitutionalServices:
         if not resolved.get("ok"):
             return resolved
         item = resolved["data"]
+
+        # Prefer the persistent embedded tab when the desktop UI is available.
+        if self._tab_opener:
+            try:
+                result = self._tab_opener(item["id"])
+                if isinstance(result, dict) and not result.get("ok", True):
+                    return result
+                return {
+                    "ok": True,
+                    "service": item["id"],
+                    "name": item["name"],
+                    "url": item["url"],
+                    "embedded": True,
+                }
+            except Exception:
+                pass
+
         try:
             webbrowser.open(item["url"])
-            return {"ok": True, "service": item["id"], "name": item["name"], "url": item["url"]}
+            return {"ok": True, "service": item["id"], "name": item["name"], "url": item["url"], "embedded": False}
         except Exception as exc:
             return {"ok": False, "error": str(exc), "service": item["id"]}
 

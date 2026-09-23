@@ -72,6 +72,8 @@ from swarm.orchestrator import SwarmOrchestrator
 from swarm.demonstration import DemonstrationTeacher
 from acquisition.engine import CapabilityAcquisitionEngine
 from acquisition.commands import parse_acquisition_command
+from long_horizon.engine import LongHorizonEngine
+from long_horizon.commands import parse_long_horizon_command
 
 from tools.apps import open_app, open_folder
 from tools.browser import open_url
@@ -86,6 +88,9 @@ class JarvisAgent:
     def __init__(self, config, base_dir=None):
         self.config = config
         self.base_dir = Path(base_dir or Path.cwd()).resolve()
+        # Model/tool execution is serialized on the CPU-first reference hardware.
+        # Background jobs release the lock between checkpoints/steps.
+        self._execution_lock = threading.RLock()
 
         self.home = Path.home().resolve()
         self.desktop = get_desktop_path()
@@ -310,12 +315,18 @@ class JarvisAgent:
             improvements=self.improvements,
             config=self.config,
         )
+        long_horizon_db = persistent_path("long_horizon_db", "cognitive/long_horizon.db")
+        self.long_horizon = LongHorizonEngine(long_horizon_db, config=self.config)
+        self.long_horizon.set_planner(self._plan_long_horizon_job)
+        self.long_horizon.set_executor(self._execute_long_horizon_step)
+        self.long_horizon.set_notifier(self._long_horizon_notification)
         self.self_awareness = SelfAwareness(
             self.services, self.actions, self.workflows, self.capabilities,
             self.models, self.hardware, self.knowledge, connectors=self.connectors,
             swarm=self.swarm, apprenticeship=self.apprenticeship,
             demonstration=self.demonstration_teacher,
             acquisition=self.acquisition,
+            long_horizon=self.long_horizon,
         )
         self.service_runtime = InstitutionalServiceRuntime(
             self.services, self.browser_agent, self.models
@@ -397,7 +408,7 @@ class JarvisAgent:
             {"type":"function","function":{"name":"find_public_sources","description":"Encontra fontes públicas/abertas adequadas ao assunto, priorizando fontes oficiais e informando operações disponíveis.","parameters":{"type":"object","properties":{"query":{"type":"string"},"limit":{"type":"integer"}},"required":["query"]}}},
             {"type":"function","function":{"name":"query_public_data","description":"Consulta uma fonte estruturada encontrada por find_public_sources. Use somente uma operação listada pela fonte.","parameters":{"type":"object","properties":{"source_id":{"type":"string"},"operation":{"type":"string"},"params":{"type":"object"}},"required":["source_id","operation"]}}},
             {"type":"function","function":{"name":"discover_public_interfaces","description":"Inspeciona um site público HTTPS procurando OpenAPI/Swagger, RSS/Atom e sitemap.","parameters":{"type":"object","properties":{"url":{"type":"string"}},"required":["url"]}}},
-            {"type":"function","function":{"name":"institutional_service","description":"Localiza ou abre um serviço cotidiano autorizado do SindPetshop-SP (site, Instagram, dashboard, agenda, Slack etc.) sem expor credenciais.","parameters":{"type":"object","properties":{"operation":{"type":"string","enum":["resolve","open","list"]},"query":{"type":"string"}},"required":["operation"]}}},
+            {"type":"function","function":{"name":"institutional_service","description":"Usa um serviço cotidiano do SindPetshop-SP pela aba persistente interna do Jarvis quando disponível (site, Instagram, dashboard, agenda, Slack etc.). Operações de leitura preferem a sessão autenticada da própria aba.","parameters":{"type":"object","properties":{"operation":{"type":"string","enum":["resolve","open","list","inspect","click","fill","reload"]},"query":{"type":"string"},"text":{"type":"string"},"field":{"type":"string"},"selector":{"type":"string"},"value":{"type":"string"},"max_chars":{"type":"integer"}},"required":["operation"]}}},
             {"type":"function","function":{"name":"project_context","description":"Gerencia contexto persistente de projetos pessoais/de trabalho. Operações: list, create, select, current, add_note.","parameters":{"type":"object","properties":{"operation":{"type":"string","enum":["list","create","select","current","add_note"]},"name":{"type":"string"},"description":{"type":"string"},"project_id":{"type":"integer"},"title":{"type":"string"},"body":{"type":"string"}},"required":["operation"]}}},
             {"type":"function","function":{"name":"list_knowledge_collections","description":"Lista bases de conhecimento internas disponíveis para treinamento e respostas institucionais.","parameters":{"type":"object","properties":{}}}},
             {"type":"function","function":{"name":"search_knowledge","description":"Pesquisa informações em uma base de conhecimento local. Use para procedimentos internos, documentos e treinamento da equipe.","parameters":{"type":"object","properties":{"collection":{"type":"string"},"query":{"type":"string"},"limit":{"type":"integer"}},"required":["collection","query"]}}},
@@ -409,6 +420,9 @@ class JarvisAgent:
             {"type":"function","function":{"name":"search_workflows","description":"Pesquisa workflows compostos e reutilizáveis. Prefira um workflow quando uma tarefa exigir várias ações relacionadas.","parameters":{"type":"object","properties":{"query":{"type":"string"},"limit":{"type":"integer"}},"required":["query"]}}},
             {"type":"function","function":{"name":"execute_workflow","description":"Executa um workflow encontrado por search_workflows.","parameters":{"type":"object","properties":{"workflow_id":{"type":"string"},"params":{"type":"object"}},"required":["workflow_id"]}}},
             {"type":"function","function":{"name":"workflow_stats","description":"Mostra quantidade e grupos dos workflows disponíveis.","parameters":{"type":"object","properties":{}}}},
+            {"type":"function","function":{"name":"create_long_job","description":"Cria um job persistente em segundo plano para objetivos que podem exigir muitas etapas, horas ou retomada após reinício. Não use para tarefas simples.","parameters":{"type":"object","properties":{"goal":{"type":"string"},"auto_resume":{"type":"boolean"},"priority":{"type":"integer"}},"required":["goal"]}}},
+            {"type":"function","function":{"name":"list_long_jobs","description":"Lista jobs persistentes e seu progresso.","parameters":{"type":"object","properties":{"status":{"type":"string"},"limit":{"type":"integer"}}}}},
+            {"type":"function","function":{"name":"long_job_status","description":"Obtém plano, progresso e estado de um job persistente.","parameters":{"type":"object","properties":{"job_id":{"type":"integer"}},"required":["job_id"]}}},
             {"type":"function","function":{"name":"set_task_plan","description":"Define um plano curto e visível para a tarefa autônoma atual. Use no início de tarefas com múltiplas etapas.","parameters":{"type":"object","properties":{"steps":{"type":"array","items":{"type":"string"}}},"required":["steps"]}}},
             {"type":"function","function":{"name":"get_world_state","description":"Lê estado atual resumido: navegador, janela desktop, base de conhecimento e modo de observação.","parameters":{"type":"object","properties":{}}}},
             {"type":"function","function":{"name":"suggest_learned_skills","description":"Analisa o histórico local e sugere sequências repetidas que podem virar Skills reutilizáveis.","parameters":{"type":"object","properties":{"min_repeats":{"type":"integer"}}}}},
@@ -418,12 +432,20 @@ class JarvisAgent:
             item["function"]["name"]: item for item in self.tools_schema
         }
 
+        if self.config.get("long_horizon_enabled", True):
+            self.long_horizon.start_worker()
+
     def _tools_for_prompt(self, user_text):
         """Seleciona apenas ferramentas plausíveis; conversa comum não carrega schemas."""
         text = str(user_text or "").lower()
         names = set()
         complex_verbs = ("faça","faca","crie","prepare","analise","organize","compare","pesquise","procure","investigue","verifique","execute","altere","edite","resuma","encontre","automatize","agende","monitore")
         if any(k in text for k in complex_verbs): names.add("set_task_plan")
+        if any(k in text for k in [
+            "segundo plano","longo prazo","continue trabalhando","mesmo se demorar",
+            "por horas","retome depois","checkpoint","job persistente"
+        ]):
+            names.update({"create_long_job","list_long_jobs","long_job_status"})
         if any(k in text for k in ["web","internet","fonte","dados públicos","dados publicos","estatística","estatistica","ibge","governo","câmara","camara","senado","cnj","datajud","cnpj","município","municipio","população","populacao","mercado de trabalho","emprego","pesquisa científica","pesquisa cientifica","api pública","api publica","banco central","selic","câmbio","cambio"]):
             names.update({"find_public_sources","query_public_data","search_web","fetch_public_url","discover_public_interfaces"})
         if any(k in text for k in ["url","site","página","pagina","link"]): names.update({"open_url","fetch_public_url","search_web"})
@@ -448,7 +470,7 @@ class JarvisAgent:
         if any(k in text for k in ["aprenda sozinho","descubra como","adquira capacidade","não sabe fazer","nao sabe fazer","não consigo fazer","nao consigo fazer","o que falta para","nova capacidade","nova competência","nova competencia"]):
             names.update({"resolve_capability","acquire_capability","search_actions","search_workflows","search_capabilities"})
         if not names and any(k in text for k in complex_verbs): names.update({"search_actions","execute_action","resolve_capability"})
-        priority=["set_task_plan","resolve_capability","acquire_capability","find_public_sources","query_public_data","discover_public_interfaces","search_web","fetch_public_url","institutional_service","project_context","list_knowledge_collections","search_knowledge","institutional_evidence","institutional_context","search_actions","execute_action","search_workflows","execute_workflow","search_capabilities","execute_capability","discover_public_apis","open_url","open_app","create_file","read_file","list_files","open_folder","list_windows","select_window","inspect_selected_window","click_control","type_text","press_key","get_clipboard","set_clipboard","take_screenshot","run_skill","suggest_learned_skills"]
+        priority=["create_long_job","long_job_status","list_long_jobs","set_task_plan","resolve_capability","acquire_capability","find_public_sources","query_public_data","discover_public_interfaces","search_web","fetch_public_url","institutional_service","project_context","list_knowledge_collections","search_knowledge","institutional_evidence","institutional_context","search_actions","execute_action","search_workflows","execute_workflow","search_capabilities","execute_capability","discover_public_apis","open_url","open_app","create_file","read_file","list_files","open_folder","list_windows","select_window","inspect_selected_window","click_control","type_text","press_key","get_clipboard","set_clipboard","take_screenshot","run_skill","suggest_learned_skills"]
         ordered=[n for n in priority if n in names and n in self.tool_schema_by_name]
         return [self.tool_schema_by_name[n] for n in ordered[:10]]
 
@@ -474,6 +496,7 @@ class JarvisAgent:
         mem = self._memory_context(user_text)
         public_stats = self.public_data.stats()
         service_stats = self.services.stats()
+        long_stats = self.long_horizon.stats() if hasattr(self, "long_horizon") else {}
         conversation_stats = self.conversations.stats()
         lessons = self.learning.relevant(user_text, limit=4)
         reflections = self.reflections.relevant(user_text, limit=3)
@@ -495,6 +518,8 @@ PRINCÍPIOS
 - Nunca declare sucesso quando uma ferramenta falhou.
 - Para fatos atuais/externos, prefira fontes oficiais/primárias e dados estruturados quando existirem.
 - Para assuntos institucionais, procure evidência na Knowledge Base/CCTs; não invente lacunas.
+- Para serviços cotidianos do SindPetshop-SP (Insights, Agenda, Facebook, LinkedIn, Instagram, TikTok, Sistema, Slack e Site), prefira a aba institucional persistente já presente no Jarvis. Use Google/navegador externo apenas como fallback quando a aba não servir ao objetivo.
+- Sessões autenticadas dessas abas pertencem ao usuário; nunca peça ou armazene senha desnecessariamente.
 - Use computador e integrações apenas quando ajudarem o objetivo.
 - High/critical continuam sujeitos à governança.
 - Nunca exponha senhas, tokens, chain-of-thought, análise passo a passo interna ou tags <think>.
@@ -514,6 +539,8 @@ CONTEXTO
 - Serviços cotidianos SindPetshop-SP mapeados: {service_stats.get('services',0)}.
 - Swarm Intelligence: {swarm_stats.get('agents',0)} papéis; {swarm_stats.get('sessions',0)} coordenações registradas.
 - Capability Acquisition: {sum(acquisition_stats.get('gaps',{}).values()) if acquisition_stats else 0} lacuna(s) registradas; {acquisition_stats.get('candidates',{}).get('installed',0) if acquisition_stats else 0} aquisição(ões) instalada(s).
+- Long-Horizon: {long_stats.get('jobs',0)} job(s) persistentes; {long_stats.get('active',0)} ativo(s).
+- Para objetivos extensos, use create_long_job em vez de abandonar a tarefa ao atingir um limite estrutural.
 - Workspace: {self.workspace}
 - Janela selecionada: {self.deep_access.snapshot().get('title') or 'nenhuma'}
 
@@ -868,7 +895,225 @@ AQUISIÇÃO DE CAPACIDADE RELEVANTE
         self.notifications.add(title, message, category="automation", severity=severity,
                                source="automation", source_id=str(job.get("id")), payload=result)
 
+    def _plan_long_horizon_job(self, job):
+        """Planner pequeno e estruturado. Fallback do engine cobre falhas do modelo."""
+        goal = str(job.get("goal") or "").strip()
+        if not goal:
+            return {"steps": []}
+
+        prompt = f"""
+OBJETIVO DE LONGO PRAZO:
+{goal}
+
+Crie um plano operacional de 3 a {int(self.config.get('long_horizon_max_steps',8))} etapas.
+Cada etapa precisa conseguir ser executada e checkpointada separadamente.
+
+Retorne SOMENTE JSON válido neste formato:
+{{
+  "steps": [
+    {{
+      "title": "nome curto",
+      "instruction": "instrução autossuficiente da etapa",
+      "retry_safe": true
+    }}
+  ]
+}}
+
+Regras:
+- leitura, pesquisa, análise, comparação, elaboração de rascunho e verificação normalmente são retry_safe=true;
+- publicar, enviar mensagem, excluir, mover, cadastrar, alterar sistema externo ou qualquer efeito não idempotente deve ser retry_safe=false;
+- não inclua uma etapa genérica chamada apenas "planejar";
+- a última etapa deve verificar o resultado.
+""".strip()
+
+        with self._execution_lock:
+            response = self.models.chat(
+                messages=[
+                    {"role": "system", "content": "Você é o Planner interno do Jarvis. Gere somente o JSON solicitado, sem markdown."},
+                    {"role": "user", "content": prompt},
+                ],
+                user_text=goal,
+                force="fast",
+            )
+
+        content = str(((response.get("message") or {}).get("content") or "")).strip()
+        content = re.sub(r"^```(?:json)?\s*|\s*```$", "", content, flags=re.I | re.S).strip()
+        match = re.search(r"\{[\s\S]*\}", content)
+        if match:
+            content = match.group(0)
+        try:
+            data = json.loads(content)
+            steps = data.get("steps") if isinstance(data, dict) else None
+            if isinstance(steps, list):
+                return {"steps": steps[:int(self.config.get("long_horizon_max_steps", 8))]}
+        except Exception:
+            pass
+        return {"steps": []}
+
+    def _execute_long_horizon_step(self, job, step):
+        """
+        Executa uma única etapa e devolve o controle ao scheduler.
+        Isso cria um checkpoint natural entre cada uso pesado do modelo.
+        """
+        previous = []
+        for item in job.get("steps", []):
+            if item.get("status") == "completed" and item.get("result_text"):
+                previous.append(
+                    f"Etapa {int(item.get('position',0))+1} — {item.get('title')}:\n"
+                    f"{str(item.get('result_text'))[:1800]}"
+                )
+        previous_text = "\n\n".join(previous[-3:])[:5000]
+
+        prompt = f"""
+JOB PERSISTENTE #{job.get('id')}
+OBJETIVO GERAL:
+{job.get('goal')}
+
+ETAPA ATUAL:
+{step.get('title')}
+
+INSTRUÇÃO:
+{step.get('instruction')}
+
+CHECKPOINTS ANTERIORES:
+{previous_text or 'Nenhum checkpoint anterior necessário.'}
+
+Execute SOMENTE esta etapa. Use ferramentas reais quando necessário.
+Não declare sucesso se não houver evidência suficiente.
+Se precisar de login, aprovação, dado do usuário ou confirmação para um efeito externo,
+explique explicitamente o que está aguardando.
+Entregue uma conclusão curta desta etapa para ser armazenada no checkpoint.
+""".strip()
+
+        with self._execution_lock:
+            try:
+                output = self._run_internal(
+                    prompt,
+                    status=lambda detail: self.long_horizon._event(
+                        job.get("id"), "progress", str(detail), {"step": step.get("position")}
+                    ),
+                    confirm_callback=None,
+                )
+            except Exception as exc:
+                return {"ok": False, "error": str(exc)}
+
+        output = str(output or "").strip()
+        low = output.lower()
+        failure_markers = (
+            "não consegui", "nao consegui", "falha", "erro:", "não foi possível",
+            "nao foi possivel", "requer confirmação", "requer confirmacao",
+            "aguarda autorização", "aguarda autorizacao", "preciso que você",
+            "preciso que voce", "faça login", "faca login",
+        )
+        if any(x in low for x in failure_markers):
+            return {"ok": False, "error": output, "output": output}
+        return {"ok": True, "output": output}
+
+    def _long_horizon_notification(self, job, result):
+        status = str(result.get("status") or job.get("status") or "")
+        if status == "completed":
+            title = f"Job concluído: {job.get('goal','')[:70]}"
+            message = "A tarefa de longo prazo terminou. Abra Atividade para ver os checkpoints."
+            severity = "success"
+        elif status == "waiting_user":
+            title = f"Job aguardando você: {job.get('goal','')[:70]}"
+            message = str(result.get("error") or job.get("last_error") or "Intervenção necessária.")[:800]
+            severity = "warning"
+        else:
+            title = f"Falha em job: {job.get('goal','')[:70]}"
+            message = str(result.get("error") or job.get("last_error") or "Falha desconhecida.")[:800]
+            severity = "error"
+        try:
+            self.notifications.add(
+                title, message, category="long_horizon", severity=severity,
+                source="long_horizon", source_id=str(job.get("id")),
+                payload={"job_id": job.get("id"), "status": status}
+            )
+        except Exception:
+            pass
+
+    def _run_long_horizon_command(self, cmd, status=None, confirm_callback=None):
+        action = cmd.get("action")
+        if action == "create":
+            if status:
+                status("Criando tarefa persistente de longo prazo")
+            result = self.long_horizon.create(
+                cmd.get("goal", ""),
+                project_id=self.projects.current_id(),
+                session_id=self.conversations.current_session_id,
+                auto_resume=bool(cmd.get("auto_resume", True)),
+                priority=60,
+                metadata={"created_from": "conversation"},
+            )
+            if not result.get("ok"):
+                return f"Não consegui criar o job: {result.get('error')}"
+            job = result["data"]
+            return (
+                f"Criei o Job persistente #{job.get('id')}: {job.get('goal')}\n\n"
+                "Ele será planejado e executado em checkpoints. "
+                "Se o Jarvis for reiniciado, etapas seguras podem ser retomadas automaticamente."
+            )
+
+        if action == "list":
+            result = self.long_horizon.list(limit=30)
+            items = result.get("items", [])
+            if not items:
+                return "Ainda não há jobs de longo prazo."
+            lines = []
+            for x in items:
+                progress = x.get("progress", {})
+                lines.append(
+                    f"• #{x.get('id')} [{x.get('status')}] {progress.get('percent',0)}% — {x.get('goal')}"
+                )
+            return "Jobs persistentes:\n" + "\n".join(lines)
+
+        if action == "stats":
+            stats = self.long_horizon.stats()
+            return (
+                f"Long-Horizon: {stats.get('jobs',0)} jobs registrados; "
+                f"{stats.get('active',0)} ativos.\nEstados: {stats.get('statuses',{})}"
+            )
+
+        job_id = int(cmd.get("job_id") or 0)
+        if action == "get":
+            result = self.long_horizon.get(job_id)
+            if not result.get("ok"):
+                return result.get("error")
+            job = result["data"]
+            lines = [
+                f"Job #{job_id} — {job.get('status')}",
+                f"Objetivo: {job.get('goal')}",
+                f"Progresso: {job.get('progress',{}).get('percent',0)}%",
+            ]
+            for step in job.get("steps", []):
+                marker = "✓" if step.get("status") == "completed" else "●" if step.get("status") == "running" else "○"
+                lines.append(f"{marker} {int(step.get('position',0))+1}. {step.get('title')} [{step.get('status')}]")
+            if job.get("last_error"):
+                lines.append(f"Observação: {job.get('last_error')}")
+            return "\n".join(lines)
+
+        if action == "pause":
+            result = self.long_horizon.pause(job_id)
+        elif action == "resume":
+            if cmd.get("force") and confirm_callback:
+                if not confirm_callback(
+                    "Forçar retomada",
+                    "A etapa anterior pode ter causado um efeito externo antes da interrupção. Reexecutar mesmo assim?"
+                ):
+                    return "Retomada forçada cancelada."
+            result = self.long_horizon.resume(job_id, force=bool(cmd.get("force")))
+        elif action == "cancel":
+            result = self.long_horizon.cancel(job_id)
+        else:
+            return "Comando de Long-Horizon desconhecido."
+
+        if result.get("ok"):
+            return f"Job #{job_id}: {result.get('status','atualizado')}."
+        return result.get("error") or "Não consegui atualizar o job."
+
     def shutdown(self):
+        try:self.long_horizon.stop_worker()
+        except Exception:pass
         try:self.automations.stop_worker()
         except Exception:pass
         try:self.browser_agent.stop()
@@ -1157,6 +1402,33 @@ AQUISIÇÃO DE CAPACIDADE RELEVANTE
                 return self.services.list(daily=True)
             if operation == "open":
                 return self.services.open(query)
+            if operation == "inspect":
+                return self.services.tab_action(
+                    query, "inspect", max_chars=int(args.get("max_chars", 14000))
+                )
+            if operation == "reload":
+                return self.services.tab_action(query, "reload")
+            if operation == "fill":
+                return self.services.tab_action(
+                    query, "fill",
+                    field=args.get("field",""),
+                    selector=args.get("selector",""),
+                    value=args.get("value",""),
+                )
+            if operation == "click":
+                click_text = str(args.get("text",""))
+                risky = any(k in click_text.lower() for k in (
+                    "publicar","postar","enviar","excluir","apagar","salvar",
+                    "confirmar","aprovar","rejeitar","cadastrar","comprar","pagar"
+                ))
+                if risky and confirm_callback:
+                    approved = confirm_callback(
+                        "Confirmar ação na aba institucional",
+                        f"O Jarvis pretende clicar em “{click_text}” dentro de {query}. Continuar?"
+                    )
+                    if not approved:
+                        return {"ok": False, "cancelled": True, "error": "Ação cancelada pelo usuário."}
+                return self.services.tab_action(query, "click", text=click_text)
             return self.services.resolve(query)
 
         if name == "project_context":
@@ -1202,6 +1474,25 @@ AQUISIÇÃO DE CAPACIDADE RELEVANTE
             return self.institutional_knowledge.execute(
                 "evidence_pack", query=args.get("query", ""), limit=args.get("limit", 10)
             )
+
+        if name == "create_long_job":
+            return self.long_horizon.create(
+                args.get("goal",""),
+                project_id=self.projects.current_id(),
+                session_id=self.conversations.current_session_id,
+                auto_resume=bool(args.get("auto_resume", True)),
+                priority=int(args.get("priority", 50)),
+                metadata={"source": source or "agent_runtime"},
+            )
+
+        if name == "list_long_jobs":
+            return self.long_horizon.list(
+                status=args.get("status") or None,
+                limit=int(args.get("limit", 20)),
+            )
+
+        if name == "long_job_status":
+            return self.long_horizon.get(int(args.get("job_id") or 0))
 
         if name == "set_task_plan":
             if not self._active_task_id:
@@ -1922,7 +2213,46 @@ AQUISIÇÃO DE CAPACIDADE RELEVANTE
             pass
         return result
 
+    def delete_conversation(self, session_id):
+        sid = int(session_id)
+        deleted_was_current = (sid == int(self.conversations.current_session_id))
+
+        try:
+            self.projects.unlink_session(sid)
+        except Exception:
+            pass
+
+        try:
+            self.attachments.purge_session(sid)
+        except Exception:
+            pass
+
+        result = self.conversations.delete_session(sid)
+        if not result.get("ok"):
+            return result
+
+        current = int(result.get("current") or self.conversations.current_session_id)
+        messages = self.conversations.recent_messages(limit=200, session_id=current)
+        return {
+            **result,
+            "deleted_was_current": deleted_was_current,
+            "session_id": current,
+            "messages": messages,
+        }
+
     def run(self, user_text, status=None, confirm_callback=None):
+        """Entrada pública serializada para hardware CPU-first."""
+        acquired = False
+        while not acquired:
+            acquired = self._execution_lock.acquire(timeout=0.25)
+            if not acquired and status:
+                status("Aguardando o runtime concluir uma etapa em segundo plano")
+        try:
+            return self._run_unlocked(user_text, status=status, confirm_callback=confirm_callback)
+        finally:
+            self._execution_lock.release()
+
+    def _run_unlocked(self, user_text, status=None, confirm_callback=None):
         """Entrada pública: persiste conversa e aprendizado explícito."""
         user_text = str(user_text or "").strip()
         if not user_text:
@@ -2042,6 +2372,12 @@ AQUISIÇÃO DE CAPACIDADE RELEVANTE
                     return "Instalação cancelada."
                 if status: status(f"Capability Factory: instalando candidato #{cid}")
                 return self.summarize("install_capability_candidate", self.acquisition.install_candidate(cid))
+
+        long_cmd = parse_long_horizon_command(user_text)
+        if long_cmd:
+            return self._run_long_horizon_command(
+                long_cmd, status=status, confirm_callback=confirm_callback
+            )
 
         # Intenções compostas de alta confiança não podem cair no Qwen.
         fast_intent = parse_fast_intent(user_text)
@@ -2399,18 +2735,60 @@ AQUISIÇÃO DE CAPACIDADE RELEVANTE
                     break
 
             final = (
-                "A tarefa atingiu o limite de autonomia desta execução. "
-                f"Foram executadas {total_tool_calls} ações.\n"
-                + "\n".join(last_summaries[-3:])
+                "A tarefa atingiu o limite estrutural desta execução. "
+                f"Foram executadas {total_tool_calls} ações."
             )
-            self.tasks.finish(task_id, final, status="paused")
-            try:
-                self.acquisition.record_failure(user_text, final)
-            except Exception:
-                pass
+
+            handoff = None
+            if self.config.get("long_horizon_auto_handoff_on_agent_limit", True):
+                try:
+                    current_task = self.tasks.get(task_id) or {}
+                    full_plan = current_task.get("plan") or []
+                    current_index = int(current_task.get("current_step") or 0)
+                    remaining_plan = full_plan[current_index:] if full_plan else []
+                    metadata = {
+                        "source_task_id": task_id,
+                        "tool_calls_before_handoff": total_tool_calls,
+                        "previous_summaries": last_summaries[-5:],
+                    }
+                    handoff = self.long_horizon.create(
+                        user_text,
+                        plan=remaining_plan if remaining_plan else None,
+                        project_id=self.projects.current_id(),
+                        session_id=self.conversations.current_session_id,
+                        auto_resume=True,
+                        priority=65,
+                        metadata=metadata,
+                    )
+                except Exception as exc:
+                    self.diagnostics.error("long_horizon_handoff", exc, task_id=task_id)
+
+            if handoff and handoff.get("ok"):
+                jid = handoff.get("data",{}).get("id")
+                final += (
+                    f"\n\nPara não abandonar o objetivo, converti a continuação em Job persistente #{jid}. "
+                    "Ele continuará em checkpoints e poderá sobreviver a reinícios."
+                )
+                self.tasks.finish(task_id, final, status="completed")
+            else:
+                final += "\n" + "\n".join(last_summaries[-3:])
+                self.tasks.finish(task_id, final, status="paused")
+                try:
+                    self.acquisition.record_failure(user_text, final)
+                except Exception:
+                    pass
+
             if swarm_bundle:
-                self.swarm.finish(swarm_bundle, status="paused", success=False)
-            self.diagnostics.event("task_paused", task_id=task_id, tool_calls=total_tool_calls)
+                self.swarm.finish(
+                    swarm_bundle,
+                    status="completed" if handoff and handoff.get("ok") else "paused",
+                    success=bool(handoff and handoff.get("ok"))
+                )
+            self.diagnostics.event(
+                "task_handoff" if handoff and handoff.get("ok") else "task_paused",
+                task_id=task_id, tool_calls=total_tool_calls,
+                long_job_id=(handoff.get("data",{}).get("id") if handoff and handoff.get("ok") else None)
+            )
             self._active_task_id = None
             return final
         except Exception as exc:

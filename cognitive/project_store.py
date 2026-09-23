@@ -162,6 +162,21 @@ class ProjectStore:
             ).fetchall()
         return {"ok": True, "items": [dict(x) for x in rows], "count": len(rows)}
 
+
+    def unlink_session(self, session_id, project_id=None):
+        with self._connect() as c:
+            if project_id:
+                cur = c.execute(
+                    "DELETE FROM project_sessions WHERE project_id=? AND session_id=?",
+                    (int(project_id), int(session_id))
+                )
+            else:
+                cur = c.execute(
+                    "DELETE FROM project_sessions WHERE session_id=?",
+                    (int(session_id),)
+                )
+        return {"ok": True, "session_id": int(session_id), "unlinked": int(cur.rowcount)}
+
     def add_note(self, project_id, title, body, tags=None):
         now = self._now()
         with self._connect() as c:

@@ -1,4 +1,4 @@
-# Jarvis Personal GPT 1.6 — Capability Acquisition
+# Jarvis Personal GPT 1.7 — Capability Acquisition
 
 GPT pessoal local, gratuito como base, adaptável ao hardware e orientado a conversa.
 
@@ -6,7 +6,7 @@ GPT pessoal local, gratuito como base, adaptável ao hardware e orientado a conv
 
 O Jarvis não é um catálogo de comandos. Ele conversa, mantém contexto, aprende preferências/correções, pesquisa a web, consulta dados públicos, lê documentos, usa desktop/navegador e aciona infraestrutura interna quando necessário.
 
-A versão 1.6 preserva **Swarm Intelligence** e **Apprenticeship** e adiciona **Capability Acquisition**: quando falta uma competência, o Jarvis registra a lacuna, procura primitivas existentes, tenta compor uma Skill, busca APIs públicas seguras e, se necessário, solicita ensino/demonstração. Veja `CAPABILITY_ACQUISITION.md`, `SWARM_INTELLIGENCE.md` e `TEACHING.md`.
+A versão 1.7 preserva **Swarm Intelligence** e **Apprenticeship** e adiciona **Capability Acquisition**: quando falta uma competência, o Jarvis registra a lacuna, procura primitivas existentes, tenta compor uma Skill, busca APIs públicas seguras e, se necessário, solicita ensino/demonstração. Veja `CAPABILITY_ACQUISITION.md`, `SWARM_INTELLIGENCE.md` e `TEACHING.md`.
 
 ## Experiência principal
 

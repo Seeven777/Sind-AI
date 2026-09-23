@@ -6,7 +6,8 @@ class InstitutionalServiceRuntime:
 
     ANALYSIS_VERBS = (
         "veja", "verifique", "analise", "analisar", "consulte", "acesse",
-        "leia", "avalie", "confira", "olhe", "examine"
+        "leia", "avalie", "confira", "olhe", "examine", "use", "utilize",
+        "pegue", "extraia", "busque", "pesquise", "compare", "ver", "cheque"
     )
 
     def __init__(self, services, browser, models):
@@ -49,7 +50,7 @@ class InstitutionalServiceRuntime:
         ]
         if inspection and inspection.get("ok"):
             title = inspection.get("title") or "página carregada"
-            lines.append(f"A página foi aberta pelo Browser Agent (`{title}`).")
+            lines.append(f"A página está disponível no Jarvis (`{title}`).")
             headings = [x.get("text") for x in inspection.get("headings", []) if x.get("text")]
             if headings:
                 lines.append("Seções visíveis detectadas: " + ", ".join(headings[:8]) + ".")
@@ -72,20 +73,44 @@ class InstitutionalServiceRuntime:
         if status:
             status(f"Consultando {item.get('name')}")
 
-        inspection = None
+        # Mantém a ferramenta correta visível dentro do próprio Jarvis.
         try:
-            inspection = self.browser.inspect_page(
-                item.get("url"), wait_ms=1600, max_chars=14000
+            self.services.open(item.get("id"))
+        except Exception:
+            pass
+
+        inspection = None
+        embedded_error = None
+
+        # Preferir a aba embutida é importante para serviços autenticados:
+        # a mesma sessão que o usuário abriu manualmente pode ser lida pelo Jarvis.
+        try:
+            inspection = self.services.tab_action(
+                item.get("id"), "inspect", max_chars=14000
             )
+            if not inspection.get("ok"):
+                embedded_error = inspection.get("error")
+                inspection = None
         except Exception as exc:
-            return {
-                "ok": True,
-                "answer": self._fallback(item, {}, str(exc)),
-                "service": item,
-                "source": item.get("url"),
-                "fallback": True,
-                "grounded": False,
-            }
+            embedded_error = str(exc)
+            inspection = None
+
+        # Browser Agent continua como fallback para serviços públicos ou quando a
+        # interface desktop não está disponível.
+        if not inspection:
+            try:
+                inspection = self.browser.inspect_page(
+                    item.get("url"), wait_ms=1600, max_chars=14000
+                )
+            except Exception as exc:
+                return {
+                    "ok": True,
+                    "answer": self._fallback(item, {}, embedded_error or str(exc)),
+                    "service": item,
+                    "source": item.get("url"),
+                    "fallback": True,
+                    "grounded": False,
+                }
 
         visible = str(inspection.get("text") or "").strip()
         # Authenticated/private services can still be opened, but we avoid inventing their contents.

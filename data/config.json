@@ -22,7 +22,7 @@
   "agent_max_rounds": 6,
   "agent_max_tool_calls": 16,
   "agent_tool_result_chars": 3000,
-  "release_name": "Jarvis Personal GPT 1.6 — Capability Acquisition",
+  "release_name": "Jarvis Personal GPT 1.7 — Long-Horizon + Institutional Workspace",
   "persistent_root_name": "JarvisData",
   "action_catalog": "actions/catalog.json",
   "browser_profile_dir": "browser/profile",
@@ -78,7 +78,7 @@
   "ui_markdown": true,
   "ui_message_actions": true,
   "auto_reflection_enabled": true,
-  "release_version": "1.6",
+  "release_version": "1.7",
   "mobile_companion_enabled": true,
   "mobile_companion_autostart": false,
   "mobile_companion_host": "0.0.0.0",
@@ -108,5 +108,13 @@
   "acquisition_existing_score": 0.34,
   "acquisition_max_candidates": 12,
   "acquisition_openapi_max_operations": 40,
-  "acquisition_db": "cognitive/capability_acquisition.db"
+  "acquisition_db": "cognitive/capability_acquisition.db",
+  "long_horizon_enabled": true,
+  "long_horizon_db": "cognitive/long_horizon.db",
+  "long_horizon_poll_seconds": 3,
+  "long_horizon_max_retries": 3,
+  "long_horizon_max_steps": 8,
+  "long_horizon_auto_resume": true,
+  "long_horizon_retry_base_seconds": 8,
+  "long_horizon_auto_handoff_on_agent_limit": true
 }

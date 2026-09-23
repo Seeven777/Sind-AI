@@ -99,6 +99,55 @@ class AttachmentManager:
             rows = c.execute(sql, args).fetchall()
         return {"ok": True, "items": [dict(x) for x in rows], "count": len(rows)}
 
+
+    def purge_session(self, session_id):
+        """
+        Remove referências/knowledge exclusivos de uma conversa excluída.
+
+        Anexos ligados também a um projeto são preservados e apenas perdem o
+        vínculo com a conversa.
+        """
+        sid = int(session_id)
+        removed = 0
+        preserved = 0
+        with self._connect() as c:
+            rows = c.execute(
+                "SELECT * FROM attachments WHERE session_id=?",
+                (sid,)
+            ).fetchall()
+
+            for row in rows:
+                item = dict(row)
+                if item.get("project_id"):
+                    c.execute(
+                        "UPDATE attachments SET session_id=NULL WHERE id=?",
+                        (int(item["id"]),)
+                    )
+                    preserved += 1
+                    continue
+
+                doc_id = item.get("document_id")
+                if doc_id:
+                    try:
+                        self.knowledge.remove_document(int(doc_id))
+                    except Exception:
+                        pass
+                c.execute("DELETE FROM attachments WHERE id=?", (int(item["id"]),))
+                removed += 1
+
+        # Older conversation-only attachments may exist without attachment rows.
+        try:
+            self.knowledge.clear_collection(f"conversation_{sid}")
+        except Exception:
+            pass
+
+        return {
+            "ok": True,
+            "session_id": sid,
+            "removed": removed,
+            "preserved_project_attachments": preserved,
+        }
+
     def search_context(self, query, session_id=None, project_id=None, limit=5, max_chars=2600):
         collections = []
         if session_id:

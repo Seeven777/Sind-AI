@@ -1,6 +1,6 @@
 {
   "name": "sind-ai-local-launcher",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "private": true,
   "scripts": {
     "build": "node vercel_build.cjs"
