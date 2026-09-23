@@ -308,6 +308,59 @@ class JarvisBridge(QObject):
         except Exception as exc:
             return json.dumps({"ok": False, "error": str(exc)}, ensure_ascii=False)
 
+    @Slot(bool, result=str)
+    def rateExperience(self, positive):
+        try:
+            recent = self.window.agent.conversations.recent_messages(limit=12)
+            last_user = next(
+                (str(x.get("content","")) for x in reversed(recent) if x.get("role")=="user"),
+                "",
+            )
+            result = self.window.agent.experience.rate_response(
+                last_user,
+                positive=bool(positive),
+                project_id=self.window.agent.projects.current_id(),
+            )
+            self.snapshotChanged.emit(
+                json.dumps(self.window.build_snapshot(), ensure_ascii=False, default=str)
+            )
+            return json.dumps(result, ensure_ascii=False, default=str)
+        except Exception as exc:
+            return json.dumps({"ok": False, "error": str(exc)}, ensure_ascii=False)
+
+    @Slot(int, str, result=str)
+    def experienceCandidateAction(self, candidate_id, action):
+        try:
+            action=str(action or "").lower()
+            if action=="approve":
+                result=self.window.agent.experience.approve_candidate(int(candidate_id))
+            elif action=="reject":
+                result=self.window.agent.experience.reject_candidate(int(candidate_id))
+            else:
+                result={"ok":False,"error":f"Ação desconhecida: {action}"}
+            self.snapshotChanged.emit(
+                json.dumps(self.window.build_snapshot(), ensure_ascii=False, default=str)
+            )
+            return json.dumps(result,ensure_ascii=False,default=str)
+        except Exception as exc:
+            return json.dumps({"ok":False,"error":str(exc)},ensure_ascii=False)
+
+    @Slot(int, str, result=str)
+    def jobToPlaybook(self, job_id, name):
+        try:
+            got=self.window.agent.long_horizon.get(int(job_id))
+            if not got.get("ok"):
+                return json.dumps(got,ensure_ascii=False,default=str)
+            result=self.window.agent.workplace.create_from_job(
+                got["data"], name=str(name or "").strip() or None
+            )
+            self.snapshotChanged.emit(
+                json.dumps(self.window.build_snapshot(), ensure_ascii=False, default=str)
+            )
+            return json.dumps(result,ensure_ascii=False,default=str)
+        except Exception as exc:
+            return json.dumps({"ok":False,"error":str(exc)},ensure_ascii=False)
+
     @Slot(str, result=str)
     def searchPlaybooks(self, query):
         try:
@@ -948,6 +1001,13 @@ class HabitatWindow(QMainWindow):
                 "stats": self.agent.workplace.stats(),
                 "suggestions": workplace_suggestions,
                 "categories": self.agent.workplace.categories,
+            },
+            "experience": {
+                "stats": self.agent.experience.stats(),
+                "retrospective": self.agent.experience.retrospective(),
+                "competences": self.agent.experience.competence_map(limit=20).get("items", []),
+                "candidates": self.agent.experience.candidates("proposed", limit=20).get("items", []),
+                "events": self.agent.experience.recent_events(limit=20).get("items", []),
             },
             "monitors": {
                 "stats": self.agent.monitors.stats(),

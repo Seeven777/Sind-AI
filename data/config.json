@@ -22,7 +22,7 @@
   "agent_max_rounds": 6,
   "agent_max_tool_calls": 16,
   "agent_tool_result_chars": 3000,
-  "release_name": "Jarvis Personal GPT 1.8 — Workplace Intelligence",
+  "release_name": "Jarvis Personal GPT 1.9 — Adaptive Experience",
   "persistent_root_name": "JarvisData",
   "action_catalog": "actions/catalog.json",
   "browser_profile_dir": "browser/profile",
@@ -78,7 +78,7 @@
   "ui_markdown": true,
   "ui_message_actions": true,
   "auto_reflection_enabled": true,
-  "release_version": "1.8",
+  "release_version": "1.9",
   "mobile_companion_enabled": true,
   "mobile_companion_autostart": false,
   "mobile_companion_host": "0.0.0.0",
@@ -122,5 +122,14 @@
   "workplace_max_context_playbooks": 3,
   "workplace_default_long_horizon_steps": 5,
   "workplace_free_only": true,
-  "workplace_preopen_services": 2
+  "workplace_preopen_services": 2,
+  "experience_enabled": true,
+  "experience_db": "cognitive/adaptive_experience.db",
+  "experience_auto_soft_rules": true,
+  "experience_candidate_failure_threshold": 2,
+  "experience_max_context_rules": 6,
+  "experience_custom_playbooks": "workplace/custom_playbooks.json",
+  "experience_recent_events": 50,
+  "experience_competence_min_samples": 2,
+  "experience_feedback_playbook_window_hours": 6
 }

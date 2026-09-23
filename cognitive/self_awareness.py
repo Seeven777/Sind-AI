@@ -1,7 +1,7 @@
 class SelfAwareness:
     """Grounded self-knowledge from the actual runtime, not model imagination."""
 
-    def __init__(self, services, actions, workflows, capabilities, models, hardware, knowledge, connectors=None, swarm=None, apprenticeship=None, demonstration=None, acquisition=None, long_horizon=None, workplace=None):
+    def __init__(self, services, actions, workflows, capabilities, models, hardware, knowledge, connectors=None, swarm=None, apprenticeship=None, demonstration=None, acquisition=None, long_horizon=None, workplace=None, experience=None):
         self.services = services
         self.actions = actions
         self.workflows = workflows
@@ -16,6 +16,7 @@ class SelfAwareness:
         self.acquisition = acquisition
         self.long_horizon = long_horizon
         self.workplace = workplace
+        self.experience = experience
 
     def matches(self, text):
         t = str(text or "").lower().strip()
@@ -28,6 +29,8 @@ class SelfAwareness:
             "como você aprende sozinho", "como voce aprende sozinho", "adquirir novas capacidades", "lacunas de capacidade",
             "tarefas de longo prazo", "jobs persistentes", "trabalhar por horas", "continuar depois de reiniciar",
             "playbooks", "rotinas de trabalho", "workplace intelligence", "biblioteca de rotinas",
+            "o que você aprendeu", "o que voce aprendeu", "mapa de competências", "mapa de competencias",
+            "adaptações", "adaptacoes", "experiência acumulada", "experiencia acumulada",
         )
         return any(x in t for x in patterns)
 
@@ -53,6 +56,7 @@ class SelfAwareness:
             "acquisition": self.acquisition.stats() if self.acquisition else {},
             "long_horizon": self.long_horizon.stats() if self.long_horizon else {},
             "workplace": self.workplace.stats() if self.workplace else {},
+            "experience": self.experience.stats() if self.experience else {},
         }
 
     def _service_lines(self):
@@ -84,6 +88,21 @@ class SelfAwareness:
     def answer(self, text):
         t = str(text or "").lower()
 
+        if any(k in t for k in ("o que você aprendeu", "o que voce aprendeu", "mapa de competências", "mapa de competencias", "adaptações", "adaptacoes", "experiência acumulada", "experiencia acumulada")):
+            stats = self.experience.stats() if self.experience else {}
+            retro = self.experience.retrospective() if self.experience else {}
+            return (
+                "Meu **Adaptive Experience** aprende sem alterar pesos do modelo: observo resultados reais, "
+                "correções explícitas e o desempenho dos playbooks.\n\n"
+                f"Estado atual: **{stats.get('events',0)} eventos de experiência**, "
+                f"**{stats.get('competences',0)} competências perfiladas**, "
+                f"**{stats.get('active_rules',0)} regras aprendidas** e "
+                f"**{stats.get('candidates',{}).get('proposed',0)} adaptações pendentes**.\n"
+                f"Taxa de sucesso na janela recente: **{retro.get('success_rate',0)}%**.\n\n"
+                "Correções textuais seguras podem virar regras imediatamente; mudanças estruturais ficam como "
+                "candidatos supervisionados. Jobs concluídos também podem virar novas rotinas persistentes."
+            )
+
         if any(k in t for k in ("playbooks", "rotinas de trabalho", "workplace intelligence", "biblioteca de rotinas")):
             stats = self.workplace.stats() if self.workplace else {}
             return (
@@ -114,8 +133,10 @@ class SelfAwareness:
                 "Posso adquirir competências de três formas persistentes:\n\n"
                 "1. **Descoberta autônoma:** diga `Descubra como fazer ...`. Primeiro verifico Skills, Actions, Workflows e APIs existentes; depois tento compor uma Skill declarativa ou encontrar uma API pública segura.\n"
                 "2. **Por explicação:** diga `Quero te ensinar como ...`, explique os passos e finalize com `finalizar ensino`.\n"
-                "3. **Por demonstração:** diga `Observe enquanto eu faço ...`, execute a rotina no computador e finalize com `terminei a demonstração`. A demonstração vira uma Skill reutilizável; texto digitado é mascarado por privacidade.\n\n"
-                "Aquisições automáticas não executam código arbitrário gerado pelo modelo. Novas competências são compostas com primitivas confiáveis ou APIs públicas read-only e continuam sujeitas às mesmas confirmações e permissões."
+                "3. **Por demonstração:** diga `Observe enquanto eu faço ...`, execute a rotina no computador e finalize com `terminei a demonstração`. A demonstração vira uma Skill reutilizável; texto digitado é mascarado por privacidade.\n"
+                "4. **Por experiência:** diga quando algo funcionou, falhou ou deve mudar. O Adaptive Experience atualiza confiança, cria regras e propõe adaptações para a próxima execução.\n"
+                "5. **Por execução real:** um Job concluído pode ser transformado em uma nova rotina persistente.\n\n"
+                "Aquisições automáticas não executam código arbitrário gerado pelo modelo. Mudanças estruturais continuam supervisionadas."
             )
 
         service = self._explicit_service(text)

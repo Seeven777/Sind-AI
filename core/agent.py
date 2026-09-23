@@ -76,6 +76,8 @@ from long_horizon.engine import LongHorizonEngine
 from long_horizon.commands import parse_long_horizon_command
 from workplace.engine import WorkplaceIntelligence
 from workplace.commands import parse_workplace_command
+from experience.engine import AdaptiveExperienceEngine
+from experience.commands import parse_experience_command
 
 from tools.apps import open_app, open_folder
 from tools.browser import open_url
@@ -323,13 +325,26 @@ class JarvisAgent:
         self.long_horizon.set_executor(self._execute_long_horizon_step)
         self.long_horizon.set_notifier(self._long_horizon_notification)
         workplace_db = persistent_path("workplace_db", "cognitive/workplace_intelligence.db")
+        custom_playbooks = persistent_path(
+            "experience_custom_playbooks", "workplace/custom_playbooks.json"
+        )
         self.workplace = WorkplaceIntelligence(
             self.base_dir / self.config.get("workplace_playbooks", "workplace/playbooks.json"),
             workplace_db,
             services=self.services,
             long_horizon=self.long_horizon,
             config=self.config,
+            user_registry_path=custom_playbooks,
         )
+        experience_db = persistent_path("experience_db", "cognitive/adaptive_experience.db")
+        self.experience = AdaptiveExperienceEngine(
+            experience_db,
+            workplace=self.workplace,
+            long_horizon=self.long_horizon,
+            config=self.config,
+        )
+        self.workplace.set_adapters(experience=self.experience)
+        self.swarm.set_experience(self.experience)
         self.self_awareness = SelfAwareness(
             self.services, self.actions, self.workflows, self.capabilities,
             self.models, self.hardware, self.knowledge, connectors=self.connectors,
@@ -338,6 +353,7 @@ class JarvisAgent:
             acquisition=self.acquisition,
             long_horizon=self.long_horizon,
             workplace=self.workplace,
+            experience=self.experience,
         )
         self.service_runtime = InstitutionalServiceRuntime(
             self.services, self.browser_agent, self.models
@@ -434,6 +450,9 @@ class JarvisAgent:
             {"type":"function","function":{"name":"search_workplace_playbooks","description":"Pesquisa a biblioteca de rotinas operacionais do SindPetshop-SP. Use antes de improvisar processos recorrentes de conteúdo, analytics, site, pesquisa, CCT, campanhas, equipe, documentos, automação ou qualidade.","parameters":{"type":"object","properties":{"query":{"type":"string"},"limit":{"type":"integer"},"category":{"type":"string"}},"required":["query"]}}},
             {"type":"function","function":{"name":"run_workplace_playbook","description":"Inicia um playbook operacional como Job persistente com checkpoints, serviços institucionais e plano já estruturado.","parameters":{"type":"object","properties":{"playbook_id":{"type":"string"},"request":{"type":"string"},"priority":{"type":"integer"}},"required":["playbook_id"]}}},
             {"type":"function","function":{"name":"workplace_stats","description":"Mostra o estado da biblioteca Workplace Intelligence e uso dos playbooks.","parameters":{"type":"object","properties":{}}}},
+            {"type":"function","function":{"name":"experience_summary","description":"Lê o mapa de competências e a retrospectiva do aprendizado por experiência do Jarvis.","parameters":{"type":"object","properties":{}}}},
+            {"type":"function","function":{"name":"experience_candidates","description":"Lista adaptações propostas para rotinas/playbooks com base em falhas e correções reais.","parameters":{"type":"object","properties":{"status":{"type":"string"},"limit":{"type":"integer"}}}}},
+            {"type":"function","function":{"name":"job_to_playbook","description":"Transforma um Job persistente já executado em uma nova rotina reutilizável e persistente.","parameters":{"type":"object","properties":{"job_id":{"type":"integer"},"name":{"type":"string"}},"required":["job_id"]}}},
             {"type":"function","function":{"name":"create_long_job","description":"Cria um job persistente em segundo plano para objetivos que podem exigir muitas etapas, horas ou retomada após reinício. Não use para tarefas simples.","parameters":{"type":"object","properties":{"goal":{"type":"string"},"auto_resume":{"type":"boolean"},"priority":{"type":"integer"}},"required":["goal"]}}},
             {"type":"function","function":{"name":"list_long_jobs","description":"Lista jobs persistentes e seu progresso.","parameters":{"type":"object","properties":{"status":{"type":"string"},"limit":{"type":"integer"}}}}},
             {"type":"function","function":{"name":"long_job_status","description":"Obtém plano, progresso e estado de um job persistente.","parameters":{"type":"object","properties":{"job_id":{"type":"integer"}},"required":["job_id"]}}},
@@ -460,6 +479,11 @@ class JarvisAgent:
             "por horas","retome depois","checkpoint","job persistente"
         ]):
             names.update({"create_long_job","list_long_jobs","long_job_status"})
+        if any(k in text for k in [
+            "aprendeu","aprendizado","experiência","experiencia","competência","competencia",
+            "adaptação","adaptacao","melhore a rotina","evolua a rotina","transforme o job"
+        ]):
+            names.update({"experience_summary","experience_candidates","job_to_playbook"})
         if any(k in text for k in ["web","internet","fonte","dados públicos","dados publicos","estatística","estatistica","ibge","governo","câmara","camara","senado","cnj","datajud","cnpj","município","municipio","população","populacao","mercado de trabalho","emprego","pesquisa científica","pesquisa cientifica","api pública","api publica","banco central","selic","câmbio","cambio"]):
             names.update({"find_public_sources","query_public_data","search_web","fetch_public_url","discover_public_interfaces"})
         if any(k in text for k in ["url","site","página","pagina","link"]): names.update({"open_url","fetch_public_url","search_web"})
@@ -531,6 +555,12 @@ class JarvisAgent:
         swarm_stats = self.swarm.stats() if hasattr(self, "swarm") else {}
         workplace_stats = self.workplace.stats() if hasattr(self, "workplace") else {}
         workplace_context = self.workplace.context(user_text, max_chars=3600).get("text", "") if hasattr(self, "workplace") else ""
+        experience_stats = self.experience.stats() if hasattr(self, "experience") else {}
+        experience_context = self.experience.context(
+            user_text,
+            project_id=self.projects.current_id(),
+            max_chars=2400,
+        ).get("text", "") if hasattr(self, "experience") else ""
         return f"""Você é Jarvis, um GPT pessoal local.
 Converse naturalmente em português e mantenha continuidade. Entenda o objetivo e decida sozinho se deve responder, pesquisar, consultar conhecimento ou agir.
 
@@ -556,6 +586,9 @@ PRINCÍPIOS
 - Quando houver um procedimento ensinado relevante, trate-o como instrução operacional do usuário, respeitando governança e confirmações.
 - Em tarefas complexas, use o trabalho do Swarm/Blackboard como orientação; não exponha discussões internas dos agentes.
 - Antes de improvisar uma rotina recorrente de trabalho, considere os playbooks do Workplace Intelligence; eles codificam formas preferidas de usar serviços, agentes e checkpoints.
+- Use experiência real acumulada para ajustar a próxima tentativa. Sucesso aumenta confiança; falha/correção deve mudar o comportamento futuro, não apenas gerar uma reflexão textual.
+- Regras aprendidas para um playbook são instruções persistentes e devem ser consideradas quando a mesma rotina reaparecer.
+- Não modifique código executável silenciosamente com base em feedback. Adaptações estruturais ficam como candidatos supervisionados; correções textuais explícitas podem virar regras seguras.
 - Playbooks são orientação operacional, não autorização para ignorar confirmações, limites de acesso ou evidências.
 
 CONTEXTO
@@ -565,7 +598,8 @@ CONTEXTO
 - Swarm Intelligence: {swarm_stats.get('agents',0)} papéis; {swarm_stats.get('sessions',0)} coordenações registradas.
 - Capability Acquisition: {sum(acquisition_stats.get('gaps',{}).values()) if acquisition_stats else 0} lacuna(s) registradas; {acquisition_stats.get('candidates',{}).get('installed',0) if acquisition_stats else 0} aquisição(ões) instalada(s).
 - Long-Horizon: {long_stats.get('jobs',0)} job(s) persistentes; {long_stats.get('active',0)} ativo(s).
-- Workplace Intelligence: {workplace_stats.get('playbooks',0)} playbooks em {workplace_stats.get('categories',0)} áreas; {workplace_stats.get('long_horizon',0)} preparados para execução longa.
+- Workplace Intelligence: {workplace_stats.get('playbooks',0)} playbooks em {workplace_stats.get('categories',0)} áreas; {workplace_stats.get('custom_playbooks',0)} rotina(s) aprendida(s) localmente.
+- Adaptive Experience: {experience_stats.get('events',0)} evento(s), {experience_stats.get('competences',0)} competência(s) perfilada(s), {experience_stats.get('active_rules',0)} regra(s) ativa(s), {experience_stats.get('candidates',{}).get('proposed',0)} adaptação(ões) pendente(s).
 - Para objetivos extensos, use create_long_job ou run_workplace_playbook em vez de abandonar a tarefa ao atingir um limite estrutural.
 - Workspace: {self.workspace}
 - Janela selecionada: {self.deep_access.snapshot().get('title') or 'nenhuma'}
@@ -590,6 +624,9 @@ AQUISIÇÃO DE CAPACIDADE RELEVANTE
 
 PLAYBOOKS DE TRABALHO RELEVANTES
 {workplace_context or "- nenhum playbook específico necessário"}
+
+EXPERIÊNCIA ACUMULADA RELEVANTE
+{experience_context or "- nenhuma experiência específica ainda"}
 {mem}
 """
 
@@ -992,6 +1029,8 @@ Regras:
                     f"{str(item.get('result_text'))[:1800]}"
                 )
         previous_text = "\n\n".join(previous[-3:])[:5000]
+        job_metadata = dict(job.get("metadata") or {})
+        experience_guidance = str(job_metadata.get("experience_guidance") or "").strip()
 
         prompt = f"""
 JOB PERSISTENTE #{job.get('id')}
@@ -1006,6 +1045,9 @@ INSTRUÇÃO:
 
 CHECKPOINTS ANTERIORES:
 {previous_text or 'Nenhum checkpoint anterior necessário.'}
+
+APRENDIZADOS ACUMULADOS PARA ESTA ROTINA:
+{experience_guidance or 'Nenhum aprendizado específico registrado ainda.'}
 
 Execute SOMENTE esta etapa. Use ferramentas reais quando necessário.
 Não declare sucesso se não houver evidência suficiente.
@@ -1043,12 +1085,44 @@ Entregue uma conclusão curta desta etapa para ser armazenada no checkpoint.
         try:
             metadata = dict(job.get("metadata") or {})
             playbook_id = metadata.get("playbook_id")
+            outcome_status = "completed" if status == "completed" else ("waiting" if status == "waiting_user" else "failed")
+            outcome_note = str(result.get("error") or job.get("final_result") or job.get("last_error") or "")[:4000]
             if playbook_id:
                 self.workplace.record_outcome(
                     playbook_id=playbook_id,
-                    status="completed" if status == "completed" else ("waiting" if status == "waiting_user" else "failed"),
-                    note=str(result.get("error") or job.get("final_result") or job.get("last_error") or "")[:4000],
+                    status=outcome_status,
+                    note=outcome_note,
                 )
+                self.experience.record_playbook_outcome(
+                    playbook_id=playbook_id,
+                    status=outcome_status,
+                    note=outcome_note,
+                    query=job.get("goal",""),
+                    job_id=job.get("id"),
+                    project_id=job.get("project_id"),
+                )
+            else:
+                self.experience.record_event(
+                    "success" if outcome_status=="completed" else ("failure" if outcome_status=="failed" else "waiting"),
+                    source_type="long_horizon",
+                    source_id=job.get("id"),
+                    project_id=job.get("project_id"),
+                    query=job.get("goal",""),
+                    note=outcome_note,
+                    score=1 if outcome_status=="completed" else (-1 if outcome_status=="failed" else 0),
+                    metadata={"status":outcome_status,"steps":len(job.get("steps",[]))},
+                )
+                if outcome_status=="completed" and len(job.get("steps",[]))>=3:
+                    try:
+                        self.improvements.propose(
+                            "reusable_job",
+                            f"Transformar Job #{job.get('id')} em rotina reutilizável",
+                            f"O Job '{job.get('goal','')[:220]}' foi concluído com {len(job.get('steps',[]))} etapas e pode virar playbook persistente.",
+                            evidence={"job_id":job.get("id"),"goal":job.get("goal"),"steps":len(job.get("steps",[]))},
+                            priority=55,
+                        )
+                    except Exception:
+                        pass
         except Exception:
             pass
         if status == "completed":
@@ -1071,6 +1145,144 @@ Entregue uma conclusão curta desta etapa para ser armazenada no checkpoint.
             )
         except Exception:
             pass
+
+    def _run_experience_command(self, cmd, status=None, confirm_callback=None):
+        action = cmd.get("action")
+
+        if action == "feedback":
+            result = self.experience.observe_feedback(
+                cmd.get("text",""),
+                project_id=self.projects.current_id(),
+            )
+            self._last_response_metadata = {
+                "grounded": True,
+                "experience_feedback_handled": True,
+            }
+            if not result.get("recognized"):
+                return "Não identifiquei feedback suficiente para registrar."
+            playbook_id = result.get("playbook_id")
+            adaptation = result.get("adaptation") or {}
+            if playbook_id:
+                if adaptation.get("status") in {"approved","installed"}:
+                    return (
+                        f"Registrei o feedback para `{playbook_id}` e já transformei a correção em "
+                        "uma regra segura para as próximas execuções."
+                    )
+                if adaptation.get("id"):
+                    return (
+                        f"Registrei o feedback para `{playbook_id}`. Também criei a adaptação "
+                        f"#{adaptation.get('id')} para revisão."
+                    )
+                return f"Registrei o feedback para `{playbook_id}` e atualizei a confiança dessa rotina."
+            return "Registrei o feedback como experiência geral desta conversa."
+
+        if action == "retrospective":
+            data = self.experience.retrospective()
+            strongest = data.get("strongest", [])[:4]
+            weakest = data.get("weakest", [])[:4]
+            lines = [
+                f"Retrospectiva de experiência ({data.get('window',0)} eventos recentes):",
+                f"- sucessos: {data.get('successes',0)}",
+                f"- falhas: {data.get('failures',0)}",
+                f"- correções: {data.get('corrections',0)}",
+                f"- taxa de sucesso observada: {data.get('success_rate',0)}%",
+            ]
+            if strongest:
+                lines.append("\nCompetências mais confiáveis:")
+                lines.extend(
+                    f"• {x.get('label')} — {round(float(x.get('confidence',0))*100)}% ({x.get('uses',0)} usos)"
+                    for x in strongest
+                )
+            if weakest:
+                lines.append("\nPontos que merecem mais supervisão:")
+                lines.extend(
+                    f"• {x.get('label')} — {round(float(x.get('confidence',0))*100)}% ({x.get('failures',0)} falhas / {x.get('corrections',0)} correções)"
+                    for x in weakest
+                )
+            pending = data.get("pending_adaptations", [])
+            if pending:
+                lines.append(f"\nHá {len(pending)} adaptação(ões) pendente(s) para revisão.")
+            return "\n".join(lines)
+
+        if action == "competence_map":
+            items = self.experience.competence_map(limit=60).get("items", [])
+            if not items:
+                return "Ainda não há experiência suficiente para montar um mapa de competências."
+            return "Mapa de competências por experiência:\n" + "\n".join(
+                f"• {x.get('label')} — {round(float(x.get('confidence',0))*100)}% "
+                f"| usos {x.get('uses',0)} | sucessos {x.get('successes',0)} | "
+                f"falhas {x.get('failures',0)} | correções {x.get('corrections',0)}"
+                for x in items[:30]
+            )
+
+        if action == "rollback_last_rule":
+            result = self.experience.rollback_last_rule()
+            if result.get("ok"):
+                return (
+                    f"Reverti a regra adaptativa mais recente de `{result.get('playbook_id')}`: "
+                    f"{result.get('rule_text')}"
+                )
+            return result.get("error") or "Não encontrei adaptação ativa para reverter."
+
+        if action == "list_candidates":
+            items = self.experience.candidates("proposed", limit=50).get("items", [])
+            if not items:
+                return "Não há adaptações pendentes."
+            return "Adaptações pendentes:\n" + "\n".join(
+                f"• #{x.get('id')} — {x.get('target_id')} — {x.get('reason')}"
+                for x in items
+            )
+
+        if action in {"approve_candidate","reject_candidate"}:
+            cid = int(cmd.get("id") or 0)
+            if action == "approve_candidate":
+                got = self.experience.candidate(cid)
+                if not got.get("ok"):
+                    return got.get("error")
+                candidate = got["data"]
+                if confirm_callback and not confirm_callback(
+                    "Aprovar adaptação de rotina",
+                    f"Aplicar a adaptação #{cid} em {candidate.get('target_id')}?\n\n{candidate.get('reason')}"
+                ):
+                    return "Adaptação não aplicada."
+                result = self.experience.approve_candidate(cid)
+                if result.get("ok"):
+                    return f"Adaptação #{cid} instalada. A próxima execução já usará a nova regra."
+                return result.get("error") or "Não consegui instalar a adaptação."
+            result = self.experience.reject_candidate(cid)
+            return f"Adaptação #{cid} rejeitada." if result.get("ok") else "Não encontrei adaptação pendente com esse ID."
+
+        if action == "job_to_playbook":
+            job_id = int(cmd.get("job_id") or 0)
+            got = self.long_horizon.get(job_id)
+            if not got.get("ok"):
+                return got.get("error") or "Job não encontrado."
+            job = got["data"]
+            if job.get("status") not in {"completed","paused","waiting_user"}:
+                return (
+                    f"O Job #{job_id} ainda está em `{job.get('status')}`. "
+                    "Conclua ou pause em um checkpoint antes de transformá-lo em rotina."
+                )
+            result = self.workplace.create_from_job(job)
+            if not result.get("ok"):
+                return result.get("error") or "Não consegui criar a rotina."
+            new_id = result.get("id")
+            with self.experience._connect() as c:
+                c.execute(
+                    """INSERT INTO playbook_evolution(
+                       base_playbook_id,evolved_playbook_id,version,source_job_id,change_note,created_at
+                       ) VALUES(?,?,?,?,?,?)""",
+                    (str((job.get("metadata") or {}).get("playbook_id") or "job"),
+                     str(new_id),1,job_id,
+                     f"Rotina criada a partir do Job #{job_id}.",
+                     self.experience._now())
+                )
+            return (
+                f"Transformei o Job #{job_id} na rotina persistente `{new_id}`. "
+                "Ela fica em JarvisData e não será perdida em futuras atualizações."
+            )
+
+        return "Comando de Adaptive Experience desconhecido."
 
     def _run_workplace_command(self, cmd, status=None, confirm_callback=None):
         action = cmd.get("action")
@@ -1584,6 +1796,30 @@ Entregue uma conclusão curta desta etapa para ser armazenada no checkpoint.
 
         if name == "workplace_stats":
             return self.workplace.stats()
+
+        if name == "experience_summary":
+            return {
+                "ok": True,
+                "stats": self.experience.stats(),
+                "retrospective": self.experience.retrospective(),
+                "competences": self.experience.competence_map(limit=30),
+            }
+
+        if name == "experience_candidates":
+            return self.experience.candidates(
+                status=args.get("status") or "proposed",
+                limit=int(args.get("limit", 30)),
+            )
+
+        if name == "job_to_playbook":
+            job_id = int(args.get("job_id") or 0)
+            got = self.long_horizon.get(job_id)
+            if not got.get("ok"):
+                return got
+            return self.workplace.create_from_job(
+                got["data"],
+                name=args.get("name") or None,
+            )
 
         if name == "create_long_job":
             return self.long_horizon.create(
@@ -2380,6 +2616,17 @@ Entregue uma conclusão curta desta etapa para ser armazenada no checkpoint.
                 if pid:
                     self.projects.link_session(pid, self.conversations.current_session_id)
             except Exception:
+                pid = None
+            try:
+                if not self._last_response_metadata.get("experience_feedback_handled"):
+                    feedback = self.experience.observe_feedback(user_text, project_id=pid)
+                    if feedback.get("recognized"):
+                        self.diagnostics.event(
+                            "experience_feedback",
+                            playbook_id=feedback.get("playbook_id"),
+                            event=(feedback.get("event") or {}).get("id"),
+                        )
+            except Exception:
                 pass
             if reflection.get("reflection_ids"):
                 self.diagnostics.event("reflection_created", reflection_ids=reflection.get("reflection_ids"), prompt=user_text)
@@ -2482,6 +2729,12 @@ Entregue uma conclusão curta desta etapa para ser armazenada no checkpoint.
                     return "Instalação cancelada."
                 if status: status(f"Capability Factory: instalando candidato #{cid}")
                 return self.summarize("install_capability_candidate", self.acquisition.install_candidate(cid))
+
+        experience_cmd = parse_experience_command(user_text)
+        if experience_cmd:
+            return self._run_experience_command(
+                experience_cmd, status=status, confirm_callback=confirm_callback
+            )
 
         workplace_cmd = parse_workplace_command(user_text)
         if workplace_cmd:

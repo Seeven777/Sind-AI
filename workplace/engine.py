@@ -8,18 +8,146 @@ from pathlib import Path
 class WorkplaceIntelligence:
     """Deterministic, local-first broker for institutional playbooks."""
 
-    def __init__(self, registry_path, db_path, services=None, long_horizon=None, config=None):
+    def __init__(self, registry_path, db_path, services=None, long_horizon=None, config=None, user_registry_path=None, experience=None):
         self.registry_path = Path(registry_path)
         self.db_path = Path(db_path)
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
         self.config = dict(config or {})
         data = json.loads(self.registry_path.read_text(encoding="utf-8"))
-        self.items = list(data.get("playbooks", []))
+        self.native_items = list(data.get("playbooks", []))
         self.categories = dict(data.get("categories", {}))
-        self.by_id = {x["id"]: x for x in self.items}
+        self.user_registry_path = Path(user_registry_path) if user_registry_path else None
+        if self.user_registry_path:
+            self.user_registry_path.parent.mkdir(parents=True, exist_ok=True)
         self.services = services
         self.long_horizon = long_horizon
+        self.experience = experience
+        self.items = []
+        self.by_id = {}
+        self._reload_items()
         self._init_db()
+
+    def _load_user_playbooks(self):
+        if not self.user_registry_path or not self.user_registry_path.exists():
+            return []
+        try:
+            data=json.loads(self.user_registry_path.read_text(encoding="utf-8"))
+            return list(data.get("playbooks",[]))
+        except Exception:
+            return []
+
+    def _reload_items(self):
+        custom=self._load_user_playbooks()
+        merged={x["id"]:dict(x) for x in self.native_items}
+        for item in custom:
+            if item.get("id"):
+                merged[item["id"]]=dict(item)
+                cat=item.get("category")
+                if cat and cat not in self.categories:
+                    self.categories[cat]=cat
+        self.items=list(merged.values())
+        self.by_id={x["id"]:x for x in self.items}
+        return {"ok":True,"native":len(self.native_items),"custom":len(custom),"total":len(self.items)}
+
+    def _save_user_playbooks(self,items):
+        if not self.user_registry_path:
+            return {"ok":False,"error":"Registro de playbooks aprendidos não configurado."}
+        payload={"version":1,"playbooks":items}
+        self.user_registry_path.write_text(
+            json.dumps(payload,ensure_ascii=False,indent=2),
+            encoding="utf-8"
+        )
+        self._reload_items()
+        return {"ok":True,"path":str(self.user_registry_path),"count":len(items)}
+
+    def install_custom(self,playbook):
+        item=dict(playbook or {})
+        required=("id","name","category","description","steps")
+        missing=[x for x in required if not item.get(x)]
+        if missing:
+            return {"ok":False,"error":"Campos ausentes: "+", ".join(missing)}
+        item["id"]=str(item["id"]).strip().lower()
+        if not item["id"].startswith("custom."):
+            item["id"]="custom."+re.sub(r"[^a-z0-9_.-]+","_",item["id"]).strip("_.")
+        item["free_only"]=True
+        item.setdefault("risk","read")
+        item.setdefault("services",[])
+        item.setdefault("agents",["planner","reviewer"])
+        item.setdefault("keywords",[])
+        item.setdefault("inputs",{})
+        item.setdefault("expected_outputs",[])
+        clean_steps=[]
+        for step in item.get("steps",[]):
+            if isinstance(step,str):
+                clean_steps.append({"title":step[:160],"instruction":step,"retry_safe":True})
+            else:
+                s=dict(step)
+                title=str(s.get("title") or "Etapa").strip()
+                instruction=str(s.get("instruction") or title).strip()
+                clean_steps.append({
+                    "title":title[:160],
+                    "instruction":instruction[:6000],
+                    "retry_safe":bool(s.get("retry_safe",True)),
+                })
+        if not clean_steps:
+            return {"ok":False,"error":"Playbook sem etapas válidas."}
+        item["steps"]=clean_steps[:12]
+        custom=self._load_user_playbooks()
+        custom=[x for x in custom if x.get("id")!=item["id"]]
+        custom.append(item)
+        saved=self._save_user_playbooks(custom)
+        if saved.get("ok"):
+            return {"ok":True,"id":item["id"],"data":item,"custom_count":saved["count"]}
+        return saved
+
+    def create_from_job(self,job,name=None,category="learned"):
+        if not job:
+            return {"ok":False,"error":"Job não informado."}
+        steps=[]
+        for raw in job.get("steps",[]):
+            title=str(raw.get("title") or f"Etapa {len(steps)+1}")
+            instruction=str(raw.get("instruction") or title)
+            steps.append({
+                "title":title,
+                "instruction":instruction,
+                "retry_safe":bool(raw.get("retry_safe",True)),
+            })
+        if not steps:
+            return {"ok":False,"error":"O job não possui etapas reutilizáveis."}
+        base_name=str(name or job.get("goal") or "Rotina aprendida").strip()
+        slug=re.sub(r"[^a-z0-9]+","_",base_name.lower()).strip("_")[:70] or "rotina"
+        pid=f"custom.{slug}"
+        if pid in self.by_id:
+            suffix=2
+            while f"{pid}_{suffix}" in self.by_id:
+                suffix+=1
+            pid=f"{pid}_{suffix}"
+        metadata=dict(job.get("metadata") or {})
+        playbook={
+            "id":pid,
+            "name":base_name[:160],
+            "category":category,
+            "description":f"Rotina aprendida a partir do Job #{job.get('id')}: {job.get('goal')}",
+            "keywords":re.findall(r"[a-zà-ÿ0-9_-]{3,}",base_name.lower())[:10],
+            "services":list(metadata.get("services") or []),
+            "agents":list(metadata.get("agents") or ["planner","reviewer"]),
+            "risk":"read" if all(x.get("retry_safe",True) for x in steps) else "write",
+            "long_horizon":len(steps)>=4,
+            "free_only":True,
+            "inputs":{},
+            "expected_outputs":["resultado reutilizável","registro de execução"],
+            "steps":steps,
+            "learned_from_job":job.get("id"),
+        }
+        return self.install_custom(playbook)
+
+    def recent_usage(self,limit=30):
+        with self._connect() as c:
+            rows=c.execute(
+                "SELECT * FROM workplace_usage ORDER BY id DESC LIMIT ?",
+                (int(limit),)
+            ).fetchall()
+        return {"ok":True,"items":[dict(x) for x in rows],"count":len(rows)}
 
     def _connect(self):
         c = sqlite3.connect(self.db_path, timeout=20)
@@ -46,11 +174,13 @@ class WorkplaceIntelligence:
             ON workplace_usage(playbook_id,status,id);
             """)
 
-    def set_adapters(self, services=None, long_horizon=None):
+    def set_adapters(self, services=None, long_horizon=None, experience=None):
         if services is not None:
             self.services = services
         if long_horizon is not None:
             self.long_horizon = long_horizon
+        if experience is not None:
+            self.experience = experience
         return {"ok": True}
 
     def stats(self):
@@ -59,9 +189,12 @@ class WorkplaceIntelligence:
                 "SELECT status,COUNT(*) n FROM workplace_usage GROUP BY status"
             ).fetchall()
         usage = {x["status"]: int(x["n"]) for x in rows}
+        custom_count=max(0,len(self.items)-len(self.native_items))
         return {
             "ok": True,
             "playbooks": len(self.items),
+            "native_playbooks": len(self.native_items),
+            "custom_playbooks": custom_count,
             "categories": len(self.categories),
             "free_only": sum(1 for x in self.items if x.get("free_only", True)),
             "long_horizon": sum(1 for x in self.items if x.get("long_horizon")),
@@ -148,6 +281,11 @@ class WorkplaceIntelligence:
             if q_tokens and matched == len(q_tokens):
                 score += 4
             score += usage_bonus.get(item["id"], 0)
+            if self.experience:
+                try:
+                    score += float(self.experience.ranking_bonus(item["id"]))
+                except Exception:
+                    pass
             if score > 0:
                 ranked.append((score, item))
         ranked.sort(key=lambda x: (-x[0], x[1]["name"]))
@@ -206,6 +344,13 @@ class WorkplaceIntelligence:
             f"{i+1}. {x.get('title')}: {x.get('instruction')}"
             for i, x in enumerate(item.get("steps", []))
         )
+        experience_guidance=""
+        if self.experience:
+            try:
+                experience_guidance=self.experience.guidance(item["id"]).get("text","")
+            except Exception:
+                experience_guidance=""
+
         prompt = f"""[WORKPLACE PLAYBOOK]
 PLAYBOOK: {item['name']}
 ID: {item['id']}
@@ -218,6 +363,8 @@ RISCO: {item.get('risk','read')}
 
 FLUXO RECOMENDADO:
 {steps}
+
+{experience_guidance}
 
 Regras:
 - Use as abas institucionais persistentes antes de pesquisa genérica quando elas contiverem a informação necessária.
@@ -277,6 +424,14 @@ Regras:
             for x in item.get("steps", [])
         ]
         goal = request.strip() if str(request or "").strip() else item.get("description")
+        guidance=""
+        if self.experience:
+            try:
+                guidance=self.experience.guidance(
+                    item["id"], project_id=project_id, max_chars=3200
+                ).get("text","")
+            except Exception:
+                guidance=""
         result = self.long_horizon.create(
             goal,
             plan=plan,
@@ -290,6 +445,7 @@ Regras:
                 "playbook_name": item["name"],
                 "services": item.get("services", []),
                 "agents": item.get("agents", []),
+                "experience_guidance": guidance,
             },
         )
         job_id = (result.get("data") or {}).get("id") if result.get("ok") else None

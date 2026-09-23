@@ -122,6 +122,10 @@ function addMessage(role,text,ok=true,time=null,meta={}){
   if(role==='assistant'){
     const regen=document.createElement('button');regen.className='message-action';regen.textContent='Regenerar';regen.onclick=()=>{if(lastUserPrompt&&!busy)sendPrompt(lastUserPrompt)};
     actions.appendChild(regen);
+    const good=document.createElement('button');good.className='message-action feedback';good.textContent='Útil';good.title='Ensinar ao Jarvis que esta abordagem funcionou';good.onclick=()=>rateExperience(true,good);
+    actions.appendChild(good);
+    const bad=document.createElement('button');bad.className='message-action feedback';bad.textContent='Não útil';bad.title='Ensinar ao Jarvis que esta abordagem precisa mudar';bad.onclick=()=>rateExperience(false,bad);
+    actions.appendChild(bad);
   }else{
     lastUserPrompt=raw;
     const edit=document.createElement('button');edit.className='message-action';edit.textContent='Editar';edit.onclick=()=>{
@@ -134,6 +138,19 @@ function addMessage(role,text,ok=true,time=null,meta={}){
   if(shouldFollow)requestAnimationFrame(()=>scrollChatToBottom(false));
   else updateJumpBottom();
 }
+function rateExperience(positive,button){
+  if(!bridge)return;
+  bridge.rateExperience(!!positive,raw=>{
+    let d={};try{d=JSON.parse(raw)}catch{}
+    if(!d.ok&&d.error){alert(d.error);return}
+    if(button){
+      button.textContent=positive?'Aprendido ✓':'Registrado ✓';
+      button.disabled=true;
+    }
+    fetchSnapshot();
+  });
+}
+
 function showThinking(text='Processando'){
   const shouldFollow=nearBottom();
   removeThinking();const el=document.createElement('div');el.id='thinking';el.className='thinking';el.textContent=text;
@@ -240,7 +257,25 @@ function renderContext(){
   const wp=snapshot?.workplace?.suggestions||[];
   $('workplaceSuggestionList').innerHTML=wp.slice(0,6).map(x=>`<button class="suggestion-item" data-playbook-id="${esc(x.id)}" data-playbook-name="${esc(x.name)}"><b>${esc(x.name)}</b><span>${esc(x.description||'')}</span><em>iniciar ›</em></button>`).join('')||'<div class="simple-item"><span>Nenhuma rotina específica sugerida agora.</span></div>';
   document.querySelectorAll('[data-playbook-id]').forEach(btn=>btn.onclick=()=>startPlaybook(btn.dataset.playbookId,btn.dataset.playbookName||''));
+  const exp=snapshot?.experience||{};
+  const comps=exp.competences||[];
+  $('experienceMap').innerHTML=comps.slice(0,6).map(x=>{
+    const pct=Math.round(Number(x.confidence||0)*100);
+    return `<div class="experience-item"><div><b>${esc(x.label||x.competence_key||'competência')}</b><span>${x.uses||0} usos • ${x.successes||0} sucessos • ${x.failures||0} falhas</span></div><strong>${pct}%</strong><div class="experience-bar"><i style="width:${Math.max(0,Math.min(100,pct))}%"></i></div></div>`;
+  }).join('')||'<div class="simple-item"><span>A experiência prática começará a aparecer conforme você usa e corrige o Jarvis.</span></div>';
+  const candidates=exp.candidates||[];
+  $('experienceCandidates').innerHTML=candidates.slice(0,6).map(x=>`<div class="experience-candidate"><b>#${x.id} • ${esc(x.target_id||'rotina')}</b><span>${esc(x.reason||'')}</span><div><button data-exp-candidate="${x.id}" data-exp-action="approve">Aprovar</button><button data-exp-candidate="${x.id}" data-exp-action="reject">Rejeitar</button></div></div>`).join('')||'<div class="simple-item"><span>Nenhuma adaptação estrutural aguardando revisão.</span></div>';
+  document.querySelectorAll('[data-exp-candidate]').forEach(btn=>btn.onclick=()=>experienceCandidateAction(Number(btn.dataset.expCandidate),btn.dataset.expAction));
 }
+function experienceCandidateAction(id,action){
+  if(!bridge)return;
+  bridge.experienceCandidateAction(id,action,raw=>{
+    let d={};try{d=JSON.parse(raw)}catch{}
+    if(!d.ok&&d.error)alert(d.error);
+    fetchSnapshot();
+  });
+}
+
 function renderSources(){
   const pd=snapshot?.public_data||{};const stats=pd.stats||{};const sources=pd.sources||[];
   $('sourceStats').innerHTML=`<span class="pill">${stats.sources||0} fontes</span><span class="pill">${stats.official||0} oficiais</span><span class="pill">${snapshot?.institutional_services?.stats?.services||0} serviços do sindicato</span>`;
@@ -256,9 +291,11 @@ function renderActivity(){
       ['completed','cancelled','failed'].includes(x.status)?'':
       `<button data-long-job="${x.id}" data-long-action="pause">Pausar</button>`;
     const cancel=!['completed','cancelled'].includes(x.status)?`<button data-long-job="${x.id}" data-long-action="cancel">Cancelar</button>`:'';
-    return `<div class="simple-item long-job-item"><b>#${x.id} • ${esc((x.status||'').toUpperCase())} • ${p.percent||0}%</b><span>${esc(x.goal||'')}</span><div class="long-job-progress"><i style="width:${Math.max(0,Math.min(100,p.percent||0))}%"></i></div><div class="long-job-actions">${controls}${cancel}</div></div>`;
+    const save=x.status==='completed'?`<button data-job-playbook="${x.id}" data-job-name="${esc(x.goal||'Rotina aprendida')}">Salvar como rotina</button>`:'';
+    return `<div class="simple-item long-job-item"><b>#${x.id} • ${esc((x.status||'').toUpperCase())} • ${p.percent||0}%</b><span>${esc(x.goal||'')}</span><div class="long-job-progress"><i style="width:${Math.max(0,Math.min(100,p.percent||0))}%"></i></div><div class="long-job-actions">${controls}${cancel}${save}</div></div>`;
   }).join('')||'<div class="simple-item"><span>Nenhum job persistente.</span></div>';
   document.querySelectorAll('[data-long-job]').forEach(btn=>btn.onclick=()=>longJobAction(Number(btn.dataset.longJob),btn.dataset.longAction));
+  document.querySelectorAll('[data-job-playbook]').forEach(btn=>btn.onclick=()=>jobToPlaybook(Number(btn.dataset.jobPlaybook),btn.dataset.jobName||''));
   $('alertList').innerHTML=alerts.slice(0,8).map(x=>`<div class="simple-item"><b>${esc(x.title||'Alerta')}</b><span>${esc(x.message||'')}</span></div>`).join('')||'<div class="simple-item"><span>Nenhum alerta pendente.</span></div>';
   $('improvementList').innerHTML=improvements.slice(0,8).map(x=>`<div class="simple-item"><b>${esc(x.title||x.kind)}</b><span>${esc(x.description||'')}</span></div>`).join('')||'<div class="simple-item"><span>Nenhuma melhoria sugerida pendente.</span></div>';
 }
@@ -403,6 +440,18 @@ function changeUpdateChannel(value){
   bridge.setUpdateChannel(value,()=>setTimeout(fetchSnapshot,800));
 }
 
+function jobToPlaybook(id,name){
+  if(!bridge)return;
+  const finalName=prompt('Nome da nova rotina:',name||'Rotina aprendida');
+  if(finalName===null)return;
+  bridge.jobToPlaybook(id,finalName,raw=>{
+    let d={};try{d=JSON.parse(raw)}catch{}
+    if(!d.ok){alert(d.error||'Não foi possível criar a rotina.');return}
+    alert(`Nova rotina criada: ${d.id||'playbook aprendido'}`);
+    fetchSnapshot();
+  });
+}
+
 function longJobAction(id,action){
   if(!bridge)return;
   bridge.longJobAction(id,action,raw=>{
@@ -414,7 +463,7 @@ function longJobAction(id,action){
 
 function renderControlCenter(){
   if(!snapshot)return;
-  const a=snapshot.actions||{},w=snapshot.workflows||{},c=snapshot.capabilities||{},p=snapshot.public_data?.stats||{},k=snapshot.knowledge||{},auto=snapshot.automations?.stats||{},lh=snapshot.long_horizon?.stats||{},wp=snapshot.workplace?.stats||{},con=snapshot.connectors?.stats||{},r=snapshot.cognitive?.reflections||{},proj=snapshot.projects?.stats||{},acq=snapshot.acquisition?.stats||{};
+  const a=snapshot.actions||{},w=snapshot.workflows||{},c=snapshot.capabilities||{},p=snapshot.public_data?.stats||{},k=snapshot.knowledge||{},auto=snapshot.automations?.stats||{},lh=snapshot.long_horizon?.stats||{},wp=snapshot.workplace?.stats||{},exp=snapshot.experience?.stats||{},con=snapshot.connectors?.stats||{},r=snapshot.cognitive?.reflections||{},proj=snapshot.projects?.stats||{},acq=snapshot.acquisition?.stats||{};
   const tiles=[
     ['CONVERSATION',snapshot.cognitive?.conversations?.messages||0,'mensagens persistentes'],
     ['PROJECTS',proj.projects||0,'contextos ativos'],

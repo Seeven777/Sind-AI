@@ -326,6 +326,7 @@ class MobileCompanion:
             },
             "hardware": self.agent.hardware.profile(),
             "workplace": self.agent.workplace.stats() if hasattr(self.agent, "workplace") else {},
+            "experience": self.agent.experience.stats() if hasattr(self.agent, "experience") else {},
             "long_horizon": self.agent.long_horizon.stats() if hasattr(self.agent, "long_horizon") else {},
             "mobile": {"url": self.url(), "lan_only": True},
         }
@@ -542,6 +543,20 @@ class MobileCompanion:
                         return self._json(400, {"ok": False, "error": "session_id inválido."})
                     result = companion.agent.delete_conversation(sid)
                     return self._json(200 if result.get("ok") else 404, result)
+
+                if path == "/api/experience/rate":
+                    positive = bool(body.get("positive"))
+                    recent = companion.agent.conversations.recent_messages(limit=12)
+                    last_user = next(
+                        (str(x.get("content","")) for x in reversed(recent) if x.get("role")=="user"),
+                        "",
+                    )
+                    result = companion.agent.experience.rate_response(
+                        last_user,
+                        positive=positive,
+                        project_id=companion.agent.projects.current_id(),
+                    )
+                    return self._json(200 if result.get("ok") else 400, result)
 
                 if path == "/api/upload":
                     name = Path(str(body.get("name", "arquivo"))).name

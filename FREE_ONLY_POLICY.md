@@ -81,6 +81,6 @@ determinístico, memória, conhecimento, ferramentas, automações e integraçõ
 não por exigir modelos cada vez maiores.
 
 
-## Workplace Intelligence 1.8
+## Workplace Intelligence 1.9
 
 Todos os 144 playbooks usam `free_only=true`. A camada não requer API paga, assinatura adicional ou modelo hospedado. Integrações externas continuam condicionadas às credenciais/serviços que a organização já possui; o playbook em si não adiciona custo.

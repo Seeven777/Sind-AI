@@ -1,8 +1,8 @@
 {
   "product": "Jarvis Personal GPT",
-  "version": "1.8",
+  "version": "1.9",
   "channel": "main",
   "min_python": "3.12",
   "data_schema": 1,
-  "notes": "Workplace Intelligence: 144 playbooks operacionais, roteamento institucional, sugestões contextuais, playbook search/launch e execução integrada ao Long-Horizon."
+  "notes": "Adaptive Experience: feedback explícito, memória de sucesso/falha, regras de playbook, candidatos de adaptação, mapa de competências e criação de rotinas a partir de jobs."
 }
