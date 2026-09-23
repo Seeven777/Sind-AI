@@ -319,6 +319,21 @@ class JarvisBridge(QObject):
             return json.dumps({"ok": False, "error": str(exc)}, ensure_ascii=False)
 
     @Slot(result=str)
+    def mobileMakeNetworkPrivate(self):
+        try:
+            script = self.window.base_dir / "Set-Jarvis-NetworkPrivate.ps1"
+            if not script.exists():
+                return json.dumps({"ok": False, "error": "Helper de rede não encontrado."}, ensure_ascii=False)
+            import subprocess
+            subprocess.Popen([
+                "powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command",
+                f"Start-Process powershell -Verb RunAs -ArgumentList '-NoProfile -ExecutionPolicy Bypass -File \"{script}\"'"
+            ], creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+            return json.dumps({"ok": True, "message": "Solicitação administrativa aberta."}, ensure_ascii=False)
+        except Exception as exc:
+            return json.dumps({"ok": False, "error": str(exc)}, ensure_ascii=False)
+
+    @Slot(result=str)
     def mobileEnableFirewall(self):
         try:
             script = self.window.base_dir / "Enable-Jarvis-Mobile.ps1"

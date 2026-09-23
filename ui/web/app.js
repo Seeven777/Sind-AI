@@ -251,11 +251,22 @@ function diagnoseMobile(){
     if(d.loopback_ok)details.push('Teste local: OK');
     if(d.network_profile)details.push(`Perfil da rede: ${d.network_profile}`);
     details.push(`Firewall Jarvis: ${d.firewall_rule?'liberado':'não detectado'}`);
+    const privateBtn=$('mobilePrivateBtn');
+    if(privateBtn)privateBtn.classList.toggle('hidden',String(d.network_profile||'').toLowerCase()!=='public');
     if((d.urls||[]).length)details.push(`Endereços: ${(d.urls||[]).join(' • ')}`);
     if((d.issues||[]).length)details.push(`Problemas: ${(d.issues||[]).join(' ')}`);
     text.textContent=details.join('\\n');
   });
 }
+function makeMobileNetworkPrivate(){
+  if(!bridge)return;
+  bridge.mobileMakeNetworkPrivate(raw=>{
+    let d={};try{d=JSON.parse(raw)}catch{}
+    if(!d.ok)alert(d.error||'Não foi possível alterar o perfil da rede.');
+    else setTimeout(diagnoseMobile,3000);
+  });
+}
+
 function enableMobileFirewall(){
   if(!bridge)return;
   bridge.mobileEnableFirewall(raw=>{
@@ -405,3 +416,5 @@ setInterval(()=>{if(bridge&&!busy)fetchSnapshot()},15000);
 
 $('mobileDiagBtn').onclick=diagnoseMobile;
 $('mobileFirewallBtn').onclick=enableMobileFirewall;
+
+$('mobilePrivateBtn').onclick=makeMobileNetworkPrivate;

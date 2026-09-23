@@ -33,11 +33,11 @@ def main():
     check("root HTML", "Jarvis Mobile" in root_html, root_html[:200])
 
     # Exact failure reported by the user: PIN appended to URL.
-    with urllib.request.urlopen(base_url + "/068112", timeout=3) as r:
+    with urllib.request.urlopen(base_url + "/791327", timeout=3) as r:
         pin_html = r.read().decode("utf-8")
         status = r.status
-    check("/068112 is not 404", status == 200, status)
-    check("/068112 serves mobile UI", "Jarvis Mobile" in pin_html, pin_html[:200])
+    check("/791327 is not 404", status == 200, status)
+    check("/791327 serves mobile UI", "Jarvis Mobile" in pin_html, pin_html[:200])
 
     with urllib.request.urlopen(base_url + "/health", timeout=3) as r:
         health = json.loads(r.read().decode("utf-8"))

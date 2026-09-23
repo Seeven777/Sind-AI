@@ -1,8 +1,8 @@
 {
   "product": "Jarvis Personal GPT",
-  "version": "1.3.2",
+  "version": "1.3.3",
   "channel": "main",
   "min_python": "3.12",
   "data_schema": 1,
-  "notes": "Aceita PIN em /123456, corrige fallback SPA mobile e elimina subprocessos Windows visíveis."
+  "notes": "Corrige rota PIN mobile, facilita mudança de rede Public para Private e melhora diagnóstico de acesso LAN."
 }

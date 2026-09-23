@@ -46,3 +46,5 @@ body.compact .sidebar,body.compact .inspector{display:none}body.compact .app{gri
 .mobile-alt{display:flex;flex-wrap:wrap;gap:5px;margin:7px 0}.mobile-alt code{border:1px solid #252b3b;background:#090c13;color:#858da1;border-radius:7px;padding:5px 7px;font-size:8px}
 .mobile-diagnostic{border:1px solid #383144;background:#100d17;border-radius:10px;padding:10px;margin-top:9px;color:#a7adbd;font-size:9px}.mobile-diagnostic.hidden{display:none}.mobile-diagnostic button{margin-top:8px}
 .mobile-diagnostic.ok{border-color:#244c3f;background:#0b1613}.mobile-diagnostic.warn{border-color:#503b25;background:#17110b}
+
+.mobile-diag-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}.mobile-diag-actions .hidden{display:none}

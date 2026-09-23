@@ -213,6 +213,7 @@ class MobileCompanion:
             "running": running,
             "loopback_ok": loopback_ok,
             "network_profile": profile,
+            "hostname": socket.gethostname(),
             "firewall_rule": firewall_rule,
             "urls": [f"http://{ip}:{self.port}/" for ip in ips] or self.urls(),
             "web_root": str(self.web_root),
@@ -336,7 +337,7 @@ class MobileCompanion:
         companion = self
 
         class Handler(BaseHTTPRequestHandler):
-            server_version = "JarvisMobile/1.3.2"
+            server_version = "JarvisMobile/1.3.3"
 
             def log_message(self, fmt, *args):
                 pass
@@ -447,7 +448,7 @@ class MobileCompanion:
                 # directly to the URL (e.g. /068112). Treat it as a valid entry
                 # route instead of returning 404. The mobile JS reads the PIN
                 # from location.pathname and completes pairing through /api/pair.
-                if re.fullmatch(r"/\\d{6}/?", path):
+                if re.fullmatch(r"/\d{6}/?", path):
                     return self._file("index.html")
 
                 if path == "/":

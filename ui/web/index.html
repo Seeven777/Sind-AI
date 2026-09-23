@@ -155,7 +155,10 @@
         <div class="mobile-actions"><button class="primary-action" id="mobileToggleBtn">Ativar acesso mobile</button><button class="secondary-action" id="mobileResetBtn">Novo PIN</button><button class="secondary-action" id="mobileDiagBtn">Diagnosticar</button></div>
         <div class="mobile-diagnostic hidden" id="mobileDiagnostic">
           <div id="mobileDiagnosticText">—</div>
-          <button class="secondary-action" id="mobileFirewallBtn">Liberar no Firewall</button>
+          <div class="mobile-diag-actions">
+            <button class="secondary-action" id="mobileFirewallBtn">Liberar no Firewall</button>
+            <button class="secondary-action hidden" id="mobilePrivateBtn">Tornar rede privada</button>
+          </div>
         </div>
         <div class="mobile-note">Abra um dos endereços no navegador do celular, conectado à mesma rede Wi‑Fi, e informe o PIN. Se não abrir, use “Diagnosticar”.</div>
       </div>
