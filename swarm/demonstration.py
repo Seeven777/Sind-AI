@@ -74,6 +74,42 @@ class DemonstrationTeacher:
         "mostre padrões da minha atividade",
         "mostre padroes da minha atividade",
     )
+    OPERATIONAL_CONTEXT_QUERIES = (
+        "qual é meu contexto operacional",
+        "qual e meu contexto operacional",
+        "me dê meu contexto operacional",
+        "me de meu contexto operacional",
+        "contexto operacional",
+        "em que eu estava trabalhando",
+        "onde eu parei",
+        "continue de onde parei",
+    )
+    PROCEDURE_QUERIES = (
+        "quais procedimentos você aprendeu",
+        "quais procedimentos voce aprendeu",
+        "quais rotinas você aprendeu",
+        "quais rotinas voce aprendeu",
+        "mostre sua memória procedural",
+        "mostre sua memoria procedural",
+    )
+    EXPERT_QUERIES = (
+        "quais aplicativos você conhece",
+        "quais aplicativos voce conhece",
+        "quais especialistas você tem",
+        "quais especialistas voce tem",
+        "mostre sua experiência por aplicativo",
+        "mostre sua experiencia por aplicativo",
+    )
+    LEARNING_QUERIES = (
+        "status do aprendizado pessoal",
+        "status do aprendizado",
+        "o que você já aprendeu comigo",
+        "o que voce ja aprendeu comigo",
+        "quão autônomo você está",
+        "quao autonomo voce esta",
+        "qual seu nível de autonomia",
+        "qual seu nivel de autonomia",
+    )
 
     def __init__(self, observe_engine, skill_store):
         self.observe = observe_engine
@@ -167,6 +203,95 @@ class DemonstrationTeacher:
         )
         return "\n".join(lines)
 
+    @staticmethod
+    def _format_operational_context(result):
+        if not result.get("ok"):
+            return f"Não consegui montar o contexto operacional: {result.get('error', 'erro desconhecido')}"
+        current = result.get("current") or {}
+        episode = result.get("latest_episode") or {}
+        expert = result.get("expert") or {}
+        procedures = result.get("related_procedures") or []
+        lines = [
+            f"Contexto operacional: {current.get('app_label') or current.get('app_id') or 'desconhecido'}.",
+            f"Janela atual: {current.get('window_title') or 'sem título'}.",
+        ]
+        if current.get("document_hint"):
+            lines.append(f"Documento/projeto provável: {current.get('document_hint')}.")
+        if episode:
+            seq = " → ".join(episode.get("apps") or [])
+            lines.append(
+                f"Último episódio de trabalho: {seq or 'sem sequência identificável'} "
+                f"({episode.get('events',0)} eventos)."
+            )
+            if episode.get("documents"):
+                lines.append("Documentos recentes: " + "; ".join(episode.get("documents")[:5]) + ".")
+        lines.append(
+            f"Especialista deste app: {expert.get('maturity','unseen')} — "
+            f"{expert.get('procedures',0)} procedimento(s) aprendido(s)."
+        )
+        if procedures:
+            lines.append("Rotinas relacionadas que já conheço:")
+            for item in procedures[:5]:
+                lines.append(
+                    f"• {item.get('name')} — {item.get('maturity')} — confiança "
+                    f"{float(item.get('confidence') or 0):.0%}"
+                )
+        return "\n".join(lines)
+
+    @staticmethod
+    def _format_procedures(result):
+        items = result.get("items") or []
+        if not items:
+            return "Ainda não há procedimentos persistidos na memória procedural. Ensine uma rotina com ‘observe enquanto eu faço ...’."
+        lines = ["Memória procedural aprendida:"]
+        for item in items[:15]:
+            apps = ", ".join(item.get("app_ids") or []) or "app não identificado"
+            lines.append(
+                f"• {item.get('name')} — {item.get('maturity')} — "
+                f"{item.get('step_count',0)} passos — apps: {apps} — "
+                f"confiança {float(item.get('confidence') or 0):.0%}"
+            )
+        return "\n".join(lines)
+
+    @staticmethod
+    def _format_experts(result):
+        items = result.get("items") or []
+        if not items:
+            return "Ainda não observei aplicativos suficientes para formar perfis de experiência."
+        lines = ["Experiência por aplicativo:"]
+        for item in items[:15]:
+            lines.append(
+                f"• {item.get('app_id')} — {item.get('maturity')} — "
+                f"{item.get('observed_events',0)} eventos — "
+                f"{item.get('procedures',0)} procedimento(s)"
+            )
+        return "\n".join(lines)
+
+    @staticmethod
+    def _format_learning(result):
+        if not result.get("ok"):
+            return "Não consegui calcular o estado do aprendizado pessoal."
+        observer = result.get("observer") or {}
+        procedures = result.get("procedures") or {}
+        experts = result.get("experts") or []
+        patterns = result.get("patterns") or []
+        learned_apps = [x for x in experts if x.get("maturity") in {"learned", "practiced"}]
+        lines = [
+            "Estado do aprendizado pessoal:",
+            f"• Observador: {'ativo' if observer.get('active') else 'desativado'}",
+            f"• Episódios de trabalho detectados: {result.get('episodes',0)}",
+            f"• Aplicativos observados: {len(experts)}",
+            f"• Aplicativos com aprendizado procedural: {len(learned_apps)}",
+            f"• Procedimentos aprendidos: {procedures.get('procedures',0)}",
+            f"• Procedimentos confiáveis/autônomos: "
+            f"{procedures.get('trusted',0) + procedures.get('autonomous',0)}",
+            f"• Padrões repetidos detectados: {len(patterns)}",
+        ]
+        lines.append(
+            "A autonomia aumenta quando uma rotina é demonstrada, reutilizada com sucesso e recebe poucas correções."
+        )
+        return "\n".join(lines)
+
     def handle(self, text):
         raw = str(text or "").strip()
         low = self._clean(raw)
@@ -226,12 +351,24 @@ class DemonstrationTeacher:
             extra = (
                 f" Entradas variáveis detectadas: {', '.join(inputs)}." if inputs else ""
             )
+            procedure = self.observe.remember_procedure(
+                name=name,
+                source_session=session_id,
+                skill_name=name,
+                app_ids=data.get("apps") or [],
+                inputs=data.get("inputs") or {},
+                step_count=int(saved.get("steps", 0) or 0),
+                metadata={"candidate_path": candidate.get("path", ""), "source": "human_demonstration"},
+            )
+            proc_data = procedure.get("procedure") or {}
+            maturity = proc_data.get("maturity") or "learned"
             return {
                 "handled": True,
                 "ok": True,
                 "answer": (
                     f"Aprendi por demonstração a skill “{name}” com "
-                    f"{saved.get('steps', 0)} passo(s).{extra}"
+                    f"{saved.get('steps', 0)} passo(s).{extra} "
+                    f"Também registrei a rotina na memória procedural ({maturity})."
                 ),
             }
 
@@ -272,7 +409,7 @@ class DemonstrationTeacher:
                 "answer": (
                     "Observador pessoal ativado e persistente. A partir de agora registro "
                     "mudanças de aplicativo/janela e contexto estrutural em segundo plano. "
-                    "Nesta primeira fase não gravo conteúdo digitado nem screenshots contínuos. "
+                    "Continuo sem gravar conteúdo digitado nem screenshots contínuos. "
                     "Você pode perguntar “o que estou fazendo agora?” ou “o que eu fiz nos "
                     "últimos 30 minutos?”."
                 ),
@@ -327,6 +464,55 @@ class DemonstrationTeacher:
             minutes = int(summary_match.group(1) or 60)
             result = self.observe.activity_summary(minutes=max(1, min(minutes, 24 * 60)))
             return {"handled": True, "ok": True, "answer": self._format_summary(result)}
+
+        if low in {self._clean(x) for x in self.OPERATIONAL_CONTEXT_QUERIES}:
+            result = self.observe.operational_context(minutes=180, max_procedures=6)
+            return {"handled": True, "ok": True, "answer": self._format_operational_context(result)}
+
+        if low in {self._clean(x) for x in self.PROCEDURE_QUERIES}:
+            result = self.observe.list_procedures(limit=30)
+            return {"handled": True, "ok": True, "answer": self._format_procedures(result)}
+
+        search_proc = re.match(r"^(?:procure|busque|encontre) (?:uma )?(?:rotina|procedimento)(?: sobre| para)?\s+(.+)$", low, flags=re.I)
+        if search_proc:
+            result = self.observe.search_procedures(search_proc.group(1), limit=8)
+            return {"handled": True, "ok": True, "answer": self._format_procedures(result)}
+
+        expert_match = re.match(
+            r"^(?:o que você sabe sobre|o que voce sabe sobre|status do especialista|especialista)\s+(.+)$",
+            low,
+            flags=re.I,
+        )
+        if expert_match:
+            app_query = expert_match.group(1).strip()
+            aliases = {
+                "photoshop": "photoshop", "adobe photoshop": "photoshop",
+                "vscode": "vscode", "visual studio code": "vscode",
+                "visual studio": "visual_studio", "chrome": "chrome",
+                "opera": "opera", "edge": "edge", "word": "word",
+                "excel": "excel", "obs": "obs", "explorer": "explorer",
+            }
+            app_id = aliases.get(app_query, app_query.replace(" ", "_"))
+            result = self.observe.app_expertise(app_id=app_id)
+            return {
+                "handled": True,
+                "ok": True,
+                "answer": (
+                    f"{result.get('label', app_id)}: maturidade {result.get('maturity')}. "
+                    f"Observei {result.get('observed_events',0)} eventos e tenho "
+                    f"{result.get('procedures',0)} procedimento(s) aprendido(s).\n"
+                    f"Estratégia preferida: {' → '.join(result.get('preferred_execution') or [])}.\n"
+                    f"Bridge: {result.get('bridge','unknown')}."
+                ),
+            }
+
+        if low in {self._clean(x) for x in self.EXPERT_QUERIES}:
+            result = self.observe.app_expertise(limit=30)
+            return {"handled": True, "ok": True, "answer": self._format_experts(result)}
+
+        if low in {self._clean(x) for x in self.LEARNING_QUERIES}:
+            result = self.observe.learning_snapshot()
+            return {"handled": True, "ok": True, "answer": self._format_learning(result)}
 
         if low in {self._clean(x) for x in self.PATTERN_QUERIES}:
             result = self.observe.activity_patterns(minutes=8 * 60, min_count=2, limit=12)

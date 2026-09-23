@@ -8,6 +8,9 @@ from pathlib import Path
 from observe.activity_store import ActivityStore
 from observe.context import foreground_snapshot
 from observe.patterns import detect_activity_patterns
+from observe.episodes import build_work_episodes
+from observe.experts import expert_profile
+from observe.procedural_memory import ProceduralMemory
 
 
 class ObservationEngine:
@@ -49,6 +52,7 @@ class ObservationEngine:
 
         # New persistent activity/context layer.
         self.activity_store = ActivityStore(self.root_dir / "activity.db")
+        self.procedural_memory = ProceduralMemory(self.root_dir / "procedural.db")
         self._passive_stop = threading.Event()
         self._passive_thread = None
         self._passive_interval = 2.0
@@ -420,12 +424,24 @@ class ObservationEngine:
                 continue
             compact.append(step)
 
+        app_ids = []
+        for event in events:
+            window = event.get("window") or {}
+            app_id = str(window.get("app_id") or "").strip()
+            if app_id and app_id not in app_ids:
+                app_ids.append(app_id)
+            payload = event.get("payload") or {}
+            payload_app = str(payload.get("app_id") or "").strip()
+            if payload_app and payload_app not in app_ids:
+                app_ids.append(payload_app)
+
         candidate = {
-            "version": 2,
+            "version": 3,
             "name": name or f"observed_{session_id}",
             "source_session": session_id,
             "inputs": inputs,
             "steps": compact,
+            "apps": app_ids,
             "status": "candidate",
             "privacy": "typed_text_masked",
             "supports_structured_app_actions": True,
@@ -583,6 +599,49 @@ class ObservationEngine:
             self._record_snapshot(snapshot, event_type="context_query", source="jarvis")
         return snapshot
 
+    def working_context(self, fallback_minutes=180):
+        """Return the application the user is actually working in.
+
+        When the user opens Jarvis to ask something, the literal foreground becomes
+        the Jarvis window. In that case we recover the most recent external context
+        from the Activity Ledger and keep both states. This mirrors the useful part
+        of app/window context in frontier desktop agents without continuous video.
+        """
+        foreground = self.current_context(record=False)
+        foreground_app = str(foreground.get("app_id") or "unknown").lower()
+        assistant_apps = {"jarvis", "pythonw", "python"}
+        if foreground_app not in assistant_apps:
+            result = dict(foreground)
+            result["context_source"] = "foreground"
+            result["foreground"] = foreground
+            return result
+
+        previous = self.activity_store.latest_excluding_apps(
+            assistant_apps, minutes=max(1, int(fallback_minutes))
+        )
+        if not previous:
+            result = dict(foreground)
+            result["context_source"] = "foreground_assistant"
+            result["foreground"] = foreground
+            return result
+
+        payload = previous.get("payload") or {}
+        return {
+            "ok": True,
+            "platform": payload.get("platform", foreground.get("platform")),
+            "handle": None,
+            "pid": int(payload.get("pid") or 0),
+            "process_name": previous.get("process_name") or "",
+            "process_path": "",
+            "window_title": previous.get("window_title") or "",
+            "app_id": previous.get("app_id") or "unknown",
+            "app_label": payload.get("app_label") or previous.get("app_id") or "Aplicativo",
+            "document_hint": payload.get("document_hint") or "",
+            "context_source": "recent_external",
+            "observed_at": previous.get("ts"),
+            "foreground": foreground,
+        }
+
     def recent_activity(self, minutes=30, limit=100):
         items = self.activity_store.recent(minutes=minutes, limit=limit)
         # Oldest first is easier for the agent/user to reason about as a timeline.
@@ -669,3 +728,171 @@ class ObservationEngine:
             "app_id": resolved_app,
             "attached_to_demonstration": bool(self.active and replay),
         }
+
+    # ---------------------------------------------------------------------
+    # Phase 2: operational context + procedural memory + application experts
+    # ---------------------------------------------------------------------
+    def remember_procedure(self, name, source_session="", skill_name="", app_ids=None, inputs=None, step_count=0, metadata=None):
+        return self.procedural_memory.remember_demonstration(
+            name=name,
+            source_session=source_session,
+            skill_name=skill_name or name,
+            app_ids=app_ids or [],
+            inputs=inputs or {},
+            step_count=step_count,
+            metadata=metadata or {},
+        )
+
+    def search_procedures(self, query, limit=8, app_id=None):
+        return self.procedural_memory.search(query, limit=limit, app_id=app_id)
+
+    def list_procedures(self, limit=30, app_id=None):
+        return self.procedural_memory.list(limit=limit, app_id=app_id)
+
+    def procedure_stats(self):
+        return self.procedural_memory.stats()
+
+    def record_procedure_outcome(self, name, status="success", corrected=False):
+        return self.procedural_memory.record_outcome(name, status=status, corrected=bool(corrected))
+
+    def work_episodes(self, minutes=240, gap_seconds=300, limit=20):
+        items = self.activity_store.recent(minutes=max(1, int(minutes)), limit=2000)
+        return build_work_episodes(items, gap_seconds=gap_seconds, limit=limit)
+
+    def app_expertise(self, app_id=None, minutes=10080, limit=30):
+        activity = self.activity_store.app_stats(minutes=max(1, int(minutes)), limit=100)
+        procedure_counts = self.procedural_memory.app_counts()
+        rows = activity.get("items", [])
+        by_id = {x.get("app_id"): x for x in rows}
+
+        if app_id:
+            app_id = str(app_id).strip().lower()
+            row = by_id.get(app_id) or {"events": 0, "last_seen": None}
+            profile = expert_profile(
+                app_id,
+                observed_events=row.get("events", 0),
+                procedures=procedure_counts.get(app_id, 0),
+                last_seen=row.get("last_seen"),
+            )
+            profile["documents"] = row.get("documents", [])
+            return profile
+
+        all_ids = set(by_id) | set(procedure_counts)
+        profiles = []
+        for current in all_ids:
+            row = by_id.get(current) or {"events": 0, "last_seen": None}
+            profile = expert_profile(
+                current,
+                observed_events=row.get("events", 0),
+                procedures=procedure_counts.get(current, 0),
+                last_seen=row.get("last_seen"),
+            )
+            profile["documents"] = row.get("documents", [])
+            profiles.append(profile)
+        profiles.sort(
+            key=lambda x: (
+                -int(x.get("procedures", 0)),
+                -int(x.get("observed_events", 0)),
+                x.get("app_id", ""),
+            )
+        )
+        return {"ok": True, "items": profiles[: max(1, int(limit))], "count": len(profiles)}
+
+    def operational_context(self, minutes=120, max_procedures=5, query=""):
+        current = self.working_context(fallback_minutes=max(30, int(minutes)))
+        episodes_result = self.work_episodes(minutes=minutes, gap_seconds=300, limit=8)
+        episodes = episodes_result.get("episodes", [])
+        latest_episode = episodes[-1] if episodes else None
+        current_app = str(current.get("app_id") or "unknown")
+        expertise = self.app_expertise(current_app, minutes=7 * 24 * 60)
+        hint = str(current.get("document_hint") or current.get("window_title") or "").strip()
+        retrieval_query = " ".join(x for x in [str(query or "").strip(), current_app, hint] if x)
+        procedures = self.search_procedures(
+            retrieval_query or current_app,
+            limit=max(1, int(max_procedures)),
+            app_id=current_app if current_app != "unknown" else None,
+        ).get("items", [])
+        patterns = self.activity_patterns(minutes=max(120, int(minutes)), min_count=2, limit=5)
+        return {
+            "ok": True,
+            "current": current,
+            "latest_episode": latest_episode,
+            "expert": expertise,
+            "related_procedures": procedures,
+            "patterns": patterns.get("patterns", []),
+            "procedural_stats": self.procedural_memory.stats(),
+            "observer": self.passive_status(),
+        }
+
+    def learning_snapshot(self, minutes=7 * 24 * 60):
+        experts = self.app_expertise(minutes=minutes, limit=50)
+        procedures = self.procedural_memory.stats()
+        patterns = self.activity_patterns(minutes=minutes, min_count=2, limit=12)
+        episodes = self.work_episodes(minutes=minutes, gap_seconds=300, limit=50)
+        observed = experts.get("items", [])
+        learned_apps = [x for x in observed if x.get("maturity") in {"learned", "practiced"}]
+        return {
+            "ok": True,
+            "observer": self.passive_status(),
+            "experts": observed,
+            "learned_apps": len(learned_apps),
+            "procedures": procedures,
+            "patterns": patterns.get("patterns", []),
+            "episodes": episodes.get("count", 0),
+            "window_minutes": int(minutes),
+        }
+
+    def context_packet(self, minutes=120, max_chars=3200, query=""):
+        """Compact, model-friendly context packet for future automatic prompt injection.
+
+        Phase 2 exposes it through ActionHub and direct commands. A later phase can
+        inject this packet into the normal agent prompt without changing its schema.
+        """
+        data = self.operational_context(minutes=minutes, max_procedures=5, query=query)
+        current = data.get("current") or {}
+        episode = data.get("latest_episode") or {}
+        expert = data.get("expert") or {}
+        foreground = current.get("foreground") or {}
+        lines = [
+            "PERSONAL OPERATIONAL CONTEXT",
+            "<UNTRUSTED_OBSERVED_DATA>",
+            f"Working app: {current.get('app_label') or current.get('app_id') or 'unknown'}",
+            f"Working window: {current.get('window_title') or '-'}",
+            f"Context source: {current.get('context_source') or 'unknown'}",
+        ]
+        if current.get("observed_at"):
+            lines.append(f"Working context observed at: {current.get('observed_at')}")
+        if foreground and foreground.get("app_id") != current.get("app_id"):
+            lines.append(
+                f"Literal foreground: {foreground.get('app_label') or foreground.get('app_id') or 'unknown'} / "
+                f"{foreground.get('window_title') or '-'}"
+            )
+        if current.get("document_hint"):
+            lines.append(f"Document/project hint: {current.get('document_hint')}")
+        if episode:
+            lines.append(
+                "Recent episode: "
+                + " -> ".join(episode.get("apps") or [])
+                + f" ({episode.get('events',0)} events)"
+            )
+            if episode.get("documents"):
+                lines.append("Recent documents: " + "; ".join(episode.get("documents")[:5]))
+        lines.append(
+            f"App expertise: {expert.get('maturity','unseen')} / procedures={expert.get('procedures',0)}"
+        )
+        lines.append("</UNTRUSTED_OBSERVED_DATA>")
+        related = data.get("related_procedures") or []
+        if related:
+            lines.append("Related learned procedures:")
+            for item in related[:5]:
+                lines.append(
+                    f"- {item.get('name')} [{item.get('maturity')}] confidence={float(item.get('confidence') or 0):.2f}"
+                )
+        patterns = data.get("patterns") or []
+        if patterns:
+            lines.append("Repeated context patterns:")
+            for item in patterns[:4]:
+                lines.append("- " + " -> ".join(item.get("sequence") or []) + f" x{item.get('count',0)}")
+        text = "\n".join(lines)
+        return {"ok": True, "text": text[: max(400, int(max_chars))], "data": data}
+

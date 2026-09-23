@@ -4,6 +4,14 @@ from pathlib import Path
 
 APP_RULES = [
     {
+        "id": "jarvis",
+        "label": "Jarvis Habitat",
+        # Do not identify every python/pythonw process as Jarvis. The title is the
+        # stable discriminator for the desktop shell.
+        "processes": set(),
+        "title_terms": ("jarvis habitat", "sind ai"),
+    },
+    {
         "id": "photoshop",
         "label": "Adobe Photoshop",
         "processes": {"photoshop.exe", "photoshop"},

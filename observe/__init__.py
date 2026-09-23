@@ -1,6 +1,6 @@
 """Observe & Learn subsystem.
 
-Phase 1 keeps the existing explicit demonstration recorder and adds a low-cost,
-opt-in personal activity ledger for future procedural learning and application
-bridges.
+Phase 1: opt-in low-cost personal activity ledger and explicit demonstration.
+Phase 2: work episodes, procedural memory, app-expert profiles and compact
+operational context prepared for automatic prompt grounding.
 """

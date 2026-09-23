@@ -155,6 +155,27 @@ class ActivityStore:
             ).fetchone()
         return self._decode_row(row) if row else None
 
+    def latest_excluding_apps(self, excluded_apps=None, minutes=180):
+        """Return the latest event outside assistant-shell apps.
+
+        This matters because the foreground window becomes Jarvis itself as soon as
+        the user asks a question. Keeping the most recent *working* application lets
+        normal chat requests retain useful desktop context without screen recording.
+        """
+        excluded = [str(x).strip().lower() for x in (excluded_apps or []) if str(x).strip()]
+        cutoff = (datetime.now() - timedelta(minutes=max(1, int(minutes)))).isoformat(timespec="milliseconds")
+        params = [cutoff]
+        where = "ts >= ?"
+        if excluded:
+            where += " AND lower(app_id) NOT IN (%s)" % ",".join("?" for _ in excluded)
+            params.extend(excluded)
+        with self._connect() as conn:
+            row = conn.execute(
+                f"SELECT * FROM activity_events WHERE {where} ORDER BY id DESC LIMIT 1",
+                tuple(params),
+            ).fetchone()
+        return self._decode_row(row) if row else None
+
     def count(self):
         with self._connect() as conn:
             row = conn.execute("SELECT COUNT(*) AS n FROM activity_events").fetchone()
@@ -195,3 +216,36 @@ class ActivityStore:
         with self._write_lock, self._connect() as conn:
             cur = conn.execute("DELETE FROM activity_events WHERE ts < ?", (cutoff,))
         return {"ok": True, "deleted": int(cur.rowcount or 0), "days": days}
+
+    def app_stats(self, minutes=10080, limit=50):
+        """Aggregate observed activity by application for expert/memory scoring."""
+        items = self.recent(minutes=max(1, int(minutes)), limit=2000)
+        stats = {}
+        for item in items:
+            app_id = str(item.get("app_id") or "unknown")
+            bucket = stats.setdefault(
+                app_id,
+                {"app_id": app_id, "events": 0, "focus_events": 0, "last_seen": "", "documents": []},
+            )
+            bucket["events"] += 1
+            if item.get("event_type") == "window_focus":
+                bucket["focus_events"] += 1
+            ts = str(item.get("ts") or "")
+            if ts > bucket["last_seen"]:
+                bucket["last_seen"] = ts
+            hint = str((item.get("payload") or {}).get("document_hint") or "").strip()
+            if hint and hint not in bucket["documents"] and len(bucket["documents"]) < 12:
+                bucket["documents"].append(hint)
+        ordered = sorted(stats.values(), key=lambda x: (-x["events"], x["app_id"]))
+        return {"ok": True, "minutes": int(minutes), "items": ordered[: max(1, int(limit))], "count": len(ordered)}
+
+    def latest_for_app(self, app_id):
+        app_id = str(app_id or "").strip()
+        if not app_id:
+            return None
+        with self._connect() as conn:
+            row = conn.execute(
+                "SELECT * FROM activity_events WHERE app_id=? ORDER BY id DESC LIMIT 1",
+                (app_id,),
+            ).fetchone()
+        return self._decode_row(row) if row else None

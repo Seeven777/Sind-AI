@@ -37,6 +37,15 @@ _SEARCH_SYNONYMS = {
     "atividade":{"observe","observer","contexto","trabalho"},
     "padrao":{"pattern","observe","rotina"},
     "padroes":{"pattern","observe","rotina"},
+    "procedimento":{"procedure","procedural","skill","rotina","observe"},
+    "procedimentos":{"procedure","procedural","skill","rotina","observe"},
+    "rotina":{"procedure","procedural","workflow","skill","observe"},
+    "rotinas":{"procedure","procedural","workflow","skill","observe"},
+    "especialista":{"expert","appagent","application","observe"},
+    "especialistas":{"expert","appagent","application","observe"},
+    "autonomia":{"autonomy","maturity","confidence","procedure","observe"},
+    "episodio":{"episode","activity","context","observe"},
+    "episodios":{"episode","activity","context","observe"},
 }
 
 
