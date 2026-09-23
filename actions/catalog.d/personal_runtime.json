@@ -1,0 +1,88 @@
+{
+  "release": "Personal Autonomy Foundation - Phase 1",
+  "actions": [
+    {
+      "id": "observe.passive.start",
+      "engine": "observe",
+      "group": "personal_context",
+      "operation": "start_passive",
+      "description": "Ativa o observador pessoal persistente de baixo custo. Registra mudanças de aplicativo/janela e contexto estrutural, sem gravar conteúdo digitado.",
+      "params": {
+        "interval_seconds": {"default": 2.0}
+      },
+      "risk": "act",
+      "keywords": ["observador pessoal", "aprendizado contínuo", "contexto", "atividade", "trabalho", "desktop", "observar"]
+    },
+    {
+      "id": "observe.passive.stop",
+      "engine": "observe",
+      "group": "personal_context",
+      "operation": "stop_passive",
+      "description": "Desativa o observador pessoal persistente preservando o histórico de atividade já registrado.",
+      "params": {},
+      "risk": "act",
+      "keywords": ["observador pessoal", "parar observação", "aprendizado contínuo", "contexto"]
+    },
+    {
+      "id": "observe.passive.status",
+      "engine": "observe",
+      "group": "personal_context",
+      "operation": "passive_status",
+      "description": "Mostra se o observador pessoal está ativo e quantos eventos estruturais já foram registrados.",
+      "params": {},
+      "risk": "read",
+      "keywords": ["observador pessoal", "status", "aprendizado contínuo", "contexto"]
+    },
+    {
+      "id": "observe.context.current",
+      "engine": "observe",
+      "group": "personal_context",
+      "operation": "current_context",
+      "description": "Lê o contexto atual do desktop: aplicativo, processo, título da janela e documento/projeto provável.",
+      "params": {
+        "record": {"default": false}
+      },
+      "risk": "read",
+      "keywords": ["o que estou fazendo", "contexto atual", "desktop", "aplicativo atual", "janela ativa", "trabalho atual"]
+    },
+    {
+      "id": "observe.activity.recent",
+      "engine": "observe",
+      "group": "personal_activity",
+      "operation": "recent_activity",
+      "description": "Retorna uma linha do tempo recente de mudanças de contexto e eventos estruturados observados no computador.",
+      "params": {
+        "minutes": {"default": 30},
+        "limit": {"default": 100}
+      },
+      "risk": "read",
+      "keywords": ["atividade recente", "histórico de trabalho", "o que eu fiz", "contexto", "timeline"]
+    },
+    {
+      "id": "observe.activity.summary",
+      "engine": "observe",
+      "group": "personal_activity",
+      "operation": "activity_summary",
+      "description": "Resume aplicativos, eventos e transições de contexto observados em uma janela de tempo.",
+      "params": {
+        "minutes": {"default": 60}
+      },
+      "risk": "read",
+      "keywords": ["resumo de atividade", "trabalho", "aplicativos", "contexto", "produtividade"]
+    },
+    {
+      "id": "observe.activity.patterns",
+      "engine": "observe",
+      "group": "personal_learning",
+      "operation": "activity_patterns",
+      "description": "Detecta sequências repetidas de aplicativos/contextos como evidência para futuras rotinas aprendidas. Não cria automações automaticamente.",
+      "params": {
+        "minutes": {"default": 480},
+        "min_count": {"default": 2},
+        "limit": {"default": 12}
+      },
+      "risk": "read",
+      "keywords": ["padrões", "rotinas", "hábitos", "aprendizado", "trabalho repetido", "procedimento"]
+    }
+  ]
+}

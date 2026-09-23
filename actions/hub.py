@@ -3,8 +3,6 @@ from pathlib import Path
 import re
 import unicodedata
 
-
-
 _SEARCH_STOPWORDS = {
     "a","o","as","os","um","uma","uns","umas","de","da","do","das","dos","e","em",
     "no","na","nos","nas","para","por","sobre","com","sem","ao","aos","à","às",
@@ -33,7 +31,14 @@ _SEARCH_SYNONYMS = {
     "conhecimento":{"knowledge"},
     "qualidade":{"quality","feedback"},
     "treinamento":{"training","track"},
+    # Phase 1 personal-runtime synonyms.
+    "observador":{"observe","observer","contexto","atividade"},
+    "contexto":{"observe","observer","atividade","desktop"},
+    "atividade":{"observe","observer","contexto","trabalho"},
+    "padrao":{"pattern","observe","rotina"},
+    "padroes":{"pattern","observe","rotina"},
 }
+
 
 def _norm_search(value):
     s = unicodedata.normalize("NFKD", str(value or "").lower())
@@ -41,12 +46,14 @@ def _norm_search(value):
     s = re.sub(r"[^a-z0-9_.-]+", " ", s)
     return re.sub(r"\s+", " ", s).strip()
 
+
 def _singularish(token):
     if len(token) > 5 and token.endswith("oes"):
         return token[:-3] + "ao"
     if len(token) > 4 and token.endswith("s"):
         return token[:-1]
     return token
+
 
 def _search_terms(query):
     normalized = _norm_search(query)
@@ -63,9 +70,11 @@ def _search_terms(query):
 
 
 class ActionHub:
-    """
-    Broker local de ações. Mantém centenas de operações fora do schema do LLM.
-    O modelo usa somente search_actions + execute_action.
+    """Broker local de ações.
+
+    The main catalog remains actions/catalog.json. Optional additive catalogs can
+    now live in actions/catalog.d/*.json. This lets new capabilities ship without
+    rewriting the large native catalog and is backward compatible with 1.9.
     """
 
     def __init__(self, catalog_path, engines):
@@ -73,12 +82,47 @@ class ActionHub:
         self.engines = dict(engines)
         self._catalog = []
         self._by_id = {}
+        self._catalog_sources = []
         self.reload()
 
+    @staticmethod
+    def _read_catalog(path):
+        data = json.loads(Path(path).read_text(encoding="utf-8"))
+        return data.get("actions", data if isinstance(data, list) else [])
+
     def reload(self):
-        data = json.loads(self.catalog_path.read_text(encoding="utf-8"))
-        self._catalog = data.get("actions", data if isinstance(data, list) else [])
+        catalog = []
+        sources = []
+
+        primary = self._read_catalog(self.catalog_path)
+        catalog.extend(primary)
+        sources.append({"path": str(self.catalog_path), "actions": len(primary), "primary": True})
+
+        # Supplemental catalogs are additive only. Duplicate IDs never override the
+        # native catalog or an earlier supplemental file.
+        supplement_dir = self.catalog_path.parent / "catalog.d"
+        if supplement_dir.exists():
+            for path in sorted(supplement_dir.glob("*.json")):
+                try:
+                    items = self._read_catalog(path)
+                except Exception:
+                    # A broken optional catalog must not prevent Jarvis from booting.
+                    continue
+                catalog.extend(items)
+                sources.append({"path": str(path), "actions": len(items), "primary": False})
+
+        deduped = []
+        seen = set()
+        for item in catalog:
+            action_id = str((item or {}).get("id", "")).strip()
+            if not action_id or action_id in seen:
+                continue
+            seen.add(action_id)
+            deduped.append(item)
+
+        self._catalog = deduped
         self._by_id = {x["id"]: x for x in self._catalog}
+        self._catalog_sources = sources
 
     def get(self, action_id):
         return self._by_id.get(str(action_id))
@@ -90,13 +134,14 @@ class ActionHub:
         for item in self._catalog:
             engines[item["engine"]] = engines.get(item["engine"], 0) + 1
             groups[item["group"]] = groups.get(item["group"], 0) + 1
-            risks[item.get("risk","read")] = risks.get(item.get("risk","read"), 0) + 1
+            risks[item.get("risk", "read")] = risks.get(item.get("risk", "read"), 0) + 1
         return {
             "ok": True,
             "actions": len(self._catalog),
             "engines": engines,
             "groups": groups,
             "risks": risks,
+            "catalog_sources": list(self._catalog_sources),
         }
 
     def list(self, engine=None, group=None, limit=100):
@@ -111,12 +156,11 @@ class ActionHub:
         q, terms = _search_terms(query)
         if not q:
             return {"ok": True, "items": [], "count": 0}
-
         ranked = []
         for item in self._catalog:
             hay = _norm_search(" ".join([
-                item.get("id",""), item.get("engine",""), item.get("group",""),
-                item.get("description",""), " ".join(item.get("keywords",[]))
+                item.get("id", ""), item.get("engine", ""), item.get("group", ""),
+                item.get("description", ""), " ".join(item.get("keywords", []))
             ]))
             score = 12 if q in hay else 0
             matched = 0
@@ -127,7 +171,6 @@ class ActionHub:
             score += matched * matched
             if score:
                 ranked.append((score, item))
-
         ranked.sort(key=lambda x: (-x[0], x[1]["id"]))
 
         compact = []
@@ -137,8 +180,8 @@ class ActionHub:
                 "engine": item["engine"],
                 "group": item["group"],
                 "description": item["description"],
-                "risk": item.get("risk","read"),
-                "params": item.get("params",{}),
+                "risk": item.get("risk", "read"),
+                "params": item.get("params", {}),
             })
         return {"ok": True, "items": compact, "count": len(ranked)}
 
@@ -151,13 +194,12 @@ class ActionHub:
         engine = self.engines.get(engine_name)
         if engine is None:
             return {"ok": False, "error": f"Engine não disponível: {engine_name}"}
-
         params = dict(params or {})
         required = [
-            name for name, spec in item.get("params",{}).items()
+            name for name, spec in item.get("params", {}).items()
             if spec.get("required")
         ]
-        missing = [name for name in required if params.get(name) in (None,"")]
+        missing = [name for name in required if params.get(name) in (None, "")]
         if missing:
             return {
                 "ok": False,
@@ -166,7 +208,6 @@ class ActionHub:
             }
 
         operation = item["operation"]
-
         try:
             if hasattr(engine, "execute"):
                 result = engine.execute(operation, **params)
@@ -179,7 +220,6 @@ class ActionHub:
 
         if not isinstance(result, dict):
             result = {"ok": True, "data": result}
-
         result.setdefault("action", action_id)
         result.setdefault("engine", engine_name)
         return result
