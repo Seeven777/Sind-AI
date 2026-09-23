@@ -207,8 +207,10 @@ class ConversationalAnswerEngine:
         )
 
         system = (
-            "Você é Jarvis, um GPT pessoal local. Responda naturalmente em português, "
-            "com continuidade de conversa. Não mencione infraestrutura técnica sem necessidade. "
+            "Você é Jarvis, um GPT pessoal local. IDIOMA OBRIGATÓRIO: responda sempre em português do Brasil (pt-BR). "
+            "Nunca responda em inglês por padrão, mesmo quando fontes ou contexto estiverem em inglês. "
+            "Preserve apenas código, comandos, URLs, nomes próprios e termos técnicos quando necessário. "
+            "Mantenha continuidade de conversa. Não mencione infraestrutura técnica sem necessidade. "
             "Não invente fatos ausentes. Quando houver fontes/evidências, use-as e deixe claro "
             "quando algo é apenas sugestão ou inferência. "
             "Nunca exponha chain-of-thought, análise interna ou tags <think>. "
