@@ -1666,10 +1666,16 @@ PROJETO ATUAL
             )
             synthesis = ""
             synthesis_error = None
-            llm_budget = min(
-                int(self.config.get("research_llm_timeout_seconds", 32)),
-                int(self.config.get("agent_llm_timeout_seconds", 45)),
-            )
+            research_timeout = int(self.config.get("research_llm_timeout_seconds", 0))
+            agent_timeout = int(self.config.get("agent_llm_timeout_seconds", 0))
+            if research_timeout > 0 and agent_timeout > 0:
+                llm_budget = min(research_timeout, agent_timeout)
+            elif research_timeout > 0:
+                llm_budget = research_timeout
+            elif agent_timeout > 0:
+                llm_budget = agent_timeout
+            else:
+                llm_budget = 0  # execução sem deadline artificial
 
             try:
                 prompt = (
@@ -2039,28 +2045,42 @@ PROJETO ATUAL
         max_rounds = int(self.config.get("agent_max_rounds", 4))
         total_tool_calls = 0
         max_tool_calls = int(self.config.get("agent_max_tool_calls", 10))
-        llm_timeout = int(self.config.get("agent_llm_timeout_seconds", 45))
-        total_budget = int(self.config.get("agent_total_timeout_seconds", 120))
+        llm_timeout = int(self.config.get("agent_llm_timeout_seconds", 0))
+        total_budget = int(self.config.get("agent_total_timeout_seconds", 0))
         last_summaries = []
 
         try:
             for round_index in range(1, max_rounds + 1):
                 self._check_cancelled()
                 elapsed = time.monotonic() - started_at
-                if elapsed >= total_budget:
-                    raise RuntimeError(
-                        f"A tarefa ultrapassou o limite de {total_budget}s. "
-                        "Ela foi interrompida em vez de continuar travada."
-                    )
-                if status:
-                    status(f"Agente: ciclo {round_index}/{max_rounds} • {int(elapsed)}s")
 
-                remaining = max(10, min(llm_timeout, int(total_budget - elapsed)))
+                # total_budget <= 0 significa que a tarefa não é interrompida
+                # automaticamente por tempo. O usuário decide quando parar.
+                if total_budget > 0 and elapsed >= total_budget:
+                    raise RuntimeError(
+                        f"A tarefa ultrapassou o limite configurado de {total_budget}s."
+                    )
+
+                model_name = self.models.reason_model_name()
+                if status:
+                    status(
+                        f"Pensando com {model_name} • ciclo {round_index}/{max_rounds}"
+                    )
+
+                if total_budget > 0:
+                    remaining_budget = max(1, int(total_budget - elapsed))
+                    if llm_timeout > 0:
+                        remaining = min(llm_timeout, remaining_budget)
+                    else:
+                        remaining = remaining_budget
+                else:
+                    remaining = llm_timeout  # 0 = sem timeout no OllamaClient
+
                 resp = self.ollama.chat(
                     messages=messages,
                     tools=self._tools_for_prompt(user_text),
                     timeout=remaining,
-                    model=self.models.reason_model_name(),
+                    model=model_name,
                 )
                 msg = resp.get("message", {})
                 calls = msg.get("tool_calls") or []

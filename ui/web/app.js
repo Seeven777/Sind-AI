@@ -363,14 +363,11 @@ function initBridge(){
   new QWebChannel(qt.webChannelTransport,channel=>{
     bridge=channel.objects.jarvisBridge;
     bridge.statusChanged.connect((state,detail)=>{
-      setBusy(true,detail||state);
-      const d=String(detail||state||'').toLowerCase();
-      let msg='Jarvis está trabalhando…';
-      if(d.includes('pesquis'))msg='Pesquisando fontes…';
-      else if(d.includes('execut'))msg='Executando…';
-      else if(d.includes('consult'))msg='Consultando contexto…';
-      else if(d.includes('convers'))msg='Preparando resposta…';
-      showThinking(msg);
+      const raw=String(detail||state||'Jarvis está trabalhando…');
+      setBusy(true,raw);
+      // Exibe o estágio real + tempo decorrido vindo do runtime.
+      // Não reduz mais tarefas longas a uma mensagem genérica.
+      showThinking(raw);
     });
     bridge.commandFinished.connect((prompt,result,ok,metaRaw)=>{
       let meta={};try{meta=JSON.parse(metaRaw||'{}')}catch{}

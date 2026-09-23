@@ -104,7 +104,7 @@ class UpdateManager:
     def _github_headers(self):
         return {
             "Accept": "application/vnd.github+json",
-            "User-Agent": "SindAI-Jarvis-Updater/1.3",
+            "User-Agent": "SindAI-Jarvis-Updater/1.4",
             "X-GitHub-Api-Version": "2022-11-28",
         }
 

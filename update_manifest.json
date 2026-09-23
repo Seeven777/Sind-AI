@@ -1,8 +1,8 @@
 {
   "product": "Jarvis Personal GPT",
-  "version": "1.3.3",
+  "version": "1.4",
   "channel": "main",
   "min_python": "3.12",
   "data_schema": 1,
-  "notes": "Corrige rota PIN mobile, facilita mudança de rede Public para Private e melhora diagnóstico de acesso LAN."
+  "notes": "Tarefas sem deadline artificial por padrão, heartbeat visual contínuo e progresso com tempo decorrido."
 }

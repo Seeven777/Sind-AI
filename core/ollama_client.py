@@ -40,11 +40,20 @@ class OllamaClient:
             method="POST",
         )
         try:
-            with urllib.request.urlopen(req, timeout=float(timeout)) as response:
+            # timeout <= 0 significa execução sem deadline artificial.
+            # O usuário continua podendo cancelar a tarefa pela interface.
+            if timeout is None or float(timeout) <= 0:
+                response_ctx = urllib.request.urlopen(req)
+            else:
+                response_ctx = urllib.request.urlopen(req, timeout=float(timeout))
+
+            with response_ctx as response:
                 data = json.loads(response.read().decode("utf-8"))
                 data["_jarvis_model"] = selected_model
                 return data
         except (socket.timeout, TimeoutError) as exc:
+            if timeout is None or float(timeout) <= 0:
+                raise RuntimeError(f"A conexão com o modelo local {selected_model} foi interrompida.") from exc
             raise RuntimeError(f"O modelo local {selected_model} ultrapassou {int(timeout)}s nesta etapa.") from exc
         except urllib.error.HTTPError as exc:
             try:
@@ -54,6 +63,8 @@ class OllamaClient:
             raise RuntimeError(f"Ollama retornou HTTP {exc.code} para {selected_model}: {body[:500]}") from exc
         except urllib.error.URLError as exc:
             if isinstance(getattr(exc, "reason", None), socket.timeout):
+                if timeout is None or float(timeout) <= 0:
+                    raise RuntimeError(f"A conexão com o modelo local {selected_model} foi interrompida.") from exc
                 raise RuntimeError(f"O modelo local {selected_model} ultrapassou {int(timeout)}s nesta etapa.") from exc
             raise RuntimeError("Não consegui conectar ao Ollama. Confirme que o aplicativo Ollama está aberto.") from exc
         except json.JSONDecodeError as exc:

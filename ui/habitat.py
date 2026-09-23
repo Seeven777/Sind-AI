@@ -1,8 +1,9 @@
 import json
 import threading
+import time
 from pathlib import Path
 
-from PySide6.QtCore import QObject, QThread, Qt, Signal, Slot, QUrl
+from PySide6.QtCore import QObject, QThread, Qt, Signal, Slot, QUrl, QTimer
 from PySide6.QtWidgets import QMainWindow, QMessageBox, QFileDialog
 from PySide6.QtWebChannel import QWebChannel
 from PySide6.QtWebEngineWidgets import QWebEngineView
@@ -379,6 +380,13 @@ class HabitatWindow(QMainWindow):
         self.thread = None
         self.worker = None
         self.current_prompt = ""
+        self._task_started_at = 0.0
+        self._last_status_detail = ""
+        self._heartbeat = QTimer(self)
+        self._heartbeat.setInterval(
+            max(1000, int(self.config.get("ui_task_heartbeat_seconds", 2)) * 1000)
+        )
+        self._heartbeat.timeout.connect(self._emit_task_heartbeat)
 
         self.setWindowTitle("Jarvis Habitat")
         self.setMinimumSize(620, 460)
@@ -606,6 +614,29 @@ class HabitatWindow(QMainWindow):
         except Exception:
             pass
 
+    def _format_elapsed(self):
+        if not self._task_started_at:
+            return "0s"
+        total = max(0, int(time.monotonic() - self._task_started_at))
+        hours, rem = divmod(total, 3600)
+        minutes, seconds = divmod(rem, 60)
+        if hours:
+            return f"{hours}h {minutes:02d}m {seconds:02d}s"
+        if minutes:
+            return f"{minutes}m {seconds:02d}s"
+        return f"{seconds}s"
+
+    def _emit_task_heartbeat(self):
+        if self.thread is None:
+            return
+        base = self._last_status_detail or "Jarvis continua trabalhando"
+        # Evita empilhar tempos antigos no texto recebido do worker.
+        detail = f"{base} • {self._format_elapsed()} • em andamento"
+        self.bridge.statusChanged.emit(
+            self._map_status(base),
+            detail,
+        )
+
     def _map_status(self, detail):
         d = (detail or "").lower()
 
@@ -628,10 +659,13 @@ class HabitatWindow(QMainWindow):
             return
 
         self.current_prompt = prompt
+        self._task_started_at = time.monotonic()
+        self._last_status_detail = "Interpretando solicitação"
         self.bridge.statusChanged.emit(
             "thinking",
-            "Interpretando solicitação",
+            "Interpretando solicitação • 0s • em andamento",
         )
+        self._heartbeat.start()
 
         self.thread = QThread(self)
         self.worker = AgentWorker(self.agent, prompt)
@@ -651,9 +685,10 @@ class HabitatWindow(QMainWindow):
         self.thread.start()
 
     def _on_status(self, detail):
+        self._last_status_detail = str(detail or "Jarvis continua trabalhando")
         self.bridge.statusChanged.emit(
             self._map_status(detail),
-            detail,
+            f"{self._last_status_detail} • {self._format_elapsed()} • em andamento",
         )
         # Mantém o painel direito vivo durante tarefas longas (plano/progresso).
         try:
@@ -703,6 +738,7 @@ class HabitatWindow(QMainWindow):
             self.worker.resolve_confirmation(approved)
 
     def _on_finished(self, result, ok):
+        self._heartbeat.stop()
         try:
             metadata = json.dumps(self.agent._last_response_metadata or {}, ensure_ascii=False, default=str)
         except Exception:
@@ -722,8 +758,11 @@ class HabitatWindow(QMainWindow):
         )
 
     def _cleanup_worker(self):
+        self._heartbeat.stop()
         self.worker = None
         self.thread = None
+        self._task_started_at = 0.0
+        self._last_status_detail = ""
 
     def show_mobile_pairing(self):
         mobile = getattr(self, "mobile_companion", None)
