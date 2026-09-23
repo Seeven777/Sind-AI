@@ -42,13 +42,25 @@ class HardwareProfiler:
             pass
         return None
 
+    def _run_hidden(self, cmd, timeout=5):
+        kwargs = {"capture_output": True, "text": True, "timeout": timeout}
+        if os.name == "nt":
+            kwargs["creationflags"] = getattr(subprocess, "CREATE_NO_WINDOW", 0)
+            try:
+                si = subprocess.STARTUPINFO()
+                si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+                kwargs["startupinfo"] = si
+            except Exception:
+                pass
+        return subprocess.run(cmd, **kwargs)
+
     def _gpu(self):
         gpus = []
         if shutil.which("nvidia-smi"):
             try:
-                p = subprocess.run(
+                p = self._run_hidden(
                     ["nvidia-smi","--query-gpu=name,memory.total","--format=csv,noheader,nounits"],
-                    capture_output=True,text=True,timeout=4
+                    timeout=4
                 )
                 for line in p.stdout.splitlines():
                     parts = [x.strip() for x in line.split(",")]
@@ -62,7 +74,7 @@ class HardwareProfiler:
                     "powershell","-NoProfile","-Command",
                     "Get-CimInstance Win32_VideoController | Select-Object -ExpandProperty Name"
                 ]
-                p = subprocess.run(cmd,capture_output=True,text=True,timeout=5)
+                p = self._run_hidden(cmd, timeout=5)
                 for line in p.stdout.splitlines():
                     if line.strip():
                         gpus.append({"name": line.strip(), "vram_mb": None, "vendor":"unknown"})

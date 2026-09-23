@@ -1,6 +1,7 @@
 import base64
 import json
 import mimetypes
+import re
 import ipaddress
 import secrets
 import socket
@@ -335,7 +336,7 @@ class MobileCompanion:
         companion = self
 
         class Handler(BaseHTTPRequestHandler):
-            server_version = "JarvisMobile/1.3.1"
+            server_version = "JarvisMobile/1.3.2"
 
             def log_message(self, fmt, *args):
                 pass
@@ -442,6 +443,13 @@ class MobileCompanion:
                         return self._json(200, companion._history(sid))
                     return self._json(404, {"ok": False, "error": "Rota não encontrada."})
 
+                # Some mobile/browser handlers append the 6-digit pairing PIN
+                # directly to the URL (e.g. /068112). Treat it as a valid entry
+                # route instead of returning 404. The mobile JS reads the PIN
+                # from location.pathname and completes pairing through /api/pair.
+                if re.fullmatch(r"/\\d{6}/?", path):
+                    return self._file("index.html")
+
                 if path == "/":
                     index_file = companion.web_root / "index.html"
                     if index_file.is_file():
@@ -460,6 +468,12 @@ class MobileCompanion:
                     self.end_headers()
                     self.wfile.write(raw)
                     return
+
+                # SPA fallback for extensionless routes. Static assets with an
+                # extension still produce a normal 404 when they are absent.
+                leaf = path.rsplit("/", 1)[-1]
+                if "." not in leaf:
+                    return self._file("index.html")
                 return self._file(path)
 
             def do_POST(self):

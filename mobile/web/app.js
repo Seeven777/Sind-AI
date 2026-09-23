@@ -17,5 +17,27 @@ async function selectConversation(id){await api('/api/conversation/select',{meth
 async function newChat(){await api('/api/conversation/new',{method:'POST',body:'{}'});closeSheets();await refresh();await loadHistory()}
 function openSheet(id){$(id).classList.remove('hidden')}function closeSheets(){document.querySelectorAll('.sheet').forEach(s=>s.classList.add('hidden'))}
 async function uploadFile(file){if(!file)return;if(file.size>15*1024*1024){alert('Limite mobile: 15 MB.');return}const chip=document.createElement('div');chip.className='upload-chip';chip.textContent=`Enviando ${file.name}…`;$('uploadStrip').appendChild(chip);const data=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(String(r.result).split(',')[1]);r.onerror=rej;r.readAsDataURL(file)});const d=await api('/api/upload',{method:'POST',body:JSON.stringify({name:file.name,data})});chip.textContent=d.ok?`${file.name} anexado`:`Falha: ${file.name}`;setTimeout(()=>chip.remove(),3000)}
-async function boot(){const st=await api('/api/status');if(st.paired||token){showApp();await refresh();await loadHistory()}else showPair()}
+function pinFromLocation(){
+  const q=new URLSearchParams(location.search).get('pin')||'';
+  const path=(location.pathname||'').replace(/^\/+|\/+$/g,'');
+  const hash=(location.hash||'').replace(/^#/,'');
+  for(const value of [q,path,hash]){
+    if(/^\d{6}$/.test(value))return value;
+  }
+  return '';
+}
+async function boot(){
+  const locationPin=pinFromLocation();
+  if(locationPin){
+    // Remove PIN from browser history/address bar before authenticating.
+    history.replaceState({},'', '/');
+    $('pinInput').value=locationPin;
+  }
+  const st=await api('/api/status');
+  if(st.paired||token){
+    showApp();await refresh();await loadHistory();return;
+  }
+  showPair();
+  if(locationPin)await pair();
+}
 $('pairBtn').onclick=pair;$('pinInput').addEventListener('keydown',e=>{if(e.key==='Enter')pair()});$('sendBtn').onclick=()=>send($('messageInput').value);$('messageInput').addEventListener('input',resize);$('messageInput').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send(e.target.value)}});$('historyBtn').onclick=()=>openSheet('historySheet');$('contextBtn').onclick=()=>openSheet('contextSheet');document.querySelectorAll('[data-close-sheet]').forEach(x=>x.onclick=closeSheets);$('newChatBtn').onclick=newChat;$('attachBtn').onclick=()=>$('fileInput').click();$('fileInput').onchange=e=>{const f=e.target.files?.[0];if(f)uploadFile(f);e.target.value=''};document.querySelectorAll('[data-prompt]').forEach(x=>x.onclick=()=>send(x.dataset.prompt));boot();
