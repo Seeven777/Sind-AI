@@ -33,15 +33,17 @@ echo.
 echo TESTES RECOMENDADOS:
 echo   1. run_doctor.bat
 echo   2. run_personal_gpt_test.bat
-echo   3. run_mobile_companion_test.bat
-echo   4. run_cognitive_test.bat
-echo   5. run_self_test.bat
-echo   6. run_foundation_test.bat
-echo   7. run_model_router_test.bat
-echo   8. run_routing_test.bat
-echo   9. run_health_test.bat
-echo  10. run_browser_test.bat
-echo  11. run_jarvis.bat
+echo   3. run_capability_acquisition_test.bat
+echo   4. run_swarm_test.bat
+echo   5. run_mobile_companion_test.bat
+echo   6. run_cognitive_test.bat
+echo   7. run_self_test.bat
+echo   8. run_foundation_test.bat
+echo   9. run_model_router_test.bat
+echo  10. run_routing_test.bat
+echo  11. run_health_test.bat
+echo  12. run_browser_test.bat
+echo  13. run_jarvis.bat
 echo.
 echo ACESSO MOBILE:
 echo   - abra o Jarvis e clique em "Jarvis Mobile"

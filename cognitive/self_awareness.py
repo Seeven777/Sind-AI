@@ -1,7 +1,7 @@
 class SelfAwareness:
     """Grounded self-knowledge from the actual runtime, not model imagination."""
 
-    def __init__(self, services, actions, workflows, capabilities, models, hardware, knowledge, connectors=None, swarm=None, apprenticeship=None, demonstration=None):
+    def __init__(self, services, actions, workflows, capabilities, models, hardware, knowledge, connectors=None, swarm=None, apprenticeship=None, demonstration=None, acquisition=None):
         self.services = services
         self.actions = actions
         self.workflows = workflows
@@ -13,6 +13,7 @@ class SelfAwareness:
         self.swarm = swarm
         self.apprenticeship = apprenticeship
         self.demonstration = demonstration
+        self.acquisition = acquisition
 
     def matches(self, text):
         t = str(text or "").lower().strip()
@@ -22,6 +23,7 @@ class SelfAwareness:
             "você consegue acessar", "voce consegue acessar", "você tem acesso", "voce tem acesso",
             "quais recursos", "suas capacidades", "suas ferramentas", "quais agentes", "seus agentes",
             "como eu te ensino", "como te ensinar", "você consegue aprender", "voce consegue aprender",
+            "como você aprende sozinho", "como voce aprende sozinho", "adquirir novas capacidades", "lacunas de capacidade",
         )
         return any(x in t for x in patterns)
 
@@ -44,6 +46,7 @@ class SelfAwareness:
             "swarm": self.swarm.stats() if self.swarm else {},
             "apprenticeship": self.apprenticeship.stats() if self.apprenticeship else {},
             "demonstration": self.demonstration.status() if self.demonstration else {},
+            "acquisition": self.acquisition.stats() if self.acquisition else {},
         }
 
     def _service_lines(self):
@@ -81,12 +84,13 @@ class SelfAwareness:
                 lines = [f"- **{x['name']}** — {x['purpose']}" for x in roles]
                 return "Meu Swarm local possui estes papéis especialistas:\n\n" + "\n".join(lines) + "\n\nEu escolho os especialistas automaticamente; você continua conversando apenas com o Jarvis."
 
-        if any(x in t for x in ("como eu te ensino", "como te ensinar", "consegue aprender", "consigo te ensinar")):
+        if any(x in t for x in ("como eu te ensino", "como te ensinar", "consegue aprender", "consigo te ensinar", "como você aprende sozinho", "como voce aprende sozinho", "adquirir novas capacidades")):
             return (
-                "Posso aprender novas rotinas de duas formas persistentes:\n\n"
-                "1. **Por explicação:** diga `Quero te ensinar como ...`, explique os passos e finalize com `finalizar ensino`.\n"
-                "2. **Por demonstração:** diga `Observe enquanto eu faço ...`, execute a rotina no computador e finalize com `terminei a demonstração`. A demonstração vira uma Skill reutilizável; texto digitado é mascarado por privacidade.\n\n"
-                "O aprendizado fica local em `JarvisData` e continua sujeito às mesmas confirmações e permissões."
+                "Posso adquirir competências de três formas persistentes:\n\n"
+                "1. **Descoberta autônoma:** diga `Descubra como fazer ...`. Primeiro verifico Skills, Actions, Workflows e APIs existentes; depois tento compor uma Skill declarativa ou encontrar uma API pública segura.\n"
+                "2. **Por explicação:** diga `Quero te ensinar como ...`, explique os passos e finalize com `finalizar ensino`.\n"
+                "3. **Por demonstração:** diga `Observe enquanto eu faço ...`, execute a rotina no computador e finalize com `terminei a demonstração`. A demonstração vira uma Skill reutilizável; texto digitado é mascarado por privacidade.\n\n"
+                "Aquisições automáticas não executam código arbitrário gerado pelo modelo. Novas competências são compostas com primitivas confiáveis ou APIs públicas read-only e continuam sujeitas às mesmas confirmações e permissões."
             )
 
         service = self._explicit_service(text)
@@ -115,6 +119,8 @@ class SelfAwareness:
             f"- **{snap['services'].get('count', 0)} serviços cotidianos do SindPetshop-SP** mapeados.\n"
             f"- **{snap.get('swarm',{}).get('agents',0)} papéis especialistas** disponíveis no Swarm Intelligence.\n"
             f"- **{snap.get('apprenticeship',{}).get('procedures',0)} rotinas ensinadas** persistentes.\n"
+            f"- **{sum(snap.get('acquisition',{}).get('gaps',{}).values()) if snap.get('acquisition') else 0} lacunas de capacidade** registradas pelo Capability Acquisition Engine.\n"
+            f"- **{snap.get('acquisition',{}).get('candidates',{}).get('installed',0) if snap.get('acquisition') else 0} competências adquiridas** instaladas por descoberta/composição.\n"
             f"- Modelos locais: `{snap['models'].get('fast_model')}` para conversa e `{snap['models'].get('reasoning_model')}` para raciocínio.\n"
             "- Posso combinar memória, Knowledge Base, web/dados públicos, arquivos, navegador, desktop, automações e conectores autorizados.\n\n"
             "Quando você pergunta se eu consigo fazer algo, a resposta vem deste estado real do sistema — não de uma suposição do modelo."

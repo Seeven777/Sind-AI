@@ -70,6 +70,8 @@ from swarm.blackboard import SwarmBlackboard
 from swarm.apprenticeship import ApprenticeshipEngine
 from swarm.orchestrator import SwarmOrchestrator
 from swarm.demonstration import DemonstrationTeacher
+from acquisition.engine import CapabilityAcquisitionEngine
+from acquisition.commands import parse_acquisition_command
 
 from tools.apps import open_app, open_folder
 from tools.browser import open_url
@@ -234,6 +236,7 @@ class JarvisAgent:
         self.attachments = AttachmentManager(attachments_db, self.knowledge, self.projects)
         swarm_blackboard_db = persistent_path("swarm_blackboard_db", "cognitive/swarm_blackboard.db")
         apprenticeship_db = persistent_path("apprenticeship_db", "cognitive/apprenticeship.db")
+        acquisition_db = persistent_path("acquisition_db", "cognitive/capability_acquisition.db")
         self.hardware = HardwareProfiler()
         self.context_orchestrator = ContextOrchestrator(
             self.conversations, self.learning, self.memory, self.semantic,
@@ -293,11 +296,26 @@ class JarvisAgent:
             apprenticeship=self.apprenticeship, config=self.config
         )
         self.demonstration_teacher = DemonstrationTeacher(self.observe, self.skills)
+        self.acquisition = CapabilityAcquisitionEngine(
+            acquisition_db,
+            models=self.models,
+            skills=self.skills,
+            apprenticeship=self.apprenticeship,
+            actions=self.actions,
+            workflows=self.workflows,
+            capabilities=self.capabilities,
+            public_data=self.public_data,
+            services=self.services,
+            web_search=self.web_search,
+            improvements=self.improvements,
+            config=self.config,
+        )
         self.self_awareness = SelfAwareness(
             self.services, self.actions, self.workflows, self.capabilities,
             self.models, self.hardware, self.knowledge, connectors=self.connectors,
             swarm=self.swarm, apprenticeship=self.apprenticeship,
-            demonstration=self.demonstration_teacher
+            demonstration=self.demonstration_teacher,
+            acquisition=self.acquisition,
         )
         self.service_runtime = InstitutionalServiceRuntime(
             self.services, self.browser_agent, self.models
@@ -372,6 +390,8 @@ class JarvisAgent:
             {"type":"function","function":{"name":"execute_capability","description":"Executa uma capacidade encontrada no Capability Hub. Use somente IDs retornados por search_capabilities e forneça os parâmetros solicitados.","parameters":{"type":"object","properties":{"capability_id":{"type":"string"},"params":{"type":"object"}},"required":["capability_id"]}}},
             {"type":"function","function":{"name":"capability_stats","description":"Mostra quantidade de capacidades, provedores e grupos disponíveis.","parameters":{"type":"object","properties":{}}}},
             {"type":"function","function":{"name":"discover_public_apis","description":"Pesquisa APIs públicas no diretório APIs.guru quando o Capability Hub ainda não possui a função necessária.","parameters":{"type":"object","properties":{"query":{"type":"string"},"limit":{"type":"integer"}},"required":["query"]}}},
+            {"type":"function","function":{"name":"resolve_capability","description":"Verifica se o Jarvis já possui uma competência executável para um objetivo e registra uma lacuna se faltar capacidade.","parameters":{"type":"object","properties":{"goal":{"type":"string"}},"required":["goal"]}}},
+            {"type":"function","function":{"name":"acquire_capability","description":"Procura caminhos seguros para aprender uma capacidade ausente: compõe Skills com primitivas existentes, procura APIs públicas e documentação. Não instala silenciosamente.","parameters":{"type":"object","properties":{"goal":{"type":"string"},"source_url":{"type":"string"}},"required":["goal"]}}},
             {"type":"function","function":{"name":"import_openapi","description":"Importa operações GET públicas de uma especificação OpenAPI JSON HTTPS como novas capacidades. Requer confirmação do usuário.","parameters":{"type":"object","properties":{"spec_url":{"type":"string"},"prefix":{"type":"string"}},"required":["spec_url"]}}},
             {"type":"function","function":{"name":"search_web","description":"Pesquisa a web pública sem chave. Use para descobrir páginas/fontes antes de fetch_public_url.","parameters":{"type":"object","properties":{"query":{"type":"string"},"limit":{"type":"integer"}},"required":["query"]}}},
             {"type":"function","function":{"name":"find_public_sources","description":"Encontra fontes públicas/abertas adequadas ao assunto, priorizando fontes oficiais e informando operações disponíveis.","parameters":{"type":"object","properties":{"query":{"type":"string"},"limit":{"type":"integer"}},"required":["query"]}}},
@@ -425,8 +445,10 @@ class JarvisAgent:
         if hasattr(self, "apprenticeship") and self.apprenticeship.relevant(user_text, limit=2):
             names.update({"search_actions","execute_action","search_workflows","execute_workflow"})
         if any(k in text for k in ["api","openapi","swagger","capability","capacidade pública","capacidade publica"]): names.update({"search_capabilities","execute_capability","discover_public_apis","discover_public_interfaces"})
-        if not names and any(k in text for k in complex_verbs): names.update({"search_actions","execute_action"})
-        priority=["set_task_plan","find_public_sources","query_public_data","discover_public_interfaces","search_web","fetch_public_url","institutional_service","project_context","list_knowledge_collections","search_knowledge","institutional_evidence","institutional_context","search_actions","execute_action","search_workflows","execute_workflow","search_capabilities","execute_capability","discover_public_apis","open_url","open_app","create_file","read_file","list_files","open_folder","list_windows","select_window","inspect_selected_window","click_control","type_text","press_key","get_clipboard","set_clipboard","take_screenshot","run_skill","suggest_learned_skills"]
+        if any(k in text for k in ["aprenda sozinho","descubra como","adquira capacidade","não sabe fazer","nao sabe fazer","não consigo fazer","nao consigo fazer","o que falta para","nova capacidade","nova competência","nova competencia"]):
+            names.update({"resolve_capability","acquire_capability","search_actions","search_workflows","search_capabilities"})
+        if not names and any(k in text for k in complex_verbs): names.update({"search_actions","execute_action","resolve_capability"})
+        priority=["set_task_plan","resolve_capability","acquire_capability","find_public_sources","query_public_data","discover_public_interfaces","search_web","fetch_public_url","institutional_service","project_context","list_knowledge_collections","search_knowledge","institutional_evidence","institutional_context","search_actions","execute_action","search_workflows","execute_workflow","search_capabilities","execute_capability","discover_public_apis","open_url","open_app","create_file","read_file","list_files","open_folder","list_windows","select_window","inspect_selected_window","click_control","type_text","press_key","get_clipboard","set_clipboard","take_screenshot","run_skill","suggest_learned_skills"]
         ordered=[n for n in priority if n in names and n in self.tool_schema_by_name]
         return [self.tool_schema_by_name[n] for n in ordered[:10]]
 
@@ -460,6 +482,8 @@ class JarvisAgent:
         project_context = self.projects.context(user_text, max_chars=1200).get("text","")
         procedure_context = self.apprenticeship.context(user_text, limit=2, max_chars=2200).get("text", "") if hasattr(self, "apprenticeship") else ""
         skill_context = self.skills.relevant_context(user_text, limit=3).get("text", "")
+        acquisition_context = self.acquisition.context(user_text, max_chars=1800).get("text", "") if hasattr(self, "acquisition") else ""
+        acquisition_stats = self.acquisition.stats() if hasattr(self, "acquisition") else {}
         swarm_stats = self.swarm.stats() if hasattr(self, "swarm") else {}
         return f"""Você é Jarvis, um GPT pessoal local.
 Converse naturalmente em português e mantenha continuidade. Entenda o objetivo e decida sozinho se deve responder, pesquisar, consultar conhecimento ou agir.
@@ -478,7 +502,9 @@ PRINCÍPIOS
 - Jarvis Mobile é somente uma interface remota do Jarvis que roda no computador host.
 - Se o usuário estiver no celular, não afirme que controla aplicativos do telefone; ações de desktop continuam acontecendo no computador host.
 - Aprenda com preferências/correções explícitas e reutilize-as somente quando relevantes.
-- Se faltar uma capacidade, não trate isso como impossibilidade definitiva: identifique o acesso, ferramenta ou procedimento faltante e explique como o usuário pode ensinar/conectar essa capacidade.
+- Se faltar uma capacidade, não trate isso como impossibilidade definitiva: use resolve_capability/acquire_capability para procurar um caminho seguro antes de desistir.
+- O Capability Acquisition Engine pode compor novas Skills apenas com primitivas já confiáveis, descobrir APIs públicas read-only e registrar lacunas; nunca invente que uma capacidade foi instalada.
+- Se descoberta automática não encontrar executor confiável, peça ensino por explicação ou demonstração e reutilize o aprendizado depois.
 - Quando houver um procedimento ensinado relevante, trate-o como instrução operacional do usuário, respeitando governança e confirmações.
 - Em tarefas complexas, use o trabalho do Swarm/Blackboard como orientação; não exponha discussões internas dos agentes.
 
@@ -487,6 +513,7 @@ CONTEXTO
 - Fontes públicas catalogadas: {public_stats.get('sources',0)}; oficiais: {public_stats.get('official',0)}.
 - Serviços cotidianos SindPetshop-SP mapeados: {service_stats.get('services',0)}.
 - Swarm Intelligence: {swarm_stats.get('agents',0)} papéis; {swarm_stats.get('sessions',0)} coordenações registradas.
+- Capability Acquisition: {sum(acquisition_stats.get('gaps',{}).values()) if acquisition_stats else 0} lacuna(s) registradas; {acquisition_stats.get('candidates',{}).get('installed',0) if acquisition_stats else 0} aquisição(ões) instalada(s).
 - Workspace: {self.workspace}
 - Janela selecionada: {self.deep_access.snapshot().get('title') or 'nenhuma'}
 
@@ -504,6 +531,9 @@ PROCEDIMENTOS ENSINADOS RELEVANTES
 
 SKILLS APRENDIDAS RELEVANTES
 {skill_context or "- nenhuma"}
+
+AQUISIÇÃO DE CAPACIDADE RELEVANTE
+{acquisition_context or "- nenhuma lacuna/candidato relacionado"}
 {mem}
 """
 
@@ -1213,6 +1243,16 @@ SKILLS APRENDIDAS RELEVANTES
                 confirm_callback=confirm_callback,
             )
 
+        if name == "resolve_capability":
+            return self.acquisition.resolve(args.get("goal", ""), create_gap=True)
+
+        if name == "acquire_capability":
+            return self.acquisition.discover(
+                args.get("goal", ""),
+                source_url=args.get("source_url"),
+                status=None,
+            )
+
         if name == "search_capabilities":
             return self.capabilities.search(args.get("query", ""), limit=args.get("limit", 12))
 
@@ -1524,6 +1564,41 @@ SKILLS APRENDIDAS RELEVANTES
                 f"Capability Hub: {r.get('capabilities',0)} capacidades em "
                 f"{len(providers)} provedores e {len(groups)} grupos."
             )
+        if name=="resolve_capability":
+            if r.get("status") == "existing":
+                return f"Já encontrei um caminho existente: {r.get('kind')} `{r.get('id')}` (confiança {r.get('score',0):.2f})."
+            return f"Registrei uma lacuna de capacidade #{r.get('gap_id')}: {r.get('goal')}. Posso tentar descobrir/compor uma nova competência."
+        if name=="acquire_capability":
+            if r.get("status") == "existing":
+                return self.summarize("resolve_capability", r)
+            items = r.get("candidates", [])
+            if not items:
+                return (
+                    f"Não encontrei um executor confiável para `{r.get('goal')}`. Registrei a lacuna #{r.get('gap_id')}. "
+                    "Posso aprender por explicação (`Quero te ensinar como ...`) ou demonstração (`Observe enquanto eu faço ...`)."
+                )
+            lines=[]
+            for item in items[:8]:
+                lines.append(f"• #{item.get('id')} [{item.get('kind')}] {item.get('title')} — risco {item.get('risk')} — estado {item.get('status')}")
+            return (
+                f"Capability Acquisition encontrou {len(items)} caminho(s) para `{r.get('goal')}` (lacuna #{r.get('gap_id')}):\n" +
+                "\n".join(lines) +
+                "\n\nVocê pode pedir `teste o candidato #N` e depois `instale a capacidade #N`."
+            )
+        if name=="list_capability_gaps":
+            items=r.get("items",[])
+            if not items:return "Não há lacunas de capacidade registradas."
+            return "Lacunas de capacidade:\n"+"\n".join(f"• #{x.get('id')} [{x.get('status')}] {x.get('goal')}" for x in items[:30])
+        if name=="list_capability_candidates":
+            items=r.get("items",[])
+            if not items:return "Não há candidatos de capacidade registrados."
+            return "Candidatos de capacidade:\n"+"\n".join(f"• #{x.get('id')} [{x.get('status')}] {x.get('kind')} — {x.get('title')}" for x in items[:30])
+        if name=="test_capability_candidate":
+            return f"Candidato #{r.get('candidate_id')} validado." if r.get('ok') else f"Candidato não passou na validação: {r.get('test') or r.get('error')}"
+        if name=="install_capability_candidate":
+            if r.get("ok"):
+                return f"Nova competência instalada: {r.get('installed_kind')} `{r.get('installed_id')}`. Ela já pode ser reutilizada em pedidos semelhantes."
+            return f"Não consegui instalar a competência: {r.get('error') or r.get('result')}"
         if name=="search_capabilities":
             items = r.get("items", [])
             if not items:
@@ -1914,6 +1989,60 @@ SKILLS APRENDIDAS RELEVANTES
             self._last_response_metadata = {"grounded": True, "apprenticeship": True}
             return teaching.get("answer") or "Ensino atualizado."
 
+        acquisition_cmd = parse_acquisition_command(user_text)
+        if acquisition_cmd:
+            action = acquisition_cmd.get("action")
+            if action == "resolve":
+                if status: status("Capability Resolver: verificando competências existentes")
+                result = self.acquisition.resolve(acquisition_cmd.get("goal", ""), create_gap=True)
+                self._last_response_metadata = {"grounded": True, "capability_acquisition": True}
+                return self.summarize("resolve_capability", result)
+            if action == "discover":
+                if status: status("Capability Acquisition: procurando como aprender")
+                result = self.acquisition.discover(
+                    acquisition_cmd.get("goal", ""),
+                    source_url=acquisition_cmd.get("source_url"),
+                    status=status,
+                )
+                self._last_response_metadata = {"grounded": True, "capability_acquisition": True}
+                if acquisition_cmd.get("auto_install") and result.get("status") == "candidates":
+                    safe = next((
+                        x for x in result.get("candidates", [])
+                        if x.get("kind") == "recipe" and x.get("risk") in {"read", "read_only", "act"}
+                    ), None)
+                    if safe:
+                        if status: status(f"Capability Factory: validando e aprendendo #{safe.get('id')}")
+                        installed = self.acquisition.install_candidate(safe.get("id"))
+                        if installed.get("ok"):
+                            return (
+                                self.summarize("install_capability_candidate", installed)
+                                + "\n\nA competência foi criada apenas com ferramentas já confiáveis do meu runtime."
+                            )
+                return self.summarize("acquire_capability", result)
+            if action == "gaps":
+                return self.summarize("list_capability_gaps", self.acquisition.list_gaps(limit=30))
+            if action == "candidates":
+                return self.summarize("list_capability_candidates", self.acquisition.list_candidates(limit=30))
+            if action == "test":
+                return self.summarize("test_capability_candidate", self.acquisition.test_candidate(acquisition_cmd.get("candidate_id")))
+            if action == "install":
+                cid = acquisition_cmd.get("candidate_id")
+                candidates = self.acquisition.list_candidates(limit=100).get("items", [])
+                target = next((x for x in candidates if int(x.get("id",0)) == int(cid)), None)
+                if not target:
+                    return f"Candidato #{cid} não encontrado."
+                # O comando só chega aqui quando o usuário pediu explicitamente
+                # "instale/aprove a capacidade #N". No desktop ainda mostramos a
+                # confirmação visual; clientes sem callback (ex.: Mobile Companion)
+                # podem prosseguir porque o consentimento já está no texto do usuário.
+                if confirm_callback and not confirm_callback(
+                    "Instalar nova competência",
+                    f"Instalar o candidato #{cid}: {target.get('title')}?\n\nTipo: {target.get('kind')}\nRisco: {target.get('risk')}"
+                ):
+                    return "Instalação cancelada."
+                if status: status(f"Capability Factory: instalando candidato #{cid}")
+                return self.summarize("install_capability_candidate", self.acquisition.install_candidate(cid))
+
         # Intenções compostas de alta confiança não podem cair no Qwen.
         fast_intent = parse_fast_intent(user_text)
         if fast_intent:
@@ -2275,6 +2404,10 @@ SKILLS APRENDIDAS RELEVANTES
                 + "\n".join(last_summaries[-3:])
             )
             self.tasks.finish(task_id, final, status="paused")
+            try:
+                self.acquisition.record_failure(user_text, final)
+            except Exception:
+                pass
             if swarm_bundle:
                 self.swarm.finish(swarm_bundle, status="paused", success=False)
             self.diagnostics.event("task_paused", task_id=task_id, tool_calls=total_tool_calls)
@@ -2282,6 +2415,10 @@ SKILLS APRENDIDAS RELEVANTES
             return final
         except Exception as exc:
             self.tasks.finish(task_id, str(exc), status="failed")
+            try:
+                self.acquisition.record_failure(user_text, str(exc))
+            except Exception:
+                pass
             if 'swarm_bundle' in locals() and swarm_bundle:
                 try:
                     self.swarm.finish(swarm_bundle, status="failed", success=False)

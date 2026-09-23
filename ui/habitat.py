@@ -523,6 +523,11 @@ class HabitatWindow(QMainWindow):
                 "agents": self.agent.swarm_registry.list(),
             },
             "apprenticeship": self.agent.apprenticeship.stats(),
+            "acquisition": {
+                "stats": self.agent.acquisition.stats(),
+                "gaps": self.agent.acquisition.list_gaps(limit=10).get("items", []),
+                "candidates": self.agent.acquisition.list_candidates(limit=10).get("items", []),
+            },
             "hardware": self.agent.hardware.profile(),
             "public_data": {
                 "stats": self.agent.public_data.stats(),

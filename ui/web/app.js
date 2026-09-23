@@ -361,7 +361,7 @@ function changeUpdateChannel(value){
 
 function renderControlCenter(){
   if(!snapshot)return;
-  const a=snapshot.actions||{},w=snapshot.workflows||{},c=snapshot.capabilities||{},p=snapshot.public_data?.stats||{},k=snapshot.knowledge||{},auto=snapshot.automations?.stats||{},con=snapshot.connectors?.stats||{},r=snapshot.cognitive?.reflections||{},proj=snapshot.projects?.stats||{};
+  const a=snapshot.actions||{},w=snapshot.workflows||{},c=snapshot.capabilities||{},p=snapshot.public_data?.stats||{},k=snapshot.knowledge||{},auto=snapshot.automations?.stats||{},con=snapshot.connectors?.stats||{},r=snapshot.cognitive?.reflections||{},proj=snapshot.projects?.stats||{},acq=snapshot.acquisition?.stats||{};
   const tiles=[
     ['CONVERSATION',snapshot.cognitive?.conversations?.messages||0,'mensagens persistentes'],
     ['PROJECTS',proj.projects||0,'contextos ativos'],
@@ -370,6 +370,8 @@ function renderControlCenter(){
     ['ACTIONS',a.actions||0,'ferramentas internas'],
     ['WORKFLOWS',w.workflows||0,'fluxos compostos'],
     ['AUTONOMY',auto.jobs||0,'automações'],
+    ['ACQUISITION',(acq.candidates?.installed||0),'competências adquiridas'],
+    ['GAPS',Object.values(acq.gaps||{}).reduce((a,b)=>a+b,0),'lacunas registradas'],
     ['REFLECTION',r.active||0,'aprendizados em análise'],
   ];
   $('controlGrid').innerHTML=tiles.map(x=>`<div class="control-tile"><small>${x[0]}</small><b>${x[1]}</b><span>${x[2]}</span></div>`).join('');

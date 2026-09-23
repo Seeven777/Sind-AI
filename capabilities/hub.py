@@ -140,6 +140,9 @@ class CapabilityHub:
         self.reload()
         return {"ok": True, "imported": result.get("count", 0), "user_capabilities": total, "title": result.get("title")}
 
+    def get(self, capability_id):
+        return self._by_id.get(str(capability_id))
+
     def stats(self):
         providers = {}
         groups = {}

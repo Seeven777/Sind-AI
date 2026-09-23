@@ -69,7 +69,7 @@ class SkillStore:
 
         return list(reversed(items))
 
-    def save_skill(self, name, steps, description="", inputs=None):
+    def save_skill(self, name, steps, description="", inputs=None, metadata=None):
         name = str(name).strip().rstrip(" .!?;,:")
         if not name:
             return {"ok": False, "error": "Nome da skill vazio."}
@@ -103,13 +103,14 @@ class SkillStore:
                 pass
 
         data = {
-            "version": 2 if inputs else 1,
+            "version": 3 if metadata else (2 if inputs else 1),
             "name": name,
             "slug": slugify(name),
             "description": str(description).strip(),
             "created_at": created_at,
             "updated_at": now,
             "inputs": inputs or {},
+            "metadata": metadata or {},
             "steps": clean_steps,
         }
 
@@ -126,12 +127,25 @@ class SkillStore:
         }
 
 
-    def save_parametric_skill(self, name, steps, inputs=None, description=""):
+    def save_parametric_skill(self, name, steps, inputs=None, description="", metadata=None):
         return self.save_skill(
             name=name,
             steps=steps,
             description=description,
             inputs=inputs or {},
+            metadata=metadata or {},
+        )
+
+    def save_recipe_skill(self, name, steps, inputs=None, description="", metadata=None):
+        """Save a declarative acquired skill with provenance/test metadata."""
+        meta = dict(metadata or {})
+        meta.setdefault("skill_type", "acquired_recipe")
+        return self.save_skill(
+            name=name,
+            steps=steps,
+            description=description,
+            inputs=inputs or {},
+            metadata=meta,
         )
 
     def render_skill(self, skill, values=None):
@@ -209,6 +223,7 @@ class SkillStore:
                 "steps": len(data.get("steps", [])),
                 "updated_at": data.get("updated_at", ""),
                 "inputs": list((data.get("inputs") or {}).keys()),
+                "metadata": data.get("metadata") or {},
                 "path": str(path),
             })
 

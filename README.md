@@ -1,4 +1,4 @@
-# Jarvis Personal GPT 1.5 — Swarm Apprenticeship
+# Jarvis Personal GPT 1.6 — Capability Acquisition
 
 GPT pessoal local, gratuito como base, adaptável ao hardware e orientado a conversa.
 
@@ -6,7 +6,7 @@ GPT pessoal local, gratuito como base, adaptável ao hardware e orientado a conv
 
 O Jarvis não é um catálogo de comandos. Ele conversa, mantém contexto, aprende preferências/correções, pesquisa a web, consulta dados públicos, lê documentos, usa desktop/navegador e aciona infraestrutura interna quando necessário.
 
-A versão 1.5 adiciona **Swarm Intelligence** e **Apprenticeship**: problemas complexos podem ser divididos entre especialistas internos, e novas rotinas podem ser ensinadas por explicação ou demonstração. Veja `SWARM_INTELLIGENCE.md` e `TEACHING.md`.
+A versão 1.6 preserva **Swarm Intelligence** e **Apprenticeship** e adiciona **Capability Acquisition**: quando falta uma competência, o Jarvis registra a lacuna, procura primitivas existentes, tenta compor uma Skill, busca APIs públicas seguras e, se necessário, solicita ensino/demonstração. Veja `CAPABILITY_ACQUISITION.md`, `SWARM_INTELLIGENCE.md` e `TEACHING.md`.
 
 ## Experiência principal
 
@@ -61,16 +61,17 @@ Veja `VERCEL_DEPLOY.md`.
 2. se necessário: `install_fast_model.bat`
 3. `run_doctor.bat`
 4. `run_personal_gpt_test.bat`
-5. `run_swarm_test.bat`
-6. `run_mobile_companion_test.bat`
-7. `run_cognitive_test.bat`
-8. `run_self_test.bat`
-9. `run_foundation_test.bat`
-10. `run_model_router_test.bat`
-11. `run_routing_test.bat`
-12. `run_health_test.bat`
-13. `run_browser_test.bat`
-14. `run_jarvis.bat`
+5. `run_capability_acquisition_test.bat`
+6. `run_swarm_test.bat`
+7. `run_mobile_companion_test.bat`
+8. `run_cognitive_test.bat`
+9. `run_self_test.bat`
+10. `run_foundation_test.bat`
+11. `run_model_router_test.bat`
+12. `run_routing_test.bat`
+13. `run_health_test.bat`
+14. `run_browser_test.bat`
+15. `run_jarvis.bat`
 
 ## Persistência
 
