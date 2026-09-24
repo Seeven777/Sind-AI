@@ -1,0 +1,8100 @@
+{
+  "ok": true,
+  "contact": "Me (você)",
+  "opened_conversation": false,
+  "typed_message": false,
+  "sent_message": false,
+  "steps": [
+    "Janela UIA do WhatsApp conectada",
+    "Contato escrito somente no campo de pesquisa"
+  ],
+  "initial_descendants": 124,
+  "raw_search_candidates": [
+    {
+      "score": 110,
+      "index": 39,
+      "name": "",
+      "automation_id": "_r_f_",
+      "bounds": [
+        1283,
+        208,
+        1407,
+        229
+      ],
+      "read_only": false
+    }
+  ],
+  "chosen_search": {
+    "index": 39,
+    "name": "",
+    "automation_id": "_r_f_",
+    "bounds": [
+      1283,
+      208,
+      1407,
+      229
+    ],
+    "read_only": false
+  },
+  "write_method": "ValuePattern",
+  "search_value": "Me (você)",
+  "post_search_descendants": 124,
+  "window": {
+    "hwnd": 133056,
+    "pid": 2828,
+    "ppid": 16492,
+    "exe": "msedgewebview2.exe",
+    "path": "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\153.0.4234.48\\msedgewebview2.exe",
+    "title": "WhatsApp",
+    "class_name": "Chrome_WidgetWin_1",
+    "visible": true,
+    "enabled": true,
+    "foreground": true,
+    "alpha_zero": true,
+    "bounds": [
+      1150,
+      94,
+      1884,
+      923
+    ],
+    "uia_ok": true,
+    "uia_descendants": 124,
+    "uia_named": 75,
+    "uia_fields": 2,
+    "uia_buttons": 18,
+    "uia_whatsapp_hits": 11,
+    "accessibility_score": 2044,
+    "uia_error": ""
+  },
+  "window_bounds": [
+    1150,
+    94,
+    1884,
+    923
+  ],
+  "search_panel_right": 1587,
+  "exact_name_matches": [],
+  "contains_name_matches": [
+    {
+      "key": "raw:33",
+      "name": "Você",
+      "automation_id": "",
+      "control_type": "Button",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1162,
+        873,
+        1202,
+        913
+      ],
+      "patterns": [],
+      "parents": [
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            132,
+            1214,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            132,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "mount_0_0_gs",
+          "control_type": "Group",
+          "bounds": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "patterns": [
+            "Invoke"
+          ]
+        },
+        {
+          "name": "WhatsApp",
+          "automation_id": "RootWebArea",
+          "control_type": "Document",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": [
+            "Value",
+            "Text"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        }
+      ]
+    },
+    {
+      "key": "raw:51",
+      "name": "Me (você) 07:11 22 fichas = 210R$  22 cartão trem = 231R$ 210 + 231 = 441R$ transporte Conversa fixada Todas as novas mensagens desaparecerão desta conversa 7 dias após o envio, exceto se salvas na conversa.",
+      "automation_id": "",
+      "control_type": "DataItem",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1215,
+        337,
+        1479,
+        414
+      ],
+      "patterns": [],
+      "parents": [
+        {
+          "name": "Resultados da pesquisa.",
+          "automation_id": "",
+          "control_type": "DataGrid",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": [
+            "Value"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            286,
+            1479,
+            762
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            132,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "mount_0_0_gs",
+          "control_type": "Group",
+          "bounds": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "patterns": [
+            "Invoke"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "raw:52",
+      "name": "Me (você) 07:11 22 fichas = 210R$  22 cartão trem = 231R$ 210 + 231 = 441R$ transporte Conversa fixada Todas as novas mensagens desaparecerão desta conversa 7 dias após o envio, exceto se salvas na conversa.",
+      "automation_id": "",
+      "control_type": "DataItem",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1215,
+        337,
+        1479,
+        410
+      ],
+      "patterns": [
+        "SelectionItem"
+      ],
+      "parents": [
+        {
+          "name": "Me (você) 07:11 22 fichas = 210R$  22 cartão trem = 231R$ 210 + 231 = 441R$ transporte Conversa fixada Todas as novas mensagens desaparecerão desta conversa 7 dias após o envio, exceto se salvas na conversa.",
+          "automation_id": "",
+          "control_type": "DataItem",
+          "bounds": [
+            1215,
+            337,
+            1479,
+            414
+          ],
+          "patterns": []
+        },
+        {
+          "name": "Resultados da pesquisa.",
+          "automation_id": "",
+          "control_type": "DataGrid",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": [
+            "Value"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            286,
+            1479,
+            762
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            132,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        }
+      ]
+    },
+    {
+      "key": "raw:54",
+      "name": "Me (você) 07:11",
+      "automation_id": "",
+      "control_type": "DataItem",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1301,
+        350,
+        1454,
+        375
+      ],
+      "patterns": [
+        "SelectionItem"
+      ],
+      "parents": [
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            337,
+            1479,
+            410
+          ],
+          "patterns": []
+        },
+        {
+          "name": "Me (você) 07:11 22 fichas = 210R$  22 cartão trem = 231R$ 210 + 231 = 441R$ transporte Conversa fixada Todas as novas mensagens desaparecerão desta conversa 7 dias após o envio, exceto se salvas na conversa.",
+          "automation_id": "",
+          "control_type": "DataItem",
+          "bounds": [
+            1215,
+            337,
+            1479,
+            410
+          ],
+          "patterns": [
+            "SelectionItem"
+          ]
+        },
+        {
+          "name": "Me (você) 07:11 22 fichas = 210R$  22 cartão trem = 231R$ 210 + 231 = 441R$ transporte Conversa fixada Todas as novas mensagens desaparecerão desta conversa 7 dias após o envio, exceto se salvas na conversa.",
+          "automation_id": "",
+          "control_type": "DataItem",
+          "bounds": [
+            1215,
+            337,
+            1479,
+            414
+          ],
+          "patterns": []
+        },
+        {
+          "name": "Resultados da pesquisa.",
+          "automation_id": "",
+          "control_type": "DataGrid",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": [
+            "Value"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            286,
+            1479,
+            762
+          ],
+          "patterns": []
+        }
+      ]
+    }
+  ],
+  "search_panel_controls": [
+    {
+      "key": "raw:0",
+      "name": "WhatsApp - Conteúdo da Web",
+      "automation_id": "",
+      "control_type": "Pane",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1150,
+        94,
+        1884,
+        923
+      ],
+      "patterns": [],
+      "parents": [
+        {
+          "name": "WhatsApp",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "WhatsApp",
+          "automation_id": "",
+          "control_type": "Window",
+          "bounds": [
+            1142,
+            93,
+            1892,
+            931
+          ],
+          "patterns": []
+        },
+        {
+          "name": "Área de Trabalho 1",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            0,
+            0,
+            1920,
+            1080
+          ],
+          "patterns": []
+        }
+      ]
+    },
+    {
+      "key": "raw:1",
+      "name": "",
+      "automation_id": "",
+      "control_type": "Pane",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1150,
+        94,
+        1884,
+        923
+      ],
+      "patterns": [],
+      "parents": [
+        {
+          "name": "WhatsApp - Conteúdo da Web",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "WhatsApp",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "WhatsApp",
+          "automation_id": "",
+          "control_type": "Window",
+          "bounds": [
+            1142,
+            93,
+            1892,
+            931
+          ],
+          "patterns": []
+        },
+        {
+          "name": "Área de Trabalho 1",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            0,
+            0,
+            1920,
+            1080
+          ],
+          "patterns": []
+        }
+      ]
+    },
+    {
+      "key": "raw:3",
+      "name": "",
+      "automation_id": "",
+      "control_type": "Pane",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1150,
+        94,
+        1884,
+        923
+      ],
+      "patterns": [],
+      "parents": [
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "WhatsApp - Conteúdo da Web",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "WhatsApp",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "WhatsApp",
+          "automation_id": "",
+          "control_type": "Window",
+          "bounds": [
+            1142,
+            93,
+            1892,
+            931
+          ],
+          "patterns": []
+        },
+        {
+          "name": "Área de Trabalho 1",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            0,
+            0,
+            1920,
+            1080
+          ],
+          "patterns": []
+        }
+      ]
+    },
+    {
+      "key": "raw:4",
+      "name": "",
+      "automation_id": "",
+      "control_type": "Pane",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1150,
+        94,
+        1884,
+        923
+      ],
+      "patterns": [],
+      "parents": [
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "WhatsApp - Conteúdo da Web",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "WhatsApp",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "WhatsApp",
+          "automation_id": "",
+          "control_type": "Window",
+          "bounds": [
+            1142,
+            93,
+            1892,
+            931
+          ],
+          "patterns": []
+        }
+      ]
+    },
+    {
+      "key": "raw:6",
+      "name": "",
+      "automation_id": "",
+      "control_type": "Pane",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1150,
+        94,
+        1884,
+        923
+      ],
+      "patterns": [],
+      "parents": [
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "WhatsApp - Conteúdo da Web",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "WhatsApp",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        }
+      ]
+    },
+    {
+      "key": "raw:7",
+      "name": "",
+      "automation_id": "",
+      "control_type": "Pane",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1150,
+        94,
+        1884,
+        923
+      ],
+      "patterns": [],
+      "parents": [
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "WhatsApp - Conteúdo da Web",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "WhatsApp",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        }
+      ]
+    },
+    {
+      "key": "raw:8",
+      "name": "",
+      "automation_id": "",
+      "control_type": "Pane",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1150,
+        94,
+        1884,
+        923
+      ],
+      "patterns": [],
+      "parents": [
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "WhatsApp - Conteúdo da Web",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        }
+      ]
+    },
+    {
+      "key": "raw:9",
+      "name": "",
+      "automation_id": "",
+      "control_type": "Pane",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1150,
+        94,
+        1884,
+        923
+      ],
+      "patterns": [],
+      "parents": [
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        }
+      ]
+    },
+    {
+      "key": "raw:11",
+      "name": "WhatsApp",
+      "automation_id": "RootWebArea",
+      "control_type": "Document",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1150,
+        94,
+        1884,
+        923
+      ],
+      "patterns": [
+        "Value",
+        "Text"
+      ],
+      "parents": [
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        }
+      ]
+    },
+    {
+      "key": "raw:13",
+      "name": "",
+      "automation_id": "",
+      "control_type": "Group",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1150,
+        94,
+        1884,
+        923
+      ],
+      "patterns": [],
+      "parents": [
+        {
+          "name": "",
+          "automation_id": "mount_0_0_gs",
+          "control_type": "Group",
+          "bounds": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "patterns": [
+            "Invoke"
+          ]
+        },
+        {
+          "name": "WhatsApp",
+          "automation_id": "RootWebArea",
+          "control_type": "Document",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": [
+            "Value",
+            "Text"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        }
+      ]
+    },
+    {
+      "key": "raw:17",
+      "name": "",
+      "automation_id": "",
+      "control_type": "Group",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1150,
+        132,
+        1884,
+        923
+      ],
+      "patterns": [],
+      "parents": [
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "mount_0_0_gs",
+          "control_type": "Group",
+          "bounds": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "patterns": [
+            "Invoke"
+          ]
+        },
+        {
+          "name": "WhatsApp",
+          "automation_id": "RootWebArea",
+          "control_type": "Document",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": [
+            "Value",
+            "Text"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        }
+      ]
+    },
+    {
+      "key": "raw:18",
+      "name": "",
+      "automation_id": "",
+      "control_type": "Group",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1150,
+        132,
+        1214,
+        923
+      ],
+      "patterns": [],
+      "parents": [
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            132,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "mount_0_0_gs",
+          "control_type": "Group",
+          "bounds": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "patterns": [
+            "Invoke"
+          ]
+        },
+        {
+          "name": "WhatsApp",
+          "automation_id": "RootWebArea",
+          "control_type": "Document",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": [
+            "Value",
+            "Text"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        }
+      ]
+    },
+    {
+      "key": "raw:20",
+      "name": "Ligações",
+      "automation_id": "",
+      "control_type": "Button",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1162,
+        186,
+        1202,
+        227
+      ],
+      "patterns": [],
+      "parents": [
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            132,
+            1214,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            132,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "mount_0_0_gs",
+          "control_type": "Group",
+          "bounds": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "patterns": [
+            "Invoke"
+          ]
+        },
+        {
+          "name": "WhatsApp",
+          "automation_id": "RootWebArea",
+          "control_type": "Document",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": [
+            "Value",
+            "Text"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        }
+      ]
+    },
+    {
+      "key": "raw:21",
+      "name": "Status",
+      "automation_id": "",
+      "control_type": "Button",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1162,
+        230,
+        1202,
+        271
+      ],
+      "patterns": [],
+      "parents": [
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            132,
+            1214,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            132,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "mount_0_0_gs",
+          "control_type": "Group",
+          "bounds": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "patterns": [
+            "Invoke"
+          ]
+        },
+        {
+          "name": "WhatsApp",
+          "automation_id": "RootWebArea",
+          "control_type": "Document",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": [
+            "Value",
+            "Text"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        }
+      ]
+    },
+    {
+      "key": "raw:22",
+      "name": "",
+      "automation_id": "",
+      "control_type": "StatusBar",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1190,
+        231,
+        1202,
+        244
+      ],
+      "patterns": [],
+      "parents": [
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            132,
+            1214,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            132,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "mount_0_0_gs",
+          "control_type": "Group",
+          "bounds": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "patterns": [
+            "Invoke"
+          ]
+        },
+        {
+          "name": "WhatsApp",
+          "automation_id": "RootWebArea",
+          "control_type": "Document",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": [
+            "Value",
+            "Text"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        }
+      ]
+    },
+    {
+      "key": "raw:23",
+      "name": "Atualizações no status",
+      "automation_id": "",
+      "control_type": "Text",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1195,
+        236,
+        1197,
+        252
+      ],
+      "patterns": [
+        "Text"
+      ],
+      "parents": [
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "StatusBar",
+          "bounds": [
+            1190,
+            231,
+            1202,
+            244
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            132,
+            1214,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            132,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "mount_0_0_gs",
+          "control_type": "Group",
+          "bounds": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "patterns": [
+            "Invoke"
+          ]
+        },
+        {
+          "name": "WhatsApp",
+          "automation_id": "RootWebArea",
+          "control_type": "Document",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": [
+            "Value",
+            "Text"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "raw:24",
+      "name": "Canais",
+      "automation_id": "",
+      "control_type": "Button",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1162,
+        274,
+        1202,
+        315
+      ],
+      "patterns": [],
+      "parents": [
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            132,
+            1214,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            132,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "mount_0_0_gs",
+          "control_type": "Group",
+          "bounds": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "patterns": [
+            "Invoke"
+          ]
+        },
+        {
+          "name": "WhatsApp",
+          "automation_id": "RootWebArea",
+          "control_type": "Document",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": [
+            "Value",
+            "Text"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        }
+      ]
+    },
+    {
+      "key": "raw:25",
+      "name": "Comunidades",
+      "automation_id": "",
+      "control_type": "Button",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1162,
+        318,
+        1202,
+        359
+      ],
+      "patterns": [],
+      "parents": [
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            132,
+            1214,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            132,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "mount_0_0_gs",
+          "control_type": "Group",
+          "bounds": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "patterns": [
+            "Invoke"
+          ]
+        },
+        {
+          "name": "WhatsApp",
+          "automation_id": "RootWebArea",
+          "control_type": "Document",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": [
+            "Value",
+            "Text"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        }
+      ]
+    },
+    {
+      "key": "raw:26",
+      "name": "",
+      "automation_id": "",
+      "control_type": "Separator",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1162,
+        370,
+        1202,
+        373
+      ],
+      "patterns": [],
+      "parents": [
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            132,
+            1214,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            132,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "mount_0_0_gs",
+          "control_type": "Group",
+          "bounds": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "patterns": [
+            "Invoke"
+          ]
+        },
+        {
+          "name": "WhatsApp",
+          "automation_id": "RootWebArea",
+          "control_type": "Document",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": [
+            "Value",
+            "Text"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        }
+      ]
+    },
+    {
+      "key": "raw:27",
+      "name": "Arquivadas",
+      "automation_id": "",
+      "control_type": "Button",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1162,
+        384,
+        1202,
+        425
+      ],
+      "patterns": [],
+      "parents": [
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            132,
+            1214,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            132,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "mount_0_0_gs",
+          "control_type": "Group",
+          "bounds": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "patterns": [
+            "Invoke"
+          ]
+        },
+        {
+          "name": "WhatsApp",
+          "automation_id": "RootWebArea",
+          "control_type": "Document",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": [
+            "Value",
+            "Text"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        }
+      ]
+    },
+    {
+      "key": "raw:28",
+      "name": "",
+      "automation_id": "",
+      "control_type": "StatusBar",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1184,
+        378,
+        1208,
+        403
+      ],
+      "patterns": [],
+      "parents": [
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            132,
+            1214,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            132,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "mount_0_0_gs",
+          "control_type": "Group",
+          "bounds": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "patterns": [
+            "Invoke"
+          ]
+        },
+        {
+          "name": "WhatsApp",
+          "automation_id": "RootWebArea",
+          "control_type": "Document",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": [
+            "Value",
+            "Text"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        }
+      ]
+    },
+    {
+      "key": "raw:29",
+      "name": "5",
+      "automation_id": "",
+      "control_type": "Text",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1192,
+        383,
+        1200,
+        398
+      ],
+      "patterns": [
+        "Text"
+      ],
+      "parents": [
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "StatusBar",
+          "bounds": [
+            1184,
+            378,
+            1208,
+            403
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            132,
+            1214,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            132,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "mount_0_0_gs",
+          "control_type": "Group",
+          "bounds": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "patterns": [
+            "Invoke"
+          ]
+        },
+        {
+          "name": "WhatsApp",
+          "automation_id": "RootWebArea",
+          "control_type": "Document",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": [
+            "Value",
+            "Text"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "raw:30",
+      "name": "Conversas trancadas",
+      "automation_id": "",
+      "control_type": "Button",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1162,
+        428,
+        1202,
+        469
+      ],
+      "patterns": [],
+      "parents": [
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            132,
+            1214,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            132,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "mount_0_0_gs",
+          "control_type": "Group",
+          "bounds": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "patterns": [
+            "Invoke"
+          ]
+        },
+        {
+          "name": "WhatsApp",
+          "automation_id": "RootWebArea",
+          "control_type": "Document",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": [
+            "Value",
+            "Text"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        }
+      ]
+    },
+    {
+      "key": "raw:31",
+      "name": "Meta AI",
+      "automation_id": "",
+      "control_type": "Button",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1162,
+        472,
+        1202,
+        513
+      ],
+      "patterns": [],
+      "parents": [
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            132,
+            1214,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            132,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "mount_0_0_gs",
+          "control_type": "Group",
+          "bounds": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "patterns": [
+            "Invoke"
+          ]
+        },
+        {
+          "name": "WhatsApp",
+          "automation_id": "RootWebArea",
+          "control_type": "Document",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": [
+            "Value",
+            "Text"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        }
+      ]
+    },
+    {
+      "key": "raw:32",
+      "name": "Mídia",
+      "automation_id": "",
+      "control_type": "Button",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1162,
+        829,
+        1202,
+        869
+      ],
+      "patterns": [],
+      "parents": [
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            132,
+            1214,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            132,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "mount_0_0_gs",
+          "control_type": "Group",
+          "bounds": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "patterns": [
+            "Invoke"
+          ]
+        },
+        {
+          "name": "WhatsApp",
+          "automation_id": "RootWebArea",
+          "control_type": "Document",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": [
+            "Value",
+            "Text"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        }
+      ]
+    },
+    {
+      "key": "raw:33",
+      "name": "Você",
+      "automation_id": "",
+      "control_type": "Button",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1162,
+        873,
+        1202,
+        913
+      ],
+      "patterns": [],
+      "parents": [
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            132,
+            1214,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            132,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "mount_0_0_gs",
+          "control_type": "Group",
+          "bounds": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "patterns": [
+            "Invoke"
+          ]
+        },
+        {
+          "name": "WhatsApp",
+          "automation_id": "RootWebArea",
+          "control_type": "Document",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": [
+            "Value",
+            "Text"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        }
+      ]
+    },
+    {
+      "key": "raw:39",
+      "name": "",
+      "automation_id": "_r_f_",
+      "control_type": "Edit",
+      "visible": true,
+      "enabled": true,
+      "focused": true,
+      "bounds": [
+        1283,
+        208,
+        1407,
+        229
+      ],
+      "patterns": [
+        "Value",
+        "Text"
+      ],
+      "parents": [
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            132,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "mount_0_0_gs",
+          "control_type": "Group",
+          "bounds": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "patterns": [
+            "Invoke"
+          ]
+        },
+        {
+          "name": "WhatsApp",
+          "automation_id": "RootWebArea",
+          "control_type": "Document",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": [
+            "Value",
+            "Text"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        }
+      ]
+    },
+    {
+      "key": "raw:40",
+      "name": "End icon button",
+      "automation_id": "",
+      "control_type": "Button",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1411,
+        202,
+        1455,
+        235
+      ],
+      "patterns": [
+        "Invoke"
+      ],
+      "parents": [
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            132,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "mount_0_0_gs",
+          "control_type": "Group",
+          "bounds": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "patterns": [
+            "Invoke"
+          ]
+        },
+        {
+          "name": "WhatsApp",
+          "automation_id": "RootWebArea",
+          "control_type": "Document",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": [
+            "Value",
+            "Text"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        }
+      ]
+    },
+    {
+      "key": "raw:41",
+      "name": "chat-list-filters",
+      "automation_id": "",
+      "control_type": "Tab",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1215,
+        244,
+        1479,
+        287
+      ],
+      "patterns": [],
+      "parents": [
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            132,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "mount_0_0_gs",
+          "control_type": "Group",
+          "bounds": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "patterns": [
+            "Invoke"
+          ]
+        },
+        {
+          "name": "WhatsApp",
+          "automation_id": "RootWebArea",
+          "control_type": "Document",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": [
+            "Value",
+            "Text"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        }
+      ]
+    },
+    {
+      "key": "raw:42",
+      "name": "Tudo",
+      "automation_id": "all-filter",
+      "control_type": "TabItem",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1235,
+        248,
+        1294,
+        281
+      ],
+      "patterns": [
+        "SelectionItem"
+      ],
+      "parents": [
+        {
+          "name": "chat-list-filters",
+          "automation_id": "",
+          "control_type": "Tab",
+          "bounds": [
+            1215,
+            244,
+            1479,
+            287
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            132,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "mount_0_0_gs",
+          "control_type": "Group",
+          "bounds": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "patterns": [
+            "Invoke"
+          ]
+        },
+        {
+          "name": "WhatsApp",
+          "automation_id": "RootWebArea",
+          "control_type": "Document",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": [
+            "Value",
+            "Text"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        }
+      ]
+    },
+    {
+      "key": "raw:43",
+      "name": "Não lidas",
+      "automation_id": "label_item_1",
+      "control_type": "TabItem",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1301,
+        248,
+        1388,
+        281
+      ],
+      "patterns": [
+        "SelectionItem"
+      ],
+      "parents": [
+        {
+          "name": "chat-list-filters",
+          "automation_id": "",
+          "control_type": "Tab",
+          "bounds": [
+            1215,
+            244,
+            1479,
+            287
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            132,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "mount_0_0_gs",
+          "control_type": "Group",
+          "bounds": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "patterns": [
+            "Invoke"
+          ]
+        },
+        {
+          "name": "WhatsApp",
+          "automation_id": "RootWebArea",
+          "control_type": "Document",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": [
+            "Value",
+            "Text"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        }
+      ]
+    },
+    {
+      "key": "raw:44",
+      "name": "",
+      "automation_id": "",
+      "control_type": "Group",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1395,
+        248,
+        1432,
+        281
+      ],
+      "patterns": [],
+      "parents": [
+        {
+          "name": "chat-list-filters",
+          "automation_id": "",
+          "control_type": "Tab",
+          "bounds": [
+            1215,
+            244,
+            1479,
+            287
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            132,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "mount_0_0_gs",
+          "control_type": "Group",
+          "bounds": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "patterns": [
+            "Invoke"
+          ]
+        },
+        {
+          "name": "WhatsApp",
+          "automation_id": "RootWebArea",
+          "control_type": "Document",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": [
+            "Value",
+            "Text"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        }
+      ]
+    },
+    {
+      "key": "raw:45",
+      "name": "",
+      "automation_id": "additional-filters",
+      "control_type": "TabItem",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1395,
+        248,
+        1432,
+        281
+      ],
+      "patterns": [
+        "SelectionItem"
+      ],
+      "parents": [
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1395,
+            248,
+            1432,
+            281
+          ],
+          "patterns": []
+        },
+        {
+          "name": "chat-list-filters",
+          "automation_id": "",
+          "control_type": "Tab",
+          "bounds": [
+            1215,
+            244,
+            1479,
+            287
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            132,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "mount_0_0_gs",
+          "control_type": "Group",
+          "bounds": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "patterns": [
+            "Invoke"
+          ]
+        },
+        {
+          "name": "WhatsApp",
+          "automation_id": "RootWebArea",
+          "control_type": "Document",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": [
+            "Value",
+            "Text"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "raw:46",
+      "name": "",
+      "automation_id": "",
+      "control_type": "Group",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1215,
+        286,
+        1479,
+        762
+      ],
+      "patterns": [],
+      "parents": [
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            132,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "mount_0_0_gs",
+          "control_type": "Group",
+          "bounds": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "patterns": [
+            "Invoke"
+          ]
+        },
+        {
+          "name": "WhatsApp",
+          "automation_id": "RootWebArea",
+          "control_type": "Document",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": [
+            "Value",
+            "Text"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        }
+      ]
+    },
+    {
+      "key": "raw:47",
+      "name": "",
+      "automation_id": "",
+      "control_type": "Group",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1215,
+        285,
+        1479,
+        762
+      ],
+      "patterns": [],
+      "parents": [
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            286,
+            1479,
+            762
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            132,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "mount_0_0_gs",
+          "control_type": "Group",
+          "bounds": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "patterns": [
+            "Invoke"
+          ]
+        },
+        {
+          "name": "WhatsApp",
+          "automation_id": "RootWebArea",
+          "control_type": "Document",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": [
+            "Value",
+            "Text"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        }
+      ]
+    },
+    {
+      "key": "raw:48",
+      "name": "Resultados da pesquisa.",
+      "automation_id": "",
+      "control_type": "DataGrid",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1215,
+        285,
+        1479,
+        762
+      ],
+      "patterns": [
+        "Value"
+      ],
+      "parents": [
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            286,
+            1479,
+            762
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            132,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "mount_0_0_gs",
+          "control_type": "Group",
+          "bounds": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "patterns": [
+            "Invoke"
+          ]
+        },
+        {
+          "name": "WhatsApp",
+          "automation_id": "RootWebArea",
+          "control_type": "Document",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": [
+            "Value",
+            "Text"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "raw:49",
+      "name": "Conversas",
+      "automation_id": "",
+      "control_type": "DataItem",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1215,
+        293,
+        1479,
+        338
+      ],
+      "patterns": [],
+      "parents": [
+        {
+          "name": "Resultados da pesquisa.",
+          "automation_id": "",
+          "control_type": "DataGrid",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": [
+            "Value"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            286,
+            1479,
+            762
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            132,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "mount_0_0_gs",
+          "control_type": "Group",
+          "bounds": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "patterns": [
+            "Invoke"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "raw:50",
+      "name": "Conversas",
+      "automation_id": "",
+      "control_type": "Text",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1235,
+        309,
+        1459,
+        330
+      ],
+      "patterns": [],
+      "parents": [
+        {
+          "name": "Conversas",
+          "automation_id": "",
+          "control_type": "DataItem",
+          "bounds": [
+            1215,
+            293,
+            1479,
+            338
+          ],
+          "patterns": []
+        },
+        {
+          "name": "Resultados da pesquisa.",
+          "automation_id": "",
+          "control_type": "DataGrid",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": [
+            "Value"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            286,
+            1479,
+            762
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            132,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        }
+      ]
+    },
+    {
+      "key": "raw:51",
+      "name": "Me (você) 07:11 22 fichas = 210R$  22 cartão trem = 231R$ 210 + 231 = 441R$ transporte Conversa fixada Todas as novas mensagens desaparecerão desta conversa 7 dias após o envio, exceto se salvas na conversa.",
+      "automation_id": "",
+      "control_type": "DataItem",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1215,
+        337,
+        1479,
+        414
+      ],
+      "patterns": [],
+      "parents": [
+        {
+          "name": "Resultados da pesquisa.",
+          "automation_id": "",
+          "control_type": "DataGrid",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": [
+            "Value"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            286,
+            1479,
+            762
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            132,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "mount_0_0_gs",
+          "control_type": "Group",
+          "bounds": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "patterns": [
+            "Invoke"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "raw:52",
+      "name": "Me (você) 07:11 22 fichas = 210R$  22 cartão trem = 231R$ 210 + 231 = 441R$ transporte Conversa fixada Todas as novas mensagens desaparecerão desta conversa 7 dias após o envio, exceto se salvas na conversa.",
+      "automation_id": "",
+      "control_type": "DataItem",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1215,
+        337,
+        1479,
+        410
+      ],
+      "patterns": [
+        "SelectionItem"
+      ],
+      "parents": [
+        {
+          "name": "Me (você) 07:11 22 fichas = 210R$  22 cartão trem = 231R$ 210 + 231 = 441R$ transporte Conversa fixada Todas as novas mensagens desaparecerão desta conversa 7 dias após o envio, exceto se salvas na conversa.",
+          "automation_id": "",
+          "control_type": "DataItem",
+          "bounds": [
+            1215,
+            337,
+            1479,
+            414
+          ],
+          "patterns": []
+        },
+        {
+          "name": "Resultados da pesquisa.",
+          "automation_id": "",
+          "control_type": "DataGrid",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": [
+            "Value"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            286,
+            1479,
+            762
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            132,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        }
+      ]
+    },
+    {
+      "key": "raw:53",
+      "name": "",
+      "automation_id": "",
+      "control_type": "Group",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1215,
+        337,
+        1479,
+        410
+      ],
+      "patterns": [],
+      "parents": [
+        {
+          "name": "Me (você) 07:11 22 fichas = 210R$  22 cartão trem = 231R$ 210 + 231 = 441R$ transporte Conversa fixada Todas as novas mensagens desaparecerão desta conversa 7 dias após o envio, exceto se salvas na conversa.",
+          "automation_id": "",
+          "control_type": "DataItem",
+          "bounds": [
+            1215,
+            337,
+            1479,
+            410
+          ],
+          "patterns": [
+            "SelectionItem"
+          ]
+        },
+        {
+          "name": "Me (você) 07:11 22 fichas = 210R$  22 cartão trem = 231R$ 210 + 231 = 441R$ transporte Conversa fixada Todas as novas mensagens desaparecerão desta conversa 7 dias após o envio, exceto se salvas na conversa.",
+          "automation_id": "",
+          "control_type": "DataItem",
+          "bounds": [
+            1215,
+            337,
+            1479,
+            414
+          ],
+          "patterns": []
+        },
+        {
+          "name": "Resultados da pesquisa.",
+          "automation_id": "",
+          "control_type": "DataGrid",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": [
+            "Value"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            286,
+            1479,
+            762
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            132,
+            1884,
+            923
+          ],
+          "patterns": []
+        }
+      ]
+    },
+    {
+      "key": "raw:54",
+      "name": "Me (você) 07:11",
+      "automation_id": "",
+      "control_type": "DataItem",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1301,
+        350,
+        1454,
+        375
+      ],
+      "patterns": [
+        "SelectionItem"
+      ],
+      "parents": [
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            337,
+            1479,
+            410
+          ],
+          "patterns": []
+        },
+        {
+          "name": "Me (você) 07:11 22 fichas = 210R$  22 cartão trem = 231R$ 210 + 231 = 441R$ transporte Conversa fixada Todas as novas mensagens desaparecerão desta conversa 7 dias após o envio, exceto se salvas na conversa.",
+          "automation_id": "",
+          "control_type": "DataItem",
+          "bounds": [
+            1215,
+            337,
+            1479,
+            410
+          ],
+          "patterns": [
+            "SelectionItem"
+          ]
+        },
+        {
+          "name": "Me (você) 07:11 22 fichas = 210R$  22 cartão trem = 231R$ 210 + 231 = 441R$ transporte Conversa fixada Todas as novas mensagens desaparecerão desta conversa 7 dias após o envio, exceto se salvas na conversa.",
+          "automation_id": "",
+          "control_type": "DataItem",
+          "bounds": [
+            1215,
+            337,
+            1479,
+            414
+          ],
+          "patterns": []
+        },
+        {
+          "name": "Resultados da pesquisa.",
+          "automation_id": "",
+          "control_type": "DataGrid",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": [
+            "Value"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            286,
+            1479,
+            762
+          ],
+          "patterns": []
+        }
+      ]
+    },
+    {
+      "key": "raw:55",
+      "name": "",
+      "automation_id": "",
+      "control_type": "Group",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1301,
+        376,
+        1428,
+        397
+      ],
+      "patterns": [],
+      "parents": [
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            337,
+            1479,
+            410
+          ],
+          "patterns": []
+        },
+        {
+          "name": "Me (você) 07:11 22 fichas = 210R$  22 cartão trem = 231R$ 210 + 231 = 441R$ transporte Conversa fixada Todas as novas mensagens desaparecerão desta conversa 7 dias após o envio, exceto se salvas na conversa.",
+          "automation_id": "",
+          "control_type": "DataItem",
+          "bounds": [
+            1215,
+            337,
+            1479,
+            410
+          ],
+          "patterns": [
+            "SelectionItem"
+          ]
+        },
+        {
+          "name": "Me (você) 07:11 22 fichas = 210R$  22 cartão trem = 231R$ 210 + 231 = 441R$ transporte Conversa fixada Todas as novas mensagens desaparecerão desta conversa 7 dias após o envio, exceto se salvas na conversa.",
+          "automation_id": "",
+          "control_type": "DataItem",
+          "bounds": [
+            1215,
+            337,
+            1479,
+            414
+          ],
+          "patterns": []
+        },
+        {
+          "name": "Resultados da pesquisa.",
+          "automation_id": "",
+          "control_type": "DataGrid",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": [
+            "Value"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            286,
+            1479,
+            762
+          ],
+          "patterns": []
+        }
+      ]
+    },
+    {
+      "key": "raw:56",
+      "name": "Conversa fixada",
+      "automation_id": "",
+      "control_type": "DataItem",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1434,
+        376,
+        1454,
+        397
+      ],
+      "patterns": [
+        "SelectionItem"
+      ],
+      "parents": [
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            337,
+            1479,
+            410
+          ],
+          "patterns": []
+        },
+        {
+          "name": "Me (você) 07:11 22 fichas = 210R$  22 cartão trem = 231R$ 210 + 231 = 441R$ transporte Conversa fixada Todas as novas mensagens desaparecerão desta conversa 7 dias após o envio, exceto se salvas na conversa.",
+          "automation_id": "",
+          "control_type": "DataItem",
+          "bounds": [
+            1215,
+            337,
+            1479,
+            410
+          ],
+          "patterns": [
+            "SelectionItem"
+          ]
+        },
+        {
+          "name": "Me (você) 07:11 22 fichas = 210R$  22 cartão trem = 231R$ 210 + 231 = 441R$ transporte Conversa fixada Todas as novas mensagens desaparecerão desta conversa 7 dias após o envio, exceto se salvas na conversa.",
+          "automation_id": "",
+          "control_type": "DataItem",
+          "bounds": [
+            1215,
+            337,
+            1479,
+            414
+          ],
+          "patterns": []
+        },
+        {
+          "name": "Resultados da pesquisa.",
+          "automation_id": "",
+          "control_type": "DataGrid",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": [
+            "Value"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            286,
+            1479,
+            762
+          ],
+          "patterns": []
+        }
+      ]
+    },
+    {
+      "key": "raw:57",
+      "name": "Conversa fixada",
+      "automation_id": "",
+      "control_type": "Group",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1434,
+        376,
+        1454,
+        397
+      ],
+      "patterns": [],
+      "parents": [
+        {
+          "name": "Conversa fixada",
+          "automation_id": "",
+          "control_type": "DataItem",
+          "bounds": [
+            1434,
+            376,
+            1454,
+            397
+          ],
+          "patterns": [
+            "SelectionItem"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            337,
+            1479,
+            410
+          ],
+          "patterns": []
+        },
+        {
+          "name": "Me (você) 07:11 22 fichas = 210R$  22 cartão trem = 231R$ 210 + 231 = 441R$ transporte Conversa fixada Todas as novas mensagens desaparecerão desta conversa 7 dias após o envio, exceto se salvas na conversa.",
+          "automation_id": "",
+          "control_type": "DataItem",
+          "bounds": [
+            1215,
+            337,
+            1479,
+            410
+          ],
+          "patterns": [
+            "SelectionItem"
+          ]
+        },
+        {
+          "name": "Me (você) 07:11 22 fichas = 210R$  22 cartão trem = 231R$ 210 + 231 = 441R$ transporte Conversa fixada Todas as novas mensagens desaparecerão desta conversa 7 dias após o envio, exceto se salvas na conversa.",
+          "automation_id": "",
+          "control_type": "DataItem",
+          "bounds": [
+            1215,
+            337,
+            1479,
+            414
+          ],
+          "patterns": []
+        },
+        {
+          "name": "Resultados da pesquisa.",
+          "automation_id": "",
+          "control_type": "DataGrid",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": [
+            "Value"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": []
+        }
+      ]
+    },
+    {
+      "key": "raw:59",
+      "name": "Mensagens",
+      "automation_id": "",
+      "control_type": "DataItem",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1215,
+        413,
+        1479,
+        458
+      ],
+      "patterns": [],
+      "parents": [
+        {
+          "name": "Resultados da pesquisa.",
+          "automation_id": "",
+          "control_type": "DataGrid",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": [
+            "Value"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            286,
+            1479,
+            762
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            132,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "mount_0_0_gs",
+          "control_type": "Group",
+          "bounds": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "patterns": [
+            "Invoke"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "raw:60",
+      "name": "Mensagens",
+      "automation_id": "",
+      "control_type": "Text",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1235,
+        429,
+        1459,
+        450
+      ],
+      "patterns": [],
+      "parents": [
+        {
+          "name": "Mensagens",
+          "automation_id": "",
+          "control_type": "DataItem",
+          "bounds": [
+            1215,
+            413,
+            1479,
+            458
+          ],
+          "patterns": []
+        },
+        {
+          "name": "Resultados da pesquisa.",
+          "automation_id": "",
+          "control_type": "DataGrid",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": [
+            "Value"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            286,
+            1479,
+            762
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            132,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        }
+      ]
+    },
+    {
+      "key": "raw:61",
+      "name": "Garagem OFERTAS #124 09:39 +55 19 99688-1174 :  VOCÊ SÓ VAI DAR FALTA NO DIA QUE PRECISAR DE UM!!! Carregador Bateria 12v Até 100 Amperes Carro Moto Caminhão Por: R$ 45,54   🔥   🔗 https://meli.promo/s/YWI3pE1s 🚨 Loja Oficial no Meli Copie e convide seus Amigos 👇🏼 https://garagemnoticias.com.br/",
+      "automation_id": "",
+      "control_type": "DataItem",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1215,
+        457,
+        1479,
+        534
+      ],
+      "patterns": [],
+      "parents": [
+        {
+          "name": "Resultados da pesquisa.",
+          "automation_id": "",
+          "control_type": "DataGrid",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": [
+            "Value"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            286,
+            1479,
+            762
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            132,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "mount_0_0_gs",
+          "control_type": "Group",
+          "bounds": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "patterns": [
+            "Invoke"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "raw:62",
+      "name": "Garagem OFERTAS #124 09:39 +55 19 99688-1174 :  VOCÊ SÓ VAI DAR FALTA NO DIA QUE PRECISAR DE UM!!! Carregador Bateria 12v Até 100 Amperes Carro Moto Caminhão Por: R$ 45,54   🔥   🔗 https://meli.promo/s/YWI3pE1s 🚨 Loja Oficial no Meli Copie e convide seus Amigos 👇🏼 https://garagemnoticias.com.br/",
+      "automation_id": "",
+      "control_type": "DataItem",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1215,
+        457,
+        1479,
+        530
+      ],
+      "patterns": [
+        "SelectionItem"
+      ],
+      "parents": [
+        {
+          "name": "Garagem OFERTAS #124 09:39 +55 19 99688-1174 :  VOCÊ SÓ VAI DAR FALTA NO DIA QUE PRECISAR DE UM!!! Carregador Bateria 12v Até 100 Amperes Carro Moto Caminhão Por: R$ 45,54   🔥   🔗 https://meli.promo/s/YWI3pE1s 🚨 Loja Ofi",
+          "automation_id": "",
+          "control_type": "DataItem",
+          "bounds": [
+            1215,
+            457,
+            1479,
+            534
+          ],
+          "patterns": []
+        },
+        {
+          "name": "Resultados da pesquisa.",
+          "automation_id": "",
+          "control_type": "DataGrid",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": [
+            "Value"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            286,
+            1479,
+            762
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            132,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        }
+      ]
+    },
+    {
+      "key": "raw:63",
+      "name": "",
+      "automation_id": "",
+      "control_type": "Group",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1215,
+        457,
+        1479,
+        530
+      ],
+      "patterns": [],
+      "parents": [
+        {
+          "name": "Garagem OFERTAS #124 09:39 +55 19 99688-1174 :  VOCÊ SÓ VAI DAR FALTA NO DIA QUE PRECISAR DE UM!!! Carregador Bateria 12v Até 100 Amperes Carro Moto Caminhão Por: R$ 45,54   🔥   🔗 https://meli.promo/s/YWI3pE1s 🚨 Loja Ofi",
+          "automation_id": "",
+          "control_type": "DataItem",
+          "bounds": [
+            1215,
+            457,
+            1479,
+            530
+          ],
+          "patterns": [
+            "SelectionItem"
+          ]
+        },
+        {
+          "name": "Garagem OFERTAS #124 09:39 +55 19 99688-1174 :  VOCÊ SÓ VAI DAR FALTA NO DIA QUE PRECISAR DE UM!!! Carregador Bateria 12v Até 100 Amperes Carro Moto Caminhão Por: R$ 45,54   🔥   🔗 https://meli.promo/s/YWI3pE1s 🚨 Loja Ofi",
+          "automation_id": "",
+          "control_type": "DataItem",
+          "bounds": [
+            1215,
+            457,
+            1479,
+            534
+          ],
+          "patterns": []
+        },
+        {
+          "name": "Resultados da pesquisa.",
+          "automation_id": "",
+          "control_type": "DataGrid",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": [
+            "Value"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            286,
+            1479,
+            762
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            132,
+            1884,
+            923
+          ],
+          "patterns": []
+        }
+      ]
+    },
+    {
+      "key": "raw:64",
+      "name": "",
+      "automation_id": "",
+      "control_type": "Group",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1225,
+        457,
+        1469,
+        530
+      ],
+      "patterns": [
+        "Invoke"
+      ],
+      "parents": [
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            457,
+            1479,
+            530
+          ],
+          "patterns": []
+        },
+        {
+          "name": "Garagem OFERTAS #124 09:39 +55 19 99688-1174 :  VOCÊ SÓ VAI DAR FALTA NO DIA QUE PRECISAR DE UM!!! Carregador Bateria 12v Até 100 Amperes Carro Moto Caminhão Por: R$ 45,54   🔥   🔗 https://meli.promo/s/YWI3pE1s 🚨 Loja Ofi",
+          "automation_id": "",
+          "control_type": "DataItem",
+          "bounds": [
+            1215,
+            457,
+            1479,
+            530
+          ],
+          "patterns": [
+            "SelectionItem"
+          ]
+        },
+        {
+          "name": "Garagem OFERTAS #124 09:39 +55 19 99688-1174 :  VOCÊ SÓ VAI DAR FALTA NO DIA QUE PRECISAR DE UM!!! Carregador Bateria 12v Até 100 Amperes Carro Moto Caminhão Por: R$ 45,54   🔥   🔗 https://meli.promo/s/YWI3pE1s 🚨 Loja Ofi",
+          "automation_id": "",
+          "control_type": "DataItem",
+          "bounds": [
+            1215,
+            457,
+            1479,
+            534
+          ],
+          "patterns": []
+        },
+        {
+          "name": "Resultados da pesquisa.",
+          "automation_id": "",
+          "control_type": "DataGrid",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": [
+            "Value"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            286,
+            1479,
+            762
+          ],
+          "patterns": []
+        }
+      ]
+    },
+    {
+      "key": "raw:65",
+      "name": "Garagem OFERTAS #124 09:39",
+      "automation_id": "",
+      "control_type": "DataItem",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1240,
+        471,
+        1451,
+        493
+      ],
+      "patterns": [
+        "SelectionItem"
+      ],
+      "parents": [
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1225,
+            457,
+            1469,
+            530
+          ],
+          "patterns": [
+            "Invoke"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            457,
+            1479,
+            530
+          ],
+          "patterns": []
+        },
+        {
+          "name": "Garagem OFERTAS #124 09:39 +55 19 99688-1174 :  VOCÊ SÓ VAI DAR FALTA NO DIA QUE PRECISAR DE UM!!! Carregador Bateria 12v Até 100 Amperes Carro Moto Caminhão Por: R$ 45,54   🔥   🔗 https://meli.promo/s/YWI3pE1s 🚨 Loja Ofi",
+          "automation_id": "",
+          "control_type": "DataItem",
+          "bounds": [
+            1215,
+            457,
+            1479,
+            530
+          ],
+          "patterns": [
+            "SelectionItem"
+          ]
+        },
+        {
+          "name": "Garagem OFERTAS #124 09:39 +55 19 99688-1174 :  VOCÊ SÓ VAI DAR FALTA NO DIA QUE PRECISAR DE UM!!! Carregador Bateria 12v Até 100 Amperes Carro Moto Caminhão Por: R$ 45,54   🔥   🔗 https://meli.promo/s/YWI3pE1s 🚨 Loja Ofi",
+          "automation_id": "",
+          "control_type": "DataItem",
+          "bounds": [
+            1215,
+            457,
+            1479,
+            534
+          ],
+          "patterns": []
+        },
+        {
+          "name": "Resultados da pesquisa.",
+          "automation_id": "",
+          "control_type": "DataGrid",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": [
+            "Value"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": []
+        }
+      ]
+    },
+    {
+      "key": "raw:66",
+      "name": "",
+      "automation_id": "",
+      "control_type": "Group",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1240,
+        494,
+        1445,
+        515
+      ],
+      "patterns": [],
+      "parents": [
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1225,
+            457,
+            1469,
+            530
+          ],
+          "patterns": [
+            "Invoke"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            457,
+            1479,
+            530
+          ],
+          "patterns": []
+        },
+        {
+          "name": "Garagem OFERTAS #124 09:39 +55 19 99688-1174 :  VOCÊ SÓ VAI DAR FALTA NO DIA QUE PRECISAR DE UM!!! Carregador Bateria 12v Até 100 Amperes Carro Moto Caminhão Por: R$ 45,54   🔥   🔗 https://meli.promo/s/YWI3pE1s 🚨 Loja Ofi",
+          "automation_id": "",
+          "control_type": "DataItem",
+          "bounds": [
+            1215,
+            457,
+            1479,
+            530
+          ],
+          "patterns": [
+            "SelectionItem"
+          ]
+        },
+        {
+          "name": "Garagem OFERTAS #124 09:39 +55 19 99688-1174 :  VOCÊ SÓ VAI DAR FALTA NO DIA QUE PRECISAR DE UM!!! Carregador Bateria 12v Até 100 Amperes Carro Moto Caminhão Por: R$ 45,54   🔥   🔗 https://meli.promo/s/YWI3pE1s 🚨 Loja Ofi",
+          "automation_id": "",
+          "control_type": "DataItem",
+          "bounds": [
+            1215,
+            457,
+            1479,
+            534
+          ],
+          "patterns": []
+        },
+        {
+          "name": "Resultados da pesquisa.",
+          "automation_id": "",
+          "control_type": "DataGrid",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": [
+            "Value"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": []
+        }
+      ]
+    },
+    {
+      "key": "raw:72",
+      "name": "Garagem OFERTAS #124 08:33 +55 19 97125-6853 :  Se você precisa de algo especifico, pode chamar o nosso ADM, que ele vai te ajudar... Lembrando que só respondemos mensagens depois que vocês mesmo nos chamam, nunca mandamos mensagem primeiro principalmente pedindo pagamentos!",
+      "automation_id": "",
+      "control_type": "DataItem",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1215,
+        533,
+        1479,
+        610
+      ],
+      "patterns": [],
+      "parents": [
+        {
+          "name": "Resultados da pesquisa.",
+          "automation_id": "",
+          "control_type": "DataGrid",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": [
+            "Value"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            286,
+            1479,
+            762
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            132,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "mount_0_0_gs",
+          "control_type": "Group",
+          "bounds": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "patterns": [
+            "Invoke"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "raw:73",
+      "name": "Garagem OFERTAS #124 08:33 +55 19 97125-6853 :  Se você precisa de algo especifico, pode chamar o nosso ADM, que ele vai te ajudar... Lembrando que só respondemos mensagens depois que vocês mesmo nos chamam, nunca mandamos mensagem primeiro principalmente pedindo pagamentos!",
+      "automation_id": "",
+      "control_type": "DataItem",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1215,
+        533,
+        1479,
+        606
+      ],
+      "patterns": [
+        "SelectionItem"
+      ],
+      "parents": [
+        {
+          "name": "Garagem OFERTAS #124 08:33 +55 19 97125-6853 :  Se você precisa de algo especifico, pode chamar o nosso ADM, que ele vai te ajudar... Lembrando que só respondemos mensagens depois que vocês mesmo nos chamam, nunca mandam",
+          "automation_id": "",
+          "control_type": "DataItem",
+          "bounds": [
+            1215,
+            533,
+            1479,
+            610
+          ],
+          "patterns": []
+        },
+        {
+          "name": "Resultados da pesquisa.",
+          "automation_id": "",
+          "control_type": "DataGrid",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": [
+            "Value"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            286,
+            1479,
+            762
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            132,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        }
+      ]
+    },
+    {
+      "key": "raw:74",
+      "name": "",
+      "automation_id": "",
+      "control_type": "Group",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1215,
+        533,
+        1479,
+        606
+      ],
+      "patterns": [],
+      "parents": [
+        {
+          "name": "Garagem OFERTAS #124 08:33 +55 19 97125-6853 :  Se você precisa de algo especifico, pode chamar o nosso ADM, que ele vai te ajudar... Lembrando que só respondemos mensagens depois que vocês mesmo nos chamam, nunca mandam",
+          "automation_id": "",
+          "control_type": "DataItem",
+          "bounds": [
+            1215,
+            533,
+            1479,
+            606
+          ],
+          "patterns": [
+            "SelectionItem"
+          ]
+        },
+        {
+          "name": "Garagem OFERTAS #124 08:33 +55 19 97125-6853 :  Se você precisa de algo especifico, pode chamar o nosso ADM, que ele vai te ajudar... Lembrando que só respondemos mensagens depois que vocês mesmo nos chamam, nunca mandam",
+          "automation_id": "",
+          "control_type": "DataItem",
+          "bounds": [
+            1215,
+            533,
+            1479,
+            610
+          ],
+          "patterns": []
+        },
+        {
+          "name": "Resultados da pesquisa.",
+          "automation_id": "",
+          "control_type": "DataGrid",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": [
+            "Value"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            286,
+            1479,
+            762
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            132,
+            1884,
+            923
+          ],
+          "patterns": []
+        }
+      ]
+    },
+    {
+      "key": "raw:75",
+      "name": "",
+      "automation_id": "",
+      "control_type": "Group",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1225,
+        533,
+        1469,
+        606
+      ],
+      "patterns": [
+        "Invoke"
+      ],
+      "parents": [
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            533,
+            1479,
+            606
+          ],
+          "patterns": []
+        },
+        {
+          "name": "Garagem OFERTAS #124 08:33 +55 19 97125-6853 :  Se você precisa de algo especifico, pode chamar o nosso ADM, que ele vai te ajudar... Lembrando que só respondemos mensagens depois que vocês mesmo nos chamam, nunca mandam",
+          "automation_id": "",
+          "control_type": "DataItem",
+          "bounds": [
+            1215,
+            533,
+            1479,
+            606
+          ],
+          "patterns": [
+            "SelectionItem"
+          ]
+        },
+        {
+          "name": "Garagem OFERTAS #124 08:33 +55 19 97125-6853 :  Se você precisa de algo especifico, pode chamar o nosso ADM, que ele vai te ajudar... Lembrando que só respondemos mensagens depois que vocês mesmo nos chamam, nunca mandam",
+          "automation_id": "",
+          "control_type": "DataItem",
+          "bounds": [
+            1215,
+            533,
+            1479,
+            610
+          ],
+          "patterns": []
+        },
+        {
+          "name": "Resultados da pesquisa.",
+          "automation_id": "",
+          "control_type": "DataGrid",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": [
+            "Value"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            286,
+            1479,
+            762
+          ],
+          "patterns": []
+        }
+      ]
+    },
+    {
+      "key": "raw:76",
+      "name": "Garagem OFERTAS #124 08:33",
+      "automation_id": "",
+      "control_type": "DataItem",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1240,
+        547,
+        1451,
+        569
+      ],
+      "patterns": [
+        "SelectionItem"
+      ],
+      "parents": [
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1225,
+            533,
+            1469,
+            606
+          ],
+          "patterns": [
+            "Invoke"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            533,
+            1479,
+            606
+          ],
+          "patterns": []
+        },
+        {
+          "name": "Garagem OFERTAS #124 08:33 +55 19 97125-6853 :  Se você precisa de algo especifico, pode chamar o nosso ADM, que ele vai te ajudar... Lembrando que só respondemos mensagens depois que vocês mesmo nos chamam, nunca mandam",
+          "automation_id": "",
+          "control_type": "DataItem",
+          "bounds": [
+            1215,
+            533,
+            1479,
+            606
+          ],
+          "patterns": [
+            "SelectionItem"
+          ]
+        },
+        {
+          "name": "Garagem OFERTAS #124 08:33 +55 19 97125-6853 :  Se você precisa de algo especifico, pode chamar o nosso ADM, que ele vai te ajudar... Lembrando que só respondemos mensagens depois que vocês mesmo nos chamam, nunca mandam",
+          "automation_id": "",
+          "control_type": "DataItem",
+          "bounds": [
+            1215,
+            533,
+            1479,
+            610
+          ],
+          "patterns": []
+        },
+        {
+          "name": "Resultados da pesquisa.",
+          "automation_id": "",
+          "control_type": "DataGrid",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": [
+            "Value"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": []
+        }
+      ]
+    },
+    {
+      "key": "raw:77",
+      "name": "",
+      "automation_id": "",
+      "control_type": "Group",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1240,
+        570,
+        1445,
+        591
+      ],
+      "patterns": [],
+      "parents": [
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1225,
+            533,
+            1469,
+            606
+          ],
+          "patterns": [
+            "Invoke"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            533,
+            1479,
+            606
+          ],
+          "patterns": []
+        },
+        {
+          "name": "Garagem OFERTAS #124 08:33 +55 19 97125-6853 :  Se você precisa de algo especifico, pode chamar o nosso ADM, que ele vai te ajudar... Lembrando que só respondemos mensagens depois que vocês mesmo nos chamam, nunca mandam",
+          "automation_id": "",
+          "control_type": "DataItem",
+          "bounds": [
+            1215,
+            533,
+            1479,
+            606
+          ],
+          "patterns": [
+            "SelectionItem"
+          ]
+        },
+        {
+          "name": "Garagem OFERTAS #124 08:33 +55 19 97125-6853 :  Se você precisa de algo especifico, pode chamar o nosso ADM, que ele vai te ajudar... Lembrando que só respondemos mensagens depois que vocês mesmo nos chamam, nunca mandam",
+          "automation_id": "",
+          "control_type": "DataItem",
+          "bounds": [
+            1215,
+            533,
+            1479,
+            610
+          ],
+          "patterns": []
+        },
+        {
+          "name": "Resultados da pesquisa.",
+          "automation_id": "",
+          "control_type": "DataGrid",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": [
+            "Value"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": []
+        }
+      ]
+    },
+    {
+      "key": "raw:79",
+      "name": "Grupo VIP - Botequim Casa do Salgado #1 07/09/2026 +55 11 96331-1648 :  🚨 ALÔ, FAMÍLIA VIP! 🚨 Hoje é feriado e o Botequim é o lugar certo pra aproveitar o dia!  A casa abre a partir das 12h, com aquele almoço gostoso, o melhor caldo da região pra combinar com esse tempinho e, claro, muito pagode do jeito que a gente go",
+      "automation_id": "",
+      "control_type": "DataItem",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1215,
+        609,
+        1479,
+        686
+      ],
+      "patterns": [],
+      "parents": [
+        {
+          "name": "Resultados da pesquisa.",
+          "automation_id": "",
+          "control_type": "DataGrid",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": [
+            "Value"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            286,
+            1479,
+            762
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            132,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "mount_0_0_gs",
+          "control_type": "Group",
+          "bounds": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "patterns": [
+            "Invoke"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "raw:80",
+      "name": "Grupo VIP - Botequim Casa do Salgado #1 07/09/2026 +55 11 96331-1648 :  🚨 ALÔ, FAMÍLIA VIP! 🚨 Hoje é feriado e o Botequim é o lugar certo pra aproveitar o dia!  A casa abre a partir das 12h, com aquele almoço gostoso, o melhor caldo da região pra combinar com esse tempinho e, claro, muito pagode do jeito que a gente go",
+      "automation_id": "",
+      "control_type": "DataItem",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1215,
+        609,
+        1479,
+        682
+      ],
+      "patterns": [
+        "SelectionItem"
+      ],
+      "parents": [
+        {
+          "name": "Grupo VIP - Botequim Casa do Salgado #1 07/09/2026 +55 11 96331-1648 :  🚨 ALÔ, FAMÍLIA VIP! 🚨 Hoje é feriado e o Botequim é o lugar certo pra aproveitar o dia!  A casa abre a partir das 12h, com aquele almoço gostoso, o ",
+          "automation_id": "",
+          "control_type": "DataItem",
+          "bounds": [
+            1215,
+            609,
+            1479,
+            686
+          ],
+          "patterns": []
+        },
+        {
+          "name": "Resultados da pesquisa.",
+          "automation_id": "",
+          "control_type": "DataGrid",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": [
+            "Value"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            286,
+            1479,
+            762
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            132,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        }
+      ]
+    },
+    {
+      "key": "raw:81",
+      "name": "",
+      "automation_id": "",
+      "control_type": "Group",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1215,
+        609,
+        1479,
+        682
+      ],
+      "patterns": [],
+      "parents": [
+        {
+          "name": "Grupo VIP - Botequim Casa do Salgado #1 07/09/2026 +55 11 96331-1648 :  🚨 ALÔ, FAMÍLIA VIP! 🚨 Hoje é feriado e o Botequim é o lugar certo pra aproveitar o dia!  A casa abre a partir das 12h, com aquele almoço gostoso, o ",
+          "automation_id": "",
+          "control_type": "DataItem",
+          "bounds": [
+            1215,
+            609,
+            1479,
+            682
+          ],
+          "patterns": [
+            "SelectionItem"
+          ]
+        },
+        {
+          "name": "Grupo VIP - Botequim Casa do Salgado #1 07/09/2026 +55 11 96331-1648 :  🚨 ALÔ, FAMÍLIA VIP! 🚨 Hoje é feriado e o Botequim é o lugar certo pra aproveitar o dia!  A casa abre a partir das 12h, com aquele almoço gostoso, o ",
+          "automation_id": "",
+          "control_type": "DataItem",
+          "bounds": [
+            1215,
+            609,
+            1479,
+            686
+          ],
+          "patterns": []
+        },
+        {
+          "name": "Resultados da pesquisa.",
+          "automation_id": "",
+          "control_type": "DataGrid",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": [
+            "Value"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            286,
+            1479,
+            762
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            132,
+            1884,
+            923
+          ],
+          "patterns": []
+        }
+      ]
+    },
+    {
+      "key": "raw:82",
+      "name": "",
+      "automation_id": "",
+      "control_type": "Group",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1225,
+        609,
+        1469,
+        682
+      ],
+      "patterns": [
+        "Invoke"
+      ],
+      "parents": [
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            609,
+            1479,
+            682
+          ],
+          "patterns": []
+        },
+        {
+          "name": "Grupo VIP - Botequim Casa do Salgado #1 07/09/2026 +55 11 96331-1648 :  🚨 ALÔ, FAMÍLIA VIP! 🚨 Hoje é feriado e o Botequim é o lugar certo pra aproveitar o dia!  A casa abre a partir das 12h, com aquele almoço gostoso, o ",
+          "automation_id": "",
+          "control_type": "DataItem",
+          "bounds": [
+            1215,
+            609,
+            1479,
+            682
+          ],
+          "patterns": [
+            "SelectionItem"
+          ]
+        },
+        {
+          "name": "Grupo VIP - Botequim Casa do Salgado #1 07/09/2026 +55 11 96331-1648 :  🚨 ALÔ, FAMÍLIA VIP! 🚨 Hoje é feriado e o Botequim é o lugar certo pra aproveitar o dia!  A casa abre a partir das 12h, com aquele almoço gostoso, o ",
+          "automation_id": "",
+          "control_type": "DataItem",
+          "bounds": [
+            1215,
+            609,
+            1479,
+            686
+          ],
+          "patterns": []
+        },
+        {
+          "name": "Resultados da pesquisa.",
+          "automation_id": "",
+          "control_type": "DataGrid",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": [
+            "Value"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            286,
+            1479,
+            762
+          ],
+          "patterns": []
+        }
+      ]
+    },
+    {
+      "key": "raw:83",
+      "name": "Grupo VIP - Botequim Casa do Salgado #1 07/09/2026",
+      "automation_id": "",
+      "control_type": "DataItem",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1240,
+        623,
+        1451,
+        645
+      ],
+      "patterns": [
+        "SelectionItem"
+      ],
+      "parents": [
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1225,
+            609,
+            1469,
+            682
+          ],
+          "patterns": [
+            "Invoke"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            609,
+            1479,
+            682
+          ],
+          "patterns": []
+        },
+        {
+          "name": "Grupo VIP - Botequim Casa do Salgado #1 07/09/2026 +55 11 96331-1648 :  🚨 ALÔ, FAMÍLIA VIP! 🚨 Hoje é feriado e o Botequim é o lugar certo pra aproveitar o dia!  A casa abre a partir das 12h, com aquele almoço gostoso, o ",
+          "automation_id": "",
+          "control_type": "DataItem",
+          "bounds": [
+            1215,
+            609,
+            1479,
+            682
+          ],
+          "patterns": [
+            "SelectionItem"
+          ]
+        },
+        {
+          "name": "Grupo VIP - Botequim Casa do Salgado #1 07/09/2026 +55 11 96331-1648 :  🚨 ALÔ, FAMÍLIA VIP! 🚨 Hoje é feriado e o Botequim é o lugar certo pra aproveitar o dia!  A casa abre a partir das 12h, com aquele almoço gostoso, o ",
+          "automation_id": "",
+          "control_type": "DataItem",
+          "bounds": [
+            1215,
+            609,
+            1479,
+            686
+          ],
+          "patterns": []
+        },
+        {
+          "name": "Resultados da pesquisa.",
+          "automation_id": "",
+          "control_type": "DataGrid",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": [
+            "Value"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": []
+        }
+      ]
+    },
+    {
+      "key": "raw:84",
+      "name": "",
+      "automation_id": "",
+      "control_type": "Group",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1240,
+        646,
+        1445,
+        667
+      ],
+      "patterns": [],
+      "parents": [
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1225,
+            609,
+            1469,
+            682
+          ],
+          "patterns": [
+            "Invoke"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            609,
+            1479,
+            682
+          ],
+          "patterns": []
+        },
+        {
+          "name": "Grupo VIP - Botequim Casa do Salgado #1 07/09/2026 +55 11 96331-1648 :  🚨 ALÔ, FAMÍLIA VIP! 🚨 Hoje é feriado e o Botequim é o lugar certo pra aproveitar o dia!  A casa abre a partir das 12h, com aquele almoço gostoso, o ",
+          "automation_id": "",
+          "control_type": "DataItem",
+          "bounds": [
+            1215,
+            609,
+            1479,
+            682
+          ],
+          "patterns": [
+            "SelectionItem"
+          ]
+        },
+        {
+          "name": "Grupo VIP - Botequim Casa do Salgado #1 07/09/2026 +55 11 96331-1648 :  🚨 ALÔ, FAMÍLIA VIP! 🚨 Hoje é feriado e o Botequim é o lugar certo pra aproveitar o dia!  A casa abre a partir das 12h, com aquele almoço gostoso, o ",
+          "automation_id": "",
+          "control_type": "DataItem",
+          "bounds": [
+            1215,
+            609,
+            1479,
+            686
+          ],
+          "patterns": []
+        },
+        {
+          "name": "Resultados da pesquisa.",
+          "automation_id": "",
+          "control_type": "DataGrid",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": [
+            "Value"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": []
+        }
+      ]
+    },
+    {
+      "key": "raw:85",
+      "name": "🚨",
+      "automation_id": "",
+      "control_type": "Image",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1368,
+        646,
+        1389,
+        667
+      ],
+      "patterns": [],
+      "parents": [
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1240,
+            646,
+            1445,
+            667
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1225,
+            609,
+            1469,
+            682
+          ],
+          "patterns": [
+            "Invoke"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            609,
+            1479,
+            682
+          ],
+          "patterns": []
+        },
+        {
+          "name": "Grupo VIP - Botequim Casa do Salgado #1 07/09/2026 +55 11 96331-1648 :  🚨 ALÔ, FAMÍLIA VIP! 🚨 Hoje é feriado e o Botequim é o lugar certo pra aproveitar o dia!  A casa abre a partir das 12h, com aquele almoço gostoso, o ",
+          "automation_id": "",
+          "control_type": "DataItem",
+          "bounds": [
+            1215,
+            609,
+            1479,
+            682
+          ],
+          "patterns": [
+            "SelectionItem"
+          ]
+        },
+        {
+          "name": "Grupo VIP - Botequim Casa do Salgado #1 07/09/2026 +55 11 96331-1648 :  🚨 ALÔ, FAMÍLIA VIP! 🚨 Hoje é feriado e o Botequim é o lugar certo pra aproveitar o dia!  A casa abre a partir das 12h, com aquele almoço gostoso, o ",
+          "automation_id": "",
+          "control_type": "DataItem",
+          "bounds": [
+            1215,
+            609,
+            1479,
+            686
+          ],
+          "patterns": []
+        },
+        {
+          "name": "Resultados da pesquisa.",
+          "automation_id": "",
+          "control_type": "DataGrid",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": [
+            "Value"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "raw:86",
+      "name": "🚨",
+      "automation_id": "",
+      "control_type": "Image",
+      "visible": false,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1510,
+        646,
+        1531,
+        667
+      ],
+      "patterns": [],
+      "parents": [
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1240,
+            646,
+            1445,
+            667
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1225,
+            609,
+            1469,
+            682
+          ],
+          "patterns": [
+            "Invoke"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            609,
+            1479,
+            682
+          ],
+          "patterns": []
+        },
+        {
+          "name": "Grupo VIP - Botequim Casa do Salgado #1 07/09/2026 +55 11 96331-1648 :  🚨 ALÔ, FAMÍLIA VIP! 🚨 Hoje é feriado e o Botequim é o lugar certo pra aproveitar o dia!  A casa abre a partir das 12h, com aquele almoço gostoso, o ",
+          "automation_id": "",
+          "control_type": "DataItem",
+          "bounds": [
+            1215,
+            609,
+            1479,
+            682
+          ],
+          "patterns": [
+            "SelectionItem"
+          ]
+        },
+        {
+          "name": "Grupo VIP - Botequim Casa do Salgado #1 07/09/2026 +55 11 96331-1648 :  🚨 ALÔ, FAMÍLIA VIP! 🚨 Hoje é feriado e o Botequim é o lugar certo pra aproveitar o dia!  A casa abre a partir das 12h, com aquele almoço gostoso, o ",
+          "automation_id": "",
+          "control_type": "DataItem",
+          "bounds": [
+            1215,
+            609,
+            1479,
+            686
+          ],
+          "patterns": []
+        },
+        {
+          "name": "Resultados da pesquisa.",
+          "automation_id": "",
+          "control_type": "DataGrid",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": [
+            "Value"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "raw:95",
+      "name": "Grupo VIP - Botequim Casa do Salgado #1 03/09/2026 +55 11 96331-1648 :  🚨 ALÔ, FAMÍLIA VIP! 🚨 Hoje tem pagode do jeito que a gente gosta: música boa, cerveja gelada e aquela energia que só o Botequim tem! 😮‍💨 🍻 🎶 E claro que vocês, membros do nosso grupo VIP, não podem ficar de fora! 🧡 🎟️ INGRESSOS CORTESIA: https://ww",
+      "automation_id": "",
+      "control_type": "DataItem",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1215,
+        685,
+        1479,
+        762
+      ],
+      "patterns": [],
+      "parents": [
+        {
+          "name": "Resultados da pesquisa.",
+          "automation_id": "",
+          "control_type": "DataGrid",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": [
+            "Value"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            286,
+            1479,
+            762
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            132,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "mount_0_0_gs",
+          "control_type": "Group",
+          "bounds": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "patterns": [
+            "Invoke"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "raw:96",
+      "name": "Grupo VIP - Botequim Casa do Salgado #1 03/09/2026 +55 11 96331-1648 :  🚨 ALÔ, FAMÍLIA VIP! 🚨 Hoje tem pagode do jeito que a gente gosta: música boa, cerveja gelada e aquela energia que só o Botequim tem! 😮‍💨 🍻 🎶 E claro que vocês, membros do nosso grupo VIP, não podem ficar de fora! 🧡 🎟️ INGRESSOS CORTESIA: https://ww",
+      "automation_id": "",
+      "control_type": "DataItem",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1215,
+        685,
+        1479,
+        758
+      ],
+      "patterns": [
+        "SelectionItem"
+      ],
+      "parents": [
+        {
+          "name": "Grupo VIP - Botequim Casa do Salgado #1 03/09/2026 +55 11 96331-1648 :  🚨 ALÔ, FAMÍLIA VIP! 🚨 Hoje tem pagode do jeito que a gente gosta: música boa, cerveja gelada e aquela energia que só o Botequim tem! 😮‍💨 🍻 🎶 E claro",
+          "automation_id": "",
+          "control_type": "DataItem",
+          "bounds": [
+            1215,
+            685,
+            1479,
+            762
+          ],
+          "patterns": []
+        },
+        {
+          "name": "Resultados da pesquisa.",
+          "automation_id": "",
+          "control_type": "DataGrid",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": [
+            "Value"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            286,
+            1479,
+            762
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            132,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        }
+      ]
+    },
+    {
+      "key": "raw:97",
+      "name": "",
+      "automation_id": "",
+      "control_type": "Group",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1215,
+        685,
+        1479,
+        758
+      ],
+      "patterns": [],
+      "parents": [
+        {
+          "name": "Grupo VIP - Botequim Casa do Salgado #1 03/09/2026 +55 11 96331-1648 :  🚨 ALÔ, FAMÍLIA VIP! 🚨 Hoje tem pagode do jeito que a gente gosta: música boa, cerveja gelada e aquela energia que só o Botequim tem! 😮‍💨 🍻 🎶 E claro",
+          "automation_id": "",
+          "control_type": "DataItem",
+          "bounds": [
+            1215,
+            685,
+            1479,
+            758
+          ],
+          "patterns": [
+            "SelectionItem"
+          ]
+        },
+        {
+          "name": "Grupo VIP - Botequim Casa do Salgado #1 03/09/2026 +55 11 96331-1648 :  🚨 ALÔ, FAMÍLIA VIP! 🚨 Hoje tem pagode do jeito que a gente gosta: música boa, cerveja gelada e aquela energia que só o Botequim tem! 😮‍💨 🍻 🎶 E claro",
+          "automation_id": "",
+          "control_type": "DataItem",
+          "bounds": [
+            1215,
+            685,
+            1479,
+            762
+          ],
+          "patterns": []
+        },
+        {
+          "name": "Resultados da pesquisa.",
+          "automation_id": "",
+          "control_type": "DataGrid",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": [
+            "Value"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            286,
+            1479,
+            762
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            132,
+            1884,
+            923
+          ],
+          "patterns": []
+        }
+      ]
+    },
+    {
+      "key": "raw:98",
+      "name": "",
+      "automation_id": "",
+      "control_type": "Group",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1225,
+        685,
+        1469,
+        758
+      ],
+      "patterns": [
+        "Invoke"
+      ],
+      "parents": [
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            685,
+            1479,
+            758
+          ],
+          "patterns": []
+        },
+        {
+          "name": "Grupo VIP - Botequim Casa do Salgado #1 03/09/2026 +55 11 96331-1648 :  🚨 ALÔ, FAMÍLIA VIP! 🚨 Hoje tem pagode do jeito que a gente gosta: música boa, cerveja gelada e aquela energia que só o Botequim tem! 😮‍💨 🍻 🎶 E claro",
+          "automation_id": "",
+          "control_type": "DataItem",
+          "bounds": [
+            1215,
+            685,
+            1479,
+            758
+          ],
+          "patterns": [
+            "SelectionItem"
+          ]
+        },
+        {
+          "name": "Grupo VIP - Botequim Casa do Salgado #1 03/09/2026 +55 11 96331-1648 :  🚨 ALÔ, FAMÍLIA VIP! 🚨 Hoje tem pagode do jeito que a gente gosta: música boa, cerveja gelada e aquela energia que só o Botequim tem! 😮‍💨 🍻 🎶 E claro",
+          "automation_id": "",
+          "control_type": "DataItem",
+          "bounds": [
+            1215,
+            685,
+            1479,
+            762
+          ],
+          "patterns": []
+        },
+        {
+          "name": "Resultados da pesquisa.",
+          "automation_id": "",
+          "control_type": "DataGrid",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": [
+            "Value"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            286,
+            1479,
+            762
+          ],
+          "patterns": []
+        }
+      ]
+    },
+    {
+      "key": "raw:99",
+      "name": "Grupo VIP - Botequim Casa do Salgado #1 03/09/2026",
+      "automation_id": "",
+      "control_type": "DataItem",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1240,
+        699,
+        1451,
+        721
+      ],
+      "patterns": [
+        "SelectionItem"
+      ],
+      "parents": [
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1225,
+            685,
+            1469,
+            758
+          ],
+          "patterns": [
+            "Invoke"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            685,
+            1479,
+            758
+          ],
+          "patterns": []
+        },
+        {
+          "name": "Grupo VIP - Botequim Casa do Salgado #1 03/09/2026 +55 11 96331-1648 :  🚨 ALÔ, FAMÍLIA VIP! 🚨 Hoje tem pagode do jeito que a gente gosta: música boa, cerveja gelada e aquela energia que só o Botequim tem! 😮‍💨 🍻 🎶 E claro",
+          "automation_id": "",
+          "control_type": "DataItem",
+          "bounds": [
+            1215,
+            685,
+            1479,
+            758
+          ],
+          "patterns": [
+            "SelectionItem"
+          ]
+        },
+        {
+          "name": "Grupo VIP - Botequim Casa do Salgado #1 03/09/2026 +55 11 96331-1648 :  🚨 ALÔ, FAMÍLIA VIP! 🚨 Hoje tem pagode do jeito que a gente gosta: música boa, cerveja gelada e aquela energia que só o Botequim tem! 😮‍💨 🍻 🎶 E claro",
+          "automation_id": "",
+          "control_type": "DataItem",
+          "bounds": [
+            1215,
+            685,
+            1479,
+            762
+          ],
+          "patterns": []
+        },
+        {
+          "name": "Resultados da pesquisa.",
+          "automation_id": "",
+          "control_type": "DataGrid",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": [
+            "Value"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": []
+        }
+      ]
+    },
+    {
+      "key": "raw:100",
+      "name": "",
+      "automation_id": "",
+      "control_type": "Group",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1240,
+        722,
+        1445,
+        743
+      ],
+      "patterns": [],
+      "parents": [
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1225,
+            685,
+            1469,
+            758
+          ],
+          "patterns": [
+            "Invoke"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            685,
+            1479,
+            758
+          ],
+          "patterns": []
+        },
+        {
+          "name": "Grupo VIP - Botequim Casa do Salgado #1 03/09/2026 +55 11 96331-1648 :  🚨 ALÔ, FAMÍLIA VIP! 🚨 Hoje tem pagode do jeito que a gente gosta: música boa, cerveja gelada e aquela energia que só o Botequim tem! 😮‍💨 🍻 🎶 E claro",
+          "automation_id": "",
+          "control_type": "DataItem",
+          "bounds": [
+            1215,
+            685,
+            1479,
+            758
+          ],
+          "patterns": [
+            "SelectionItem"
+          ]
+        },
+        {
+          "name": "Grupo VIP - Botequim Casa do Salgado #1 03/09/2026 +55 11 96331-1648 :  🚨 ALÔ, FAMÍLIA VIP! 🚨 Hoje tem pagode do jeito que a gente gosta: música boa, cerveja gelada e aquela energia que só o Botequim tem! 😮‍💨 🍻 🎶 E claro",
+          "automation_id": "",
+          "control_type": "DataItem",
+          "bounds": [
+            1215,
+            685,
+            1479,
+            762
+          ],
+          "patterns": []
+        },
+        {
+          "name": "Resultados da pesquisa.",
+          "automation_id": "",
+          "control_type": "DataGrid",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": [
+            "Value"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": []
+        }
+      ]
+    },
+    {
+      "key": "raw:101",
+      "name": "🚨",
+      "automation_id": "",
+      "control_type": "Image",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1368,
+        722,
+        1389,
+        743
+      ],
+      "patterns": [],
+      "parents": [
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1240,
+            722,
+            1445,
+            743
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1225,
+            685,
+            1469,
+            758
+          ],
+          "patterns": [
+            "Invoke"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            685,
+            1479,
+            758
+          ],
+          "patterns": []
+        },
+        {
+          "name": "Grupo VIP - Botequim Casa do Salgado #1 03/09/2026 +55 11 96331-1648 :  🚨 ALÔ, FAMÍLIA VIP! 🚨 Hoje tem pagode do jeito que a gente gosta: música boa, cerveja gelada e aquela energia que só o Botequim tem! 😮‍💨 🍻 🎶 E claro",
+          "automation_id": "",
+          "control_type": "DataItem",
+          "bounds": [
+            1215,
+            685,
+            1479,
+            758
+          ],
+          "patterns": [
+            "SelectionItem"
+          ]
+        },
+        {
+          "name": "Grupo VIP - Botequim Casa do Salgado #1 03/09/2026 +55 11 96331-1648 :  🚨 ALÔ, FAMÍLIA VIP! 🚨 Hoje tem pagode do jeito que a gente gosta: música boa, cerveja gelada e aquela energia que só o Botequim tem! 😮‍💨 🍻 🎶 E claro",
+          "automation_id": "",
+          "control_type": "DataItem",
+          "bounds": [
+            1215,
+            685,
+            1479,
+            762
+          ],
+          "patterns": []
+        },
+        {
+          "name": "Resultados da pesquisa.",
+          "automation_id": "",
+          "control_type": "DataGrid",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": [
+            "Value"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "raw:102",
+      "name": "🚨",
+      "automation_id": "",
+      "control_type": "Image",
+      "visible": false,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1510,
+        722,
+        1531,
+        743
+      ],
+      "patterns": [],
+      "parents": [
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1240,
+            722,
+            1445,
+            743
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1225,
+            685,
+            1469,
+            758
+          ],
+          "patterns": [
+            "Invoke"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1215,
+            685,
+            1479,
+            758
+          ],
+          "patterns": []
+        },
+        {
+          "name": "Grupo VIP - Botequim Casa do Salgado #1 03/09/2026 +55 11 96331-1648 :  🚨 ALÔ, FAMÍLIA VIP! 🚨 Hoje tem pagode do jeito que a gente gosta: música boa, cerveja gelada e aquela energia que só o Botequim tem! 😮‍💨 🍻 🎶 E claro",
+          "automation_id": "",
+          "control_type": "DataItem",
+          "bounds": [
+            1215,
+            685,
+            1479,
+            758
+          ],
+          "patterns": [
+            "SelectionItem"
+          ]
+        },
+        {
+          "name": "Grupo VIP - Botequim Casa do Salgado #1 03/09/2026 +55 11 96331-1648 :  🚨 ALÔ, FAMÍLIA VIP! 🚨 Hoje tem pagode do jeito que a gente gosta: música boa, cerveja gelada e aquela energia que só o Botequim tem! 😮‍💨 🍻 🎶 E claro",
+          "automation_id": "",
+          "control_type": "DataItem",
+          "bounds": [
+            1215,
+            685,
+            1479,
+            762
+          ],
+          "patterns": []
+        },
+        {
+          "name": "Resultados da pesquisa.",
+          "automation_id": "",
+          "control_type": "DataGrid",
+          "bounds": [
+            1215,
+            285,
+            1479,
+            762
+          ],
+          "patterns": [
+            "Value"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "raw:113",
+      "name": "Suas mensagens pessoais são protegidas com a ",
+      "automation_id": "",
+      "control_type": "Text",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1238,
+        789,
+        1438,
+        820
+      ],
+      "patterns": [
+        "Text"
+      ],
+      "parents": [
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            132,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "mount_0_0_gs",
+          "control_type": "Group",
+          "bounds": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "patterns": [
+            "Invoke"
+          ]
+        },
+        {
+          "name": "WhatsApp",
+          "automation_id": "RootWebArea",
+          "control_type": "Document",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": [
+            "Value",
+            "Text"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        }
+      ]
+    },
+    {
+      "key": "raw:114",
+      "name": "criptografia de ponta a ponta",
+      "automation_id": "",
+      "control_type": "Button",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1331,
+        805,
+        1456,
+        836
+      ],
+      "patterns": [
+        "Invoke"
+      ],
+      "parents": [
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            132,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "mount_0_0_gs",
+          "control_type": "Group",
+          "bounds": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "patterns": [
+            "Invoke"
+          ]
+        },
+        {
+          "name": "WhatsApp",
+          "automation_id": "RootWebArea",
+          "control_type": "Document",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": [
+            "Value",
+            "Text"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        }
+      ]
+    },
+    {
+      "key": "raw:115",
+      "name": "Redimensionar o painel da lista de conversas",
+      "automation_id": "",
+      "control_type": "Button",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1479,
+        132,
+        1503,
+        923
+      ],
+      "patterns": [
+        "Invoke"
+      ],
+      "parents": [
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            132,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "mount_0_0_gs",
+          "control_type": "Group",
+          "bounds": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "patterns": [
+            "Invoke"
+          ]
+        },
+        {
+          "name": "WhatsApp",
+          "automation_id": "RootWebArea",
+          "control_type": "Document",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": [
+            "Value",
+            "Text"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        }
+      ]
+    },
+    {
+      "key": "raw:116",
+      "name": "Enviar documento",
+      "automation_id": "",
+      "control_type": "Button",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1492,
+        499,
+        1606,
+        572
+      ],
+      "patterns": [
+        "Invoke"
+      ],
+      "parents": [
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            132,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "mount_0_0_gs",
+          "control_type": "Group",
+          "bounds": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "patterns": [
+            "Invoke"
+          ]
+        },
+        {
+          "name": "WhatsApp",
+          "automation_id": "RootWebArea",
+          "control_type": "Document",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": [
+            "Value",
+            "Text"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        }
+      ]
+    },
+    {
+      "key": "raw:119",
+      "name": "",
+      "automation_id": "",
+      "control_type": "Group",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1150,
+        132,
+        1884,
+        923
+      ],
+      "patterns": [],
+      "parents": [
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            132,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Group",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "mount_0_0_gs",
+          "control_type": "Group",
+          "bounds": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "patterns": [
+            "Invoke"
+          ]
+        },
+        {
+          "name": "WhatsApp",
+          "automation_id": "RootWebArea",
+          "control_type": "Document",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": [
+            "Value",
+            "Text"
+          ]
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        }
+      ]
+    },
+    {
+      "key": "raw:123",
+      "name": "",
+      "automation_id": "",
+      "control_type": "Pane",
+      "visible": true,
+      "enabled": true,
+      "focused": false,
+      "bounds": [
+        1150,
+        94,
+        1884,
+        923
+      ],
+      "patterns": [],
+      "parents": [
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "WhatsApp - Conteúdo da Web",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "WhatsApp",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            1150,
+            94,
+            1884,
+            923
+          ],
+          "patterns": []
+        },
+        {
+          "name": "WhatsApp",
+          "automation_id": "",
+          "control_type": "Window",
+          "bounds": [
+            1142,
+            93,
+            1892,
+            931
+          ],
+          "patterns": []
+        },
+        {
+          "name": "Área de Trabalho 1",
+          "automation_id": "",
+          "control_type": "Pane",
+          "bounds": [
+            0,
+            0,
+            1920,
+            1080
+          ],
+          "patterns": []
+        }
+      ]
+    }
+  ]
+}

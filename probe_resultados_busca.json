@@ -1,0 +1,11 @@
+{
+  "ok": false,
+  "contact": "Me (você)",
+  "sent_message": false,
+  "typed_message": false,
+  "opened_conversation": false,
+  "steps": [
+    "WhatsApp conectado"
+  ],
+  "error": "Campo de pesquisa não ficou disponível."
+}

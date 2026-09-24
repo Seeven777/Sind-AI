@@ -1,0 +1,11 @@
+{
+  "ok": false,
+  "contact": "Me (você)",
+  "sent_message": false,
+  "typed_message": false,
+  "steps": [
+    "WhatsApp conectado",
+    "Contato escrito somente no campo de pesquisa"
+  ],
+  "error": "O contato exato não apareceu de forma única na pesquisa."
+}

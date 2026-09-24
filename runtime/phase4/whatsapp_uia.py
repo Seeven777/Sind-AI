@@ -387,13 +387,42 @@ def _inside_search_results(row, search_bounds):
     return True
 
 
+_RESULT_METADATA_PREFIX = re.compile(
+    r"^(?:"
+    r"\d{1,2}:\d{2}"
+    r"|\d{1,2}/\d{1,2}(?:/\d{2,4})?"
+    r"|hoje\b|ontem\b"
+    r"|segunda(?:-feira)?\b|terca(?:-feira)?\b|quarta(?:-feira)?\b"
+    r"|quinta(?:-feira)?\b|sexta(?:-feira)?\b|sabado\b|domingo\b"
+    r")",
+    re.I,
+)
+
+
+def contact_accessible_name_matches(name, contact):
+    """Strict match for a WhatsApp row name that appends timestamp/date metadata."""
+    candidate = identity(name)
+    wanted = identity(contact)
+    if not candidate or not wanted:
+        return False
+    if candidate == wanted:
+        return True
+    if not candidate.startswith(wanted):
+        return False
+    suffix = candidate[len(wanted):]
+    if not suffix or not suffix[0].isspace():
+        return False
+    tail = fold(suffix.strip())
+    return bool(_RESULT_METADATA_PREFIX.match(tail))
+
+
 def contact_row_matches(row, contact, search_bounds):
-    """Pure exact-label matcher; safe to unit-test without Windows."""
+    """Strict result-label matcher; never fuzzy-matches another contact name."""
     if not row.get("visible") or not row.get("enabled"):
         return False
     if not _inside_search_results(row, search_bounds):
         return False
-    return identity(row.get("name", "")) == identity(contact)
+    return contact_accessible_name_matches(row.get("name", ""), contact)
 
 
 def _runtime_id(ctrl):
@@ -449,10 +478,91 @@ def _actionable_contact_ancestor(ctrl, win, search_bounds):
     return None
 
 
+def _control_has_pattern(ctrl, pattern_name):
+    try:
+        getattr(ctrl, pattern_name)
+        return True
+    except Exception:
+        return False
+
+
+def _inside_search_results_grid(ctrl):
+    current = ctrl
+    for _ in range(8):
+        try:
+            info = current.element_info
+            if str(info.control_type or "") == "DataGrid":
+                label = fold(info.name or "").strip()
+                if "resultados da pesquisa" in label or "search results" in label:
+                    return True
+            parent = current.parent()
+            if parent is None or parent == current:
+                break
+            current = parent
+        except Exception:
+            break
+    return False
+
+
+def _contact_candidate_chain(ctrl, win, contact, search_bounds):
+    result = []
+    current = ctrl
+    for depth in range(8):
+        try:
+            info = current.element_info
+            ctype = str(info.control_type or "")
+            rect = current.rectangle()
+            row = {
+                "bounds": [rect.left, rect.top, rect.right, rect.bottom],
+                "visible": bool(current.is_visible()),
+                "enabled": bool(current.is_enabled()),
+            }
+            name = str(info.name or "")
+            if (
+                ctype in CONTACT_CONTAINER_TYPES
+                and row["visible"] and row["enabled"]
+                and _inside_search_results(row, search_bounds)
+                and contact_accessible_name_matches(name, contact)
+                and (identity(name) == identity(contact) or _inside_search_results_grid(current))
+            ):
+                result.append({
+                    "ctrl": current,
+                    "depth": depth,
+                    "area": _rect_area(row["bounds"]),
+                    "selection": _control_has_pattern(current, "iface_selection_item"),
+                    "invoke": _control_has_pattern(current, "iface_invoke"),
+                    "name": name,
+                    "control_type": ctype,
+                    "bounds": row["bounds"],
+                })
+            parent = current.parent()
+            if parent is None or parent == current or parent == win:
+                break
+            current = parent
+        except Exception:
+            break
+    return result
+
+
+def _rank_contact_candidate(item):
+    bounds = item.get("bounds") or [0,0,0,0]
+    width=max(0,bounds[2]-bounds[0]); height=max(0,bounds[3]-bounds[1])
+    return (
+        1 if item.get("selection") else 0,
+        1 if item.get("control_type") == "DataItem" else 0,
+        1 if item.get("invoke") else 0,
+        width, height, item.get("area",0), -item.get("depth",0),
+    )
+
+
+def _same_visual_result(a, b):
+    aa=a.get("bounds") or [0,0,0,0]; bb=b.get("bounds") or [0,0,0,0]
+    return all(abs(x-y) <= 8 for x,y in zip(aa,bb))
+
+
 def discover_contact_targets(rows, wrappers, win, contact, search_bounds):
-    """Find exact search result even when WhatsApp exposes Group/Custom/Text."""
-    found = []
-    seen = set()
+    """Resolve one logical result row without fuzzy recipient matching."""
+    candidates = []
 
     for row in rows:
         if not contact_row_matches(row, contact, search_bounds):
@@ -460,14 +570,26 @@ def discover_contact_targets(rows, wrappers, win, contact, search_bounds):
         ctrl = wrappers.get(row.get("key"))
         if ctrl is None:
             continue
-        target = _actionable_contact_ancestor(ctrl, win, search_bounds)
-        if target is None:
-            continue
-        marker = _runtime_id(target)
-        if marker not in seen:
-            seen.add(marker)
-            found.append(target)
+        candidates.extend(_contact_candidate_chain(ctrl, win, contact, search_bounds))
 
+        if identity(row.get("name", "")) == identity(contact):
+            legacy = _actionable_contact_ancestor(ctrl, win, search_bounds)
+            if legacy is not None:
+                try:
+                    info=legacy.element_info; rect=legacy.rectangle()
+                    candidates.append({
+                        "ctrl": legacy, "depth":0,
+                        "area": max(0,rect.right-rect.left)*max(0,rect.bottom-rect.top),
+                        "selection": _control_has_pattern(legacy,"iface_selection_item"),
+                        "invoke": _control_has_pattern(legacy,"iface_invoke"),
+                        "name": str(info.name or ""),
+                        "control_type": str(info.control_type or ""),
+                        "bounds": [rect.left,rect.top,rect.right,rect.bottom],
+                    })
+                except Exception:
+                    pass
+
+    # Current WebView2 often exposes only DataItem names, not exact Text children.
     for row in rows:
         if row.get("control_type") not in CONTACT_CONTAINER_TYPES:
             continue
@@ -475,23 +597,33 @@ def discover_contact_targets(rows, wrappers, win, contact, search_bounds):
             continue
         if not _inside_search_results(row, search_bounds):
             continue
+        if not contact_accessible_name_matches(row.get("name", ""), contact):
+            continue
         ctrl = wrappers.get(row.get("key"))
         if ctrl is None:
             continue
-        try:
-            names = [row.get("name", "")] + [
-                c.element_info.name or "" for c in ctrl.descendants(control_type="Text")
-            ]
-        except Exception:
-            names = [row.get("name", "")]
-        if not any(identity(name) == identity(contact) for name in names):
+        if identity(row.get("name", "")) != identity(contact) and not _inside_search_results_grid(ctrl):
             continue
-        marker = _runtime_id(ctrl)
-        if marker not in seen:
-            seen.add(marker)
-            found.append(ctrl)
+        candidates.extend(_contact_candidate_chain(ctrl, win, contact, search_bounds))
 
-    return found
+    # Runtime-ID dedupe.
+    runtime_unique = {}
+    for item in candidates:
+        marker = _runtime_id(item["ctrl"])
+        prev = runtime_unique.get(marker)
+        if prev is None or _rank_contact_candidate(item) > _rank_contact_candidate(prev):
+            runtime_unique[marker]=item
+
+    ranked = sorted(runtime_unique.values(), key=_rank_contact_candidate, reverse=True)
+    if not ranked:
+        return []
+
+    best = ranked[0]
+    # Treat nested/duplicate WebView2 nodes covering the same row as one result.
+    distinct = [x for x in ranked[1:] if not _same_visual_result(best,x)]
+    if distinct and _rank_contact_candidate(distinct[0]) == _rank_contact_candidate(best):
+        return []
+    return [best["ctrl"]]
 
 
 def discover_whatsapp_windows():
@@ -938,15 +1070,27 @@ class WhatsAppUIA:
             target.set_focus()
         except Exception:
             pass
+
+        selected = False
         try:
-            invoke = target.iface_invoke
+            target.iface_selection_item.Select()
+            selected = True
         except Exception:
+            pass
+
+        try:
             target.click_input()
-        else:
-            try:
-                invoke.Invoke()
-            except Exception:
-                target.click_input()
+            return
+        except Exception:
+            pass
+
+        try:
+            target.iface_invoke.Invoke()
+            return
+        except Exception:
+            if selected:
+                return
+            raise RuntimeError("Não consegui ativar o resultado exato da pesquisa do WhatsApp.")
 
     def send(self, contact, message):
         snap = self.observe(contact, message)
