@@ -45,7 +45,7 @@ def describe_control(ctrl, key=None):
     try:
         password = bool(info.element.CurrentIsPassword)
     except Exception:
-        password = True  # Unknown security properties must not authorize typing.
+        password = True
     try:
         read_only = bool(ctrl.iface_value.CurrentIsReadOnly)
     except Exception:

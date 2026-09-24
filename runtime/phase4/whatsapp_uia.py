@@ -224,6 +224,142 @@ def choose_window_candidate(rows):
     return usable[0][3]
 
 
+
+CONTACT_CONTAINER_TYPES = {
+    "ListItem", "DataItem", "Button", "Hyperlink", "Group", "Custom", "Pane"
+}
+
+
+def _rect_area(bounds):
+    bounds = bounds or [0, 0, 0, 0]
+    return max(0, bounds[2] - bounds[0]) * max(0, bounds[3] - bounds[1])
+
+
+def _inside_search_results(row, search_bounds):
+    """Restrict matches to the left/search results region below the search box."""
+    rect = row.get("bounds") or [0, 0, 0, 0]
+    search = search_bounds or [0, 0, 0, 0]
+    if _rect_area(rect) <= 0:
+        return False
+    if rect[1] < search[3] - 4:
+        return False
+    if rect[0] > search[2] + 80:
+        return False
+    height = rect[3] - rect[1]
+    width = rect[2] - rect[0]
+    search_width = max(1, search[2] - search[0])
+    if height > 220 or width > max(search_width * 1.45, 720):
+        return False
+    return True
+
+
+def contact_row_matches(row, contact, search_bounds):
+    """Pure exact-label matcher; safe to unit-test without Windows."""
+    if not row.get("visible") or not row.get("enabled"):
+        return False
+    if not _inside_search_results(row, search_bounds):
+        return False
+    return identity(row.get("name", "")) == identity(contact)
+
+
+def _runtime_id(ctrl):
+    try:
+        rid = tuple(ctrl.element_info.runtime_id or ())
+        if rid:
+            return ("rid", rid)
+    except Exception:
+        pass
+    try:
+        return ("handle", int(ctrl.handle))
+    except Exception:
+        return ("obj", id(ctrl))
+
+
+def _actionable_contact_ancestor(ctrl, win, search_bounds):
+    """Climb from an exact Text label to the nearest compact clickable row."""
+    current = ctrl
+    for _ in range(6):
+        try:
+            info = current.element_info
+            ctype = str(info.control_type or "")
+            rect = current.rectangle()
+            row = {
+                "bounds": [rect.left, rect.top, rect.right, rect.bottom],
+                "visible": bool(current.is_visible()),
+                "enabled": bool(current.is_enabled()),
+            }
+            if (
+                ctype in CONTACT_CONTAINER_TYPES
+                and row["visible"]
+                and row["enabled"]
+                and _inside_search_results(row, search_bounds)
+            ):
+                return current
+            parent = current.parent()
+            if parent is None or parent == current or parent == win:
+                break
+            current = parent
+        except Exception:
+            break
+    try:
+        rect = ctrl.rectangle()
+        fallback = {
+            "bounds": [rect.left, rect.top, rect.right, rect.bottom],
+            "visible": bool(ctrl.is_visible()),
+            "enabled": bool(ctrl.is_enabled()),
+        }
+        if fallback["visible"] and fallback["enabled"] and _inside_search_results(fallback, search_bounds):
+            return ctrl
+    except Exception:
+        pass
+    return None
+
+
+def discover_contact_targets(rows, wrappers, win, contact, search_bounds):
+    """Find exact search result even when WhatsApp exposes Group/Custom/Text."""
+    found = []
+    seen = set()
+
+    for row in rows:
+        if not contact_row_matches(row, contact, search_bounds):
+            continue
+        ctrl = wrappers.get(row.get("key"))
+        if ctrl is None:
+            continue
+        target = _actionable_contact_ancestor(ctrl, win, search_bounds)
+        if target is None:
+            continue
+        marker = _runtime_id(target)
+        if marker not in seen:
+            seen.add(marker)
+            found.append(target)
+
+    for row in rows:
+        if row.get("control_type") not in CONTACT_CONTAINER_TYPES:
+            continue
+        if not row.get("visible") or not row.get("enabled"):
+            continue
+        if not _inside_search_results(row, search_bounds):
+            continue
+        ctrl = wrappers.get(row.get("key"))
+        if ctrl is None:
+            continue
+        try:
+            names = [row.get("name", "")] + [
+                c.element_info.name or "" for c in ctrl.descendants(control_type="Text")
+            ]
+        except Exception:
+            names = [row.get("name", "")]
+        if not any(identity(name) == identity(contact) for name in names):
+            continue
+        marker = _runtime_id(ctrl)
+        if marker not in seen:
+            seen.add(marker)
+            found.append(ctrl)
+
+    return found
+
+
 def discover_whatsapp_windows():
     """Discover native WhatsApp windows including WebView2 child-process hosts."""
     if os.name != "nt":
@@ -451,22 +587,17 @@ class WhatsAppUIA:
                 search = choose_text_field(rows, purpose="search")
                 search_rect = search["bounds"]
                 result["search_value"] = self._value(wrappers[search["key"]])
-                seen = set()
-                for row in rows:
-                    if row["control_type"] not in ("ListItem", "DataItem") or not row["enabled"]:
-                        continue
-                    rect = row["bounds"]
-                    if rect[0] > search_rect[2] or rect[1] < search_rect[3]:
-                        continue
-                    ctrl = wrappers[row["key"]]
-                    names = [row["name"]] + [
-                        c.element_info.name or "" for c in ctrl.descendants(control_type="Text")
-                    ]
-                    if any(identity(n) == identity(contact) for n in names):
-                        rid = tuple(ctrl.element_info.runtime_id or ())
-                        if rid and rid not in seen:
-                            result["contacts"].append({"name": contact, "key": row["key"]})
-                            seen.add(rid)
+                targets = discover_contact_targets(
+                    rows, wrappers, win, contact, search_rect
+                )
+                for target in targets:
+                    key = f"{self.generation}:contact:{len(result['contacts'])}"
+                    self.controls[key] = target
+                    result["contacts"].append({
+                        "name": contact,
+                        "key": key,
+                        "control_type": str(target.element_info.control_type or ""),
+                    })
             except RuntimeError:
                 pass
 
@@ -537,11 +668,18 @@ class WhatsAppUIA:
     def open_contact(self, key):
         target = self._target(key)
         try:
+            target.set_focus()
+        except Exception:
+            pass
+        try:
             invoke = target.iface_invoke
         except Exception:
             target.click_input()
         else:
-            invoke.Invoke()
+            try:
+                invoke.Invoke()
+            except Exception:
+                target.click_input()
 
     def send(self, contact, message):
         snap = self.observe(contact, message)
