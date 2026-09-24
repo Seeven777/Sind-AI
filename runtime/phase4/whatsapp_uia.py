@@ -560,6 +560,38 @@ def _same_visual_result(a, b):
     return all(abs(x-y) <= 8 for x,y in zip(aa,bb))
 
 
+def _preferred_activation_node(root, contact):
+    """Prefer the nested title/time SelectionItem over the giant preview row."""
+    options = []
+    try:
+        nodes = [root] + list(root.descendants())
+    except Exception:
+        nodes = [root]
+
+    for ctrl in nodes[:200]:
+        try:
+            info = ctrl.element_info
+            if str(info.control_type or "") != "DataItem":
+                continue
+            name = str(info.name or "")
+            if not contact_accessible_name_matches(name, contact):
+                continue
+            if not _control_has_pattern(ctrl, "iface_selection_item"):
+                continue
+            if not ctrl.is_visible() or not ctrl.is_enabled():
+                continue
+            rect = ctrl.rectangle()
+            area = max(0, rect.right - rect.left) * max(0, rect.bottom - rect.top)
+            options.append((len(identity(name)), area, ctrl))
+        except Exception:
+            continue
+
+    if not options:
+        return root
+    options.sort(key=lambda item: (item[0], item[1]))
+    return options[0][2]
+
+
 def discover_contact_targets(rows, wrappers, win, contact, search_bounds):
     """Resolve one logical result row without fuzzy recipient matching."""
     candidates = []
@@ -623,7 +655,7 @@ def discover_contact_targets(rows, wrappers, win, contact, search_bounds):
     distinct = [x for x in ranked[1:] if not _same_visual_result(best,x)]
     if distinct and _rank_contact_candidate(distinct[0]) == _rank_contact_candidate(best):
         return []
-    return [best["ctrl"]]
+    return [_preferred_activation_node(best["ctrl"], contact)]
 
 
 def discover_whatsapp_windows():
@@ -739,6 +771,7 @@ class WhatsAppUIA:
     def __init__(self):
         self.window = None
         self.controls = {}
+        self.contact_names = {}
         self.generation = 0
         self.window_metadata = {}
 
@@ -970,6 +1003,7 @@ class WhatsAppUIA:
                 except Exception:
                     complete = False
             self.controls = wrappers
+            self.contact_names = {}
             result = {
                 "ok": True,
                 "complete": complete,
@@ -992,6 +1026,7 @@ class WhatsAppUIA:
                 for target in targets:
                     key = f"{self.generation}:contact:{len(result['contacts'])}"
                     self.controls[key] = target
+                    self.contact_names[key] = contact
                     result["contacts"].append({
                         "name": contact,
                         "key": key,
@@ -1064,46 +1099,94 @@ class WhatsAppUIA:
         target.set_focus()
         target.iface_value.SetValue(str(text))
 
+    def _conversation_header_present(self, contact):
+        """Verify the requested contact is visible as the right-pane header."""
+        if not contact:
+            return False
+        try:
+            win = self._attach()
+            wr = win.rectangle()
+            divider_x = wr.left + int((wr.right - wr.left) * 0.45)
+
+            for ctrl in win.descendants()[:2500]:
+                try:
+                    info = ctrl.element_info
+                    if identity(info.name or "") != identity(contact):
+                        continue
+                    rect = ctrl.rectangle()
+                    center_x = (rect.left + rect.right) / 2
+                    if center_x <= divider_x:
+                        continue
+                    if rect.top > wr.top + int((wr.bottom - wr.top) * 0.35):
+                        continue
+                    if ctrl.is_visible():
+                        return True
+                except Exception:
+                    continue
+        except Exception:
+            return False
+        return False
+
+    def _wait_conversation_header(self, contact, timeout=1.2):
+        deadline = time.monotonic() + max(0.05, float(timeout))
+        while time.monotonic() < deadline:
+            if self._conversation_header_present(contact):
+                return True
+            time.sleep(0.10)
+        return self._conversation_header_present(contact)
+
     def open_contact(self, key):
         target = self._target(key)
+        contact = self.contact_names.get(key, "")
 
-        # Current WhatsApp WebView2 exposes search rows as SelectionItem
-        # DataItems. Select() highlights the row but does NOT open the chat.
-        # Reliable semantic activation: select -> focus -> Enter.
-        selected = False
+        if contact and self._conversation_header_present(contact):
+            return
+
+        try:
+            target.click_input()
+            if not contact or self._wait_conversation_header(contact):
+                return
+        except Exception:
+            pass
+
         try:
             target.iface_selection_item.Select()
-            selected = True
         except Exception:
             pass
 
+        focused = False
         try:
             target.set_focus()
+            focused = bool(target.has_keyboard_focus())
         except Exception:
-            pass
+            focused = False
 
-        if selected:
+        if focused:
             try:
                 target.type_keys("{ENTER}", set_foreground=True)
-                return
+                if not contact or self._wait_conversation_header(contact):
+                    return
             except Exception:
                 pass
 
-        # Compatibility with older/native builds.
-        try:
-            target.iface_invoke.Invoke()
-            return
-        except Exception:
-            pass
-
-        # Last non-fixed-coordinate fallback.
         try:
             target.double_click_input()
-            return
+            if not contact or self._wait_conversation_header(contact):
+                return
         except Exception:
             pass
 
-        raise RuntimeError("Não consegui ativar o resultado exato da pesquisa do WhatsApp.")
+        try:
+            target.iface_invoke.Invoke()
+            if not contact or self._wait_conversation_header(contact):
+                return
+        except Exception:
+            pass
+
+        raise RuntimeError(
+            "O resultado correto foi localizado, mas o WhatsApp não abriu "
+            "a conversa no painel direito após as formas seguras de ativação."
+        )
 
     def send(self, contact, message):
         snap = self.observe(contact, message)
