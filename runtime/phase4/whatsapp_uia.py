@@ -12,6 +12,10 @@ from pathlib import PureWindowsPath
 
 from .controls import choose_text_field, describe_control
 from .intent import fold, identity
+from runtime.computer_v2 import (
+    click_physical, copy_focused_text, focus_hwnd, paste_unicode,
+    point_in_bounds, send_key_expression, visible_area, uia_hit_test_chain,
+)
 
 PACKAGE_MARKER = "5319275a.whatsappdesktop"
 WHATSAPP_EXES = {"whatsapp.exe", "whatsapp.root.exe"}
@@ -767,11 +771,433 @@ def message_evidence(label, automation_id, child_names, message):
     return {"text": message if body else "", "outgoing": outgoing, "state": state}
 
 
+def _safe_uia_bool(fn, default=False):
+    try:
+        return bool(fn())
+    except Exception:
+        return default
+
+
+def _raw_edit_score(ctrl, window_bounds):
+    """Score a raw UIA Edit as WhatsApp's global search box.
+
+    Current WhatsApp WebView2 may expose this field with an empty accessible
+    name and a generated automation id (observed `_r_f_`). Therefore semantic
+    labels are preferred, but geometry + editability are valid evidence.
+    """
+    try:
+        info = ctrl.element_info
+        if str(info.control_type or "") != "Edit":
+            return -1, None
+        rect = ctrl.rectangle()
+        bounds = [rect.left, rect.top, rect.right, rect.bottom]
+        if visible_area(bounds) <= 20:
+            return -1, None
+
+        enabled = _safe_uia_bool(ctrl.is_enabled)
+        if not enabled:
+            return -1, None
+
+        name = str(info.name or "")
+        aid = str(info.automation_id or "")
+        label = fold(name + " " + aid)
+
+        read_only = None
+        has_value = False
+        try:
+            value = ctrl.iface_value
+            read_only = bool(value.CurrentIsReadOnly)
+            has_value = True
+        except Exception:
+            pass
+        if read_only is True:
+            return -1, None
+
+        wl, wt, wr, wb = [int(x) for x in window_bounds]
+        width = max(1, wr - wl)
+        height = max(1, wb - wt)
+        cx = (rect.left + rect.right) / 2
+        cy = (rect.top + rect.bottom) / 2
+
+        score = 0
+        if "pesquisar" in label or "search" in label:
+            score += 350
+        if "nova conversa" in label or "new chat" in label:
+            score += 140
+
+        # This generated id was observed on the user's current WhatsApp build.
+        # It is only a hint; geometry/editability still need to agree.
+        if aid == "_r_f_":
+            score += 180
+
+        # WhatsApp global search is in the upper-left content pane.
+        if cx <= wl + width * 0.48:
+            score += 120
+        if cy <= wt + height * 0.28:
+            score += 120
+        if rect.left >= wl + width * 0.05:
+            score += 20
+
+        if has_value:
+            score += 100
+        if _safe_uia_bool(ctrl.is_visible):
+            score += 20
+
+        return score, {
+            "name": name,
+            "automation_id": aid,
+            "bounds": bounds,
+            "read_only": read_only,
+            "score": score,
+        }
+    except Exception:
+        return -1, None
+
+
+def _raw_find_search_control(win):
+    wr = win.rectangle()
+    window_bounds = [wr.left, wr.top, wr.right, wr.bottom]
+    candidates = []
+
+    for index, ctrl in enumerate(win.descendants()[:4000]):
+        score, meta = _raw_edit_score(ctrl, window_bounds)
+        if score < 0 or meta is None:
+            continue
+        candidates.append((score, -visible_area(meta["bounds"]), index, ctrl, meta))
+
+    if not candidates:
+        return None, None
+
+    candidates.sort(reverse=True, key=lambda row: (row[0], row[1], -row[2]))
+    best = candidates[0]
+
+    # Fail closed only for genuinely different equal-strength fields.
+    if len(candidates) > 1 and candidates[1][0] == best[0]:
+        a = best[4]["bounds"]
+        b = candidates[1][4]["bounds"]
+        if any(abs(x - y) > 8 for x, y in zip(a, b)):
+            return None, None
+
+    return best[3], best[4]
+
+
+def _raw_read_value(ctrl):
+    try:
+        return str(ctrl.iface_value.CurrentValue)
+    except Exception:
+        try:
+            return str(ctrl.window_text() or "")
+        except Exception:
+            return None
+
+
+def _raw_set_value(ctrl, text):
+    """Write to a verified raw Edit and immediately re-read it."""
+    target = str(text)
+    try:
+        ctrl.set_focus()
+    except Exception:
+        pass
+
+    first_error = None
+    try:
+        value = ctrl.iface_value
+        if bool(value.CurrentIsReadOnly):
+            raise RuntimeError("Campo raw UIA está read-only.")
+        value.SetValue(target)
+        actual = str(value.CurrentValue)
+        if actual != target:
+            raise RuntimeError(
+                f"ValuePattern escreveu valor diferente: {actual!r}"
+            )
+        return actual
+    except Exception as exc:
+        first_error = exc
+
+    try:
+        ctrl.set_edit_text(target)
+        actual = _raw_read_value(ctrl)
+        if actual != target:
+            raise RuntimeError(
+                f"set_edit_text escreveu valor diferente: {actual!r}"
+            )
+        return actual
+    except Exception as second:
+        raise RuntimeError(
+            "Não consegui escrever no campo raw de pesquisa. "
+            f"ValuePattern={first_error}; set_edit_text={second}"
+        )
+
+
+def _raw_has_search_results_ancestor(ctrl):
+    current = ctrl
+    for _ in range(10):
+        try:
+            info = current.element_info
+            if str(info.control_type or "") == "DataGrid":
+                name = fold(info.name or "")
+                if "resultados da pesquisa" in name or "search results" in name:
+                    return True
+            parent = current.parent()
+            if parent is None or parent == current:
+                break
+            current = parent
+        except Exception:
+            break
+    return False
+
+
+def _raw_contact_rows(win, contact, search_bounds):
+    """Return one logical WhatsApp search result using the raw WebView2 tree."""
+    wr = win.rectangle()
+    window_width = max(1, wr.right - wr.left)
+    left_panel_limit = wr.left + int(window_width * 0.52)
+    search_bottom = int((search_bounds or [0, 0, 0, wr.top])[3])
+
+    candidates = []
+    for index, ctrl in enumerate(win.descendants()[:4000]):
+        try:
+            info = ctrl.element_info
+            if str(info.control_type or "") != "DataItem":
+                continue
+            name = str(info.name or "")
+            if not contact_accessible_name_matches(name, contact):
+                continue
+            rect = ctrl.rectangle()
+            bounds = [rect.left, rect.top, rect.right, rect.bottom]
+            if visible_area(bounds) <= 20:
+                continue
+            if rect.left > left_panel_limit or rect.bottom < search_bottom - 4:
+                continue
+            if not _safe_uia_bool(ctrl.is_enabled):
+                continue
+
+            in_grid = _raw_has_search_results_ancestor(ctrl)
+            exact = identity(name) == identity(contact)
+            if not (in_grid or exact):
+                continue
+
+            selection = _control_has_pattern(ctrl, "iface_selection_item")
+            invoke = _control_has_pattern(ctrl, "iface_invoke")
+            area = visible_area(bounds)
+
+            # Same contact row is commonly represented by several nested DataItems.
+            # Larger row with SelectionItem is the best physical click target.
+            score = (
+                300 if selection else 0,
+                100 if in_grid else 0,
+                40 if invoke else 0,
+                area,
+                -len(identity(name)),
+            )
+            candidates.append({
+                "ctrl": ctrl,
+                "index": index,
+                "name": name,
+                "bounds": bounds,
+                "selection": selection,
+                "invoke": invoke,
+                "in_grid": in_grid,
+                "score": score,
+            })
+        except Exception:
+            continue
+
+    if not candidates:
+        return []
+
+    # Group nested duplicates by visual row. Their top-left and width are close.
+    groups = []
+    for item in sorted(candidates, key=lambda x: x["bounds"][1]):
+        placed = False
+        for group in groups:
+            ref = group[0]["bounds"]
+            cur = item["bounds"]
+            same_row = (
+                abs(ref[1] - cur[1]) <= 18
+                and abs(ref[3] - cur[3]) <= 45
+                and not (cur[2] < ref[0] or cur[0] > ref[2])
+            )
+            if same_row:
+                group.append(item)
+                placed = True
+                break
+        if not placed:
+            groups.append([item])
+
+    logical = []
+    for group in groups:
+        best = max(group, key=lambda x: x["score"])
+        logical.append(best)
+
+    # Search result must be unique for the requested identity.
+    if len(logical) != 1:
+        return []
+    return logical
+
+
+def _raw_header_present(win, contact):
+    return bool(_raw_conversation_evidence(win, contact).get("verified"))
+
+
+
+def _right_pane_contact_name_matches(name, contact):
+    """Header matching is intentionally different from search-row matching."""
+    got = identity(name)
+    wanted = identity(contact)
+    if not got or not wanted:
+        return False
+    if got == wanted:
+        return True
+    # Some Chromium accessibility trees append presence/status metadata to the
+    # header accessible name. Only allow a short suffix in the RIGHT pane.
+    if got.startswith(wanted + " ") and len(got) <= len(wanted) + 80:
+        return True
+    return False
+
+
+def _raw_conversation_evidence(win, contact):
+    evidence = {
+        "verified": False,
+        "header": None,
+        "neutral_markers": [],
+        "right_top_named": [],
+    }
+    try:
+        wr = win.rectangle()
+        width = max(1, wr.right - wr.left)
+        height = max(1, wr.bottom - wr.top)
+        divider = wr.left + width * 0.43
+        top_limit = wr.top + height * 0.38
+
+        neutral_terms = (
+            "enviar documento",
+            "adicionar contato",
+            "perguntar a meta ai",
+            "perguntar à meta ai",
+        )
+
+        for ctrl in win.descendants()[:4000]:
+            try:
+                info = ctrl.element_info
+                name = str(info.name or "").strip()
+                if not name:
+                    continue
+                rect = ctrl.rectangle()
+                bounds = [
+                    int(rect.left), int(rect.top),
+                    int(rect.right), int(rect.bottom),
+                ]
+                if visible_area(bounds) <= 20:
+                    continue
+                cx = (rect.left + rect.right) / 2
+                if cx <= divider:
+                    continue
+
+                low = fold(name)
+                if any(term in low for term in neutral_terms):
+                    evidence["neutral_markers"].append(name[:180])
+
+                if rect.top <= top_limit:
+                    if len(evidence["right_top_named"]) < 80:
+                        evidence["right_top_named"].append({
+                            "name": name[:220],
+                            "control_type": str(info.control_type or ""),
+                            "bounds": bounds,
+                        })
+
+                    if _right_pane_contact_name_matches(name, contact):
+                        evidence["verified"] = True
+                        evidence["header"] = {
+                            "name": name[:220],
+                            "control_type": str(info.control_type or ""),
+                            "bounds": bounds,
+                        }
+                        return evidence
+            except Exception:
+                continue
+    except Exception as exc:
+        evidence["error"] = str(exc)
+
+    return evidence
+
+
+def _hit_chain_matches_contact(hit, contact):
+    for row in (hit or {}).get("chain", []):
+        name = str(row.get("name") or "")
+        if contact_accessible_name_matches(name, contact):
+            return True
+    return False
+
+
+def _contact_click_candidates(target, contact):
+    """Generate click points from the most specific live matching descendants."""
+    items = []
+    try:
+        nodes = [target] + list(target.descendants())
+    except Exception:
+        nodes = [target]
+
+    for ctrl in nodes[:300]:
+        try:
+            info = ctrl.element_info
+            name = str(info.name or "")
+            if not contact_accessible_name_matches(name, contact):
+                continue
+            rect = ctrl.rectangle()
+            bounds = [
+                int(rect.left), int(rect.top),
+                int(rect.right), int(rect.bottom),
+            ]
+            area = visible_area(bounds)
+            if area <= 20:
+                continue
+            exactness = len(identity(name))
+            # Specific title/time child first; outer row later.
+            items.append((exactness, area, bounds))
+        except Exception:
+            continue
+
+    try:
+        rect = target.rectangle()
+        outer = [
+            int(rect.left), int(rect.top),
+            int(rect.right), int(rect.bottom),
+        ]
+        if visible_area(outer) > 20:
+            items.append((10**9, visible_area(outer), outer))
+    except Exception:
+        pass
+
+    items.sort(key=lambda row: (row[0], row[1]))
+
+    points = []
+    seen = set()
+    ratios = ((0.50, 0.50), (0.38, 0.50), (0.62, 0.50))
+    for _name_len, _area, bounds in items:
+        for xr, yr in ratios:
+            try:
+                point = point_in_bounds(bounds, xr, yr)
+            except Exception:
+                continue
+            if point not in seen:
+                seen.add(point)
+                points.append({
+                    "point": list(point),
+                    "bounds": list(bounds),
+                })
+    return points[:30]
+
+
+
 class WhatsAppUIA:
     def __init__(self):
         self.window = None
         self.controls = {}
         self.contact_names = {}
+        self.search_key = None
+        self.synthetic_composer_key = None
+        self.current_contact_hint = ""
         self.generation = 0
         self.window_metadata = {}
 
@@ -983,27 +1409,121 @@ class WhatsAppUIA:
         except Exception:
             return None
 
+    def _synthetic_composer_descriptor(self, win, key):
+        wr = win.rectangle()
+        width = max(1, wr.right - wr.left)
+        height = max(1, wr.bottom - wr.top)
+        left = wr.left + int(width * 0.43)
+        right = wr.right - max(18, int(width * 0.03))
+        bottom = wr.bottom - max(12, int(height * 0.025))
+        top = bottom - max(42, int(height * 0.065))
+        return {
+            "key": key,
+            "name": "Digite uma mensagem",
+            "automation_id": "__jarvis_keyboard_composer__",
+            "control_type": "Edit",
+            "visible": True,
+            "enabled": True,
+            "password": False,
+            "read_only": False,
+            "focused": False,
+            "bounds": [left, top, right, bottom],
+            "synthetic": True,
+        }
+
+    def _conversation_header_present(self, contact):
+        if not contact:
+            return False
+        try:
+            evidence = _raw_conversation_evidence(self._attach(), contact)
+            self.last_conversation_evidence = evidence
+            return bool(evidence.get("verified"))
+        except Exception as exc:
+            self.last_conversation_evidence = {
+                "verified": False,
+                "error": str(exc),
+            }
+            return False
+
+    def _wait_conversation_header(self, contact, timeout=2.0):
+        deadline = time.monotonic() + max(0.05, float(timeout))
+        while time.monotonic() < deadline:
+            if self._conversation_header_present(contact):
+                return True
+            time.sleep(0.10)
+        return self._conversation_header_present(contact)
+
+    def _focus_whatsapp(self):
+        hwnd = int((self.window_metadata or {}).get("hwnd") or 0)
+        focused = False
+        if hwnd:
+            try:
+                focused = bool(focus_hwnd(hwnd))
+            except Exception:
+                focused = False
+        try:
+            self._attach().set_focus()
+        except Exception:
+            pass
+        return focused
+
+    def _focus_keyboard_composer(self, contact):
+        if not self._conversation_header_present(contact):
+            raise RuntimeError("A conversa solicitada não está aberta no painel direito.")
+        win = self._attach()
+        self._focus_whatsapp()
+        desc = self._synthetic_composer_descriptor(win, "__probe_composer__")
+        point = point_in_bounds(desc["bounds"], 0.55, 0.55)
+        click_physical(*point)
+        time.sleep(0.10)
+        return desc
+
+    def _read_keyboard_composer(self, contact):
+        self._focus_keyboard_composer(contact)
+        hwnd = int((self.window_metadata or {}).get("hwnd") or 0)
+        copied = copy_focused_text(hwnd=hwnd, select_all=True, collapse=True)
+        # If focus accidentally landed on a broad page surface, copying tends to
+        # return large UI text. Treat that as unverifiable instead of a draft.
+        if len(copied) > 12000:
+            raise RuntimeError("O foco do compositor não pôde ser verificado com segurança.")
+        return copied
+
+    def _write_keyboard_composer(self, contact, text):
+        self._focus_keyboard_composer(contact)
+        hwnd = int((self.window_metadata or {}).get("hwnd") or 0)
+        paste_unicode(str(text), clear_first=True, hwnd=hwnd)
+        actual = copy_focused_text(hwnd=hwnd, select_all=True, collapse=True)
+        if actual != str(text):
+            raise RuntimeError("Digitei no compositor, mas não consegui reler o texto literal exato.")
+        return actual
+
     def observe(self, contact, message):
+        self.current_contact_hint = str(contact or "").strip()
         self.generation += 1
         self.controls = {}
+        self.contact_names = {}
+        self.search_key = None
+        self.synthetic_composer_key = None
+
         try:
             win = self._attach()
             descendants = win.descendants()
             complete = len(descendants) <= 4000
             rows = []
             wrappers = {}
+
             for index, ctrl in enumerate(descendants[:4000]):
                 try:
                     key = f"{self.generation}:{index}"
                     item = describe_control(ctrl, key)
-                    if not item["visible"]:
+                    if not item["visible"] and visible_area(item.get("bounds")) <= 20:
                         continue
                     rows.append(item)
                     wrappers[key] = ctrl
                 except Exception:
                     complete = False
-            self.controls = wrappers
-            self.contact_names = {}
+
+            self.controls = dict(wrappers)
             result = {
                 "ok": True,
                 "complete": complete,
@@ -1014,67 +1534,147 @@ class WhatsAppUIA:
                 "draft": None,
                 "search_value": None,
                 "messages": [],
+                "raw_bridge": True,
             }
 
-            try:
-                search = choose_text_field(rows, purpose="search")
-                search_rect = search["bounds"]
-                result["search_value"] = self._value(wrappers[search["key"]])
-                targets = discover_contact_targets(
-                    rows, wrappers, win, contact, search_rect
-                )
-                for target in targets:
-                    key = f"{self.generation}:contact:{len(result['contacts'])}"
-                    self.controls[key] = target
-                    self.contact_names[key] = contact
+            # RAW SEARCH BRIDGE.
+            # Do not depend on normalized accessible labels: the user's current
+            # WebView2 build exposes the global search Edit with an empty name.
+            raw_search, raw_meta = _raw_find_search_control(win)
+            search_rect = None
+            if raw_search is not None and raw_meta is not None:
+                raw_rid = _runtime_id(raw_search)
+
+                # Remove the same raw control from normalized rows so
+                # choose_text_field() cannot see duplicate aliases.
+                filtered_rows = []
+                filtered_wrappers = {}
+                for row in rows:
+                    ctrl = wrappers.get(row["key"])
+                    if ctrl is not None and _runtime_id(ctrl) == raw_rid:
+                        continue
+                    filtered_rows.append(row)
+                    filtered_wrappers[row["key"]] = ctrl
+
+                rows = filtered_rows
+                wrappers = filtered_wrappers
+
+                key = f"{self.generation}:search:raw"
+                search_desc = {
+                    "key": key,
+                    "name": raw_meta["name"] or "Pesquisar ou começar uma nova conversa",
+                    "automation_id": raw_meta["automation_id"] or "__jarvis_raw_search__",
+                    "control_type": "Edit",
+                    "visible": True,
+                    "enabled": True,
+                    "password": False,
+                    "read_only": False,
+                    "focused": False,
+                    "bounds": list(raw_meta["bounds"]),
+                    "raw_search": True,
+                }
+                rows.append(search_desc)
+                wrappers[key] = raw_search
+                self.controls = dict(wrappers)
+                self.search_key = key
+                search_rect = search_desc["bounds"]
+                result["search_value"] = _raw_read_value(raw_search)
+
+                for item in _raw_contact_rows(win, contact, search_rect):
+                    ckey = f"{self.generation}:contact:raw:{len(result['contacts'])}"
+                    self.controls[ckey] = item["ctrl"]
+                    self.contact_names[ckey] = contact
                     result["contacts"].append({
                         "name": contact,
-                        "key": key,
-                        "control_type": str(target.element_info.control_type or ""),
+                        "key": ckey,
+                        "control_type": "DataItem",
+                        "bounds": list(item["bounds"]),
+                        "raw_contact": True,
                     })
-            except RuntimeError:
-                pass
+            else:
+                # Compatibility fallback for older/native builds.
+                try:
+                    search = choose_text_field(rows, purpose="search")
+                    self.search_key = search["key"]
+                    search_rect = search["bounds"]
+                    result["search_value"] = self._value(wrappers[search["key"]])
+                    targets = discover_contact_targets(
+                        rows, wrappers, win, contact, search_rect
+                    )
+                    for target in targets:
+                        key = f"{self.generation}:contact:{len(result['contacts'])}"
+                        self.controls[key] = target
+                        self.contact_names[key] = contact
+                        result["contacts"].append({
+                            "name": contact,
+                            "key": key,
+                            "control_type": str(target.element_info.control_type or ""),
+                        })
+                except RuntimeError:
+                    pass
 
+            result["controls"] = rows
+
+            if _raw_header_present(win, contact):
+                result["conversation"] = contact
+
+            composer_desc = None
             try:
-                composer = choose_text_field(rows, purpose="message")
-                result["composer"] = composer["key"]
-                result["draft"] = self._value(wrappers[composer["key"]])
-                rect = composer["bounds"]
-                wr = win.rectangle()
-                headers = [
-                    r
-                    for r in rows
-                    if r["control_type"] in ("Text", "Button")
-                    and identity(r["name"]) == identity(contact)
-                    and r["bounds"][0] >= rect[0] - 30
-                    and r["bounds"][1] < wr.top + (wr.bottom - wr.top) * 0.22
-                ]
-                if len(headers) == 1:
-                    result["conversation"] = contact
+                composer_desc = choose_text_field(rows, purpose="message")
+                result["composer"] = composer_desc["key"]
+                result["draft"] = self._value(self.controls[composer_desc["key"]])
+            except RuntimeError:
+                if result["conversation"]:
+                    key = f"{self.generation}:composer:keyboard"
+                    composer_desc = self._synthetic_composer_descriptor(win, key)
+                    rows.append(composer_desc)
+                    self.controls[key] = "__keyboard_composer__"
+                    self.synthetic_composer_key = key
+                    result["composer"] = key
+                    try:
+                        result["draft"] = self._read_keyboard_composer(contact)
+                    except Exception:
+                        result["draft"] = None
 
+            # Message-bubble verification remains conservative. Synthetic
+            # composer geometry is enough to delimit the conversation region.
+            if composer_desc is not None:
+                rect = composer_desc["bounds"]
                 seen = set()
                 for row in rows:
+                    if row.get("synthetic") or row.get("raw_search"):
+                        continue
                     if row["control_type"] not in ("ListItem", "DataItem", "Group"):
                         continue
-                    if row["bounds"][0] < rect[0] - 30 or row["bounds"][3] > rect[1]:
+                    if row["bounds"][0] < rect[0] - 50 or row["bounds"][3] > rect[1]:
                         continue
-                    ctrl = wrappers[row["key"]]
-                    children = [c.element_info.name or "" for c in ctrl.descendants()]
+                    ctrl = self.controls.get(row["key"])
+                    if ctrl in (None, "__keyboard_composer__"):
+                        continue
+                    try:
+                        children = [c.element_info.name or "" for c in ctrl.descendants()]
+                    except Exception:
+                        children = []
                     evidence = message_evidence(
                         row["name"], row["automation_id"], children, message
                     )
                     if not evidence["text"]:
                         continue
-                    rid = tuple(ctrl.element_info.runtime_id or ())
+                    try:
+                        rid = tuple(ctrl.element_info.runtime_id or ())
+                    except Exception:
+                        rid = ()
                     if not rid:
                         complete = False
                         continue
                     if rid not in seen and evidence["outgoing"]:
-                        result["messages"].append({"id": repr(rid), **evidence})
+                        result["messages"].append({
+                            "id": repr(rid),
+                            **evidence,
+                        })
                         seen.add(rid)
-            except RuntimeError:
-                pass
 
+            result["controls"] = rows
             result["complete"] = complete
             return result
         except Exception as exc:
@@ -1088,198 +1688,246 @@ class WhatsAppUIA:
 
     def _target(self, key):
         ctrl = self.controls.get(key)
-        if ctrl is None or not ctrl.is_visible() or not ctrl.is_enabled():
-            raise RuntimeError("Controle UIA ausente, obsoleto ou desabilitado.")
-        self._attach().set_focus()
+        if ctrl is None:
+            raise RuntimeError("Controle UIA ausente ou obsoleto.")
+        if ctrl == "__keyboard_composer__":
+            return ctrl
+        if not ctrl.is_enabled():
+            raise RuntimeError("Controle UIA desabilitado.")
+        try:
+            visible = bool(ctrl.is_visible())
+        except Exception:
+            visible = False
+        if not visible:
+            try:
+                rect = ctrl.rectangle()
+                if visible_area([rect.left, rect.top, rect.right, rect.bottom]) <= 20:
+                    raise RuntimeError("Controle UIA não está visível.")
+            except Exception:
+                raise RuntimeError("Controle UIA não está visível.")
+        self._focus_whatsapp()
         return ctrl
 
     def set_text(self, key, text):
+        target = self.controls.get(key)
+
+        if target == "__keyboard_composer__":
+            contact = self.current_contact_hint
+            if not contact:
+                candidates = list(dict.fromkeys(self.contact_names.values()))
+                if len(candidates) == 1:
+                    contact = candidates[0]
+            if not contact:
+                raise RuntimeError("Não consegui associar o compositor à conversa aberta.")
+            self._write_keyboard_composer(contact, str(text))
+            return
+
         target = self._target(key)
-        choose_text_field([describe_control(target, key)])
-        target.set_focus()
-        target.iface_value.SetValue(str(text))
 
-    def _conversation_header_present(self, contact):
-        """Verify the requested contact is visible as the right-pane header."""
-        if not contact:
-            return False
+        # Raw search bridge: use the exact method that succeeded in the direct
+        # diagnostic on this WhatsApp build.
+        if key == self.search_key:
+            actual = _raw_set_value(target, str(text))
+            if actual != str(text):
+                raise RuntimeError("A busca raw não pôde ser relida exatamente.")
+            return
+
+        row = describe_control(target, key)
+        choose_text_field([row])
         try:
-            win = self._attach()
-            wr = win.rectangle()
-            divider_x = wr.left + int((wr.right - wr.left) * 0.45)
+            target.set_focus()
+        except Exception:
+            pass
+        try:
+            if bool(target.iface_value.CurrentIsReadOnly):
+                raise RuntimeError("Campo UIA está read-only.")
+            target.iface_value.SetValue(str(text))
+            actual = str(target.iface_value.CurrentValue)
+            if actual != str(text):
+                raise RuntimeError("O valor escrito não pôde ser relido exatamente.")
+            return
+        except Exception:
+            try:
+                rect = target.rectangle()
+                click_physical(
+                    *point_in_bounds([rect.left, rect.top, rect.right, rect.bottom])
+                )
+            except Exception:
+                pass
+            hwnd = int((self.window_metadata or {}).get("hwnd") or 0)
+            paste_unicode(str(text), clear_first=True, hwnd=hwnd)
 
-            for ctrl in win.descendants()[:2500]:
-                try:
-                    info = ctrl.element_info
-                    if identity(info.name or "") != identity(contact):
-                        continue
-                    rect = ctrl.rectangle()
-                    center_x = (rect.left + rect.right) / 2
-                    if center_x <= divider_x:
-                        continue
-                    if rect.top > wr.top + int((wr.bottom - wr.top) * 0.35):
-                        continue
-                    if ctrl.is_visible():
-                        return True
-                except Exception:
-                    continue
+    def _search_wrapper(self):
+        if self.search_key:
+            ctrl = self.controls.get(self.search_key)
+            if ctrl not in (None, "__keyboard_composer__"):
+                return ctrl
+        return None
+
+    def _keyboard_open_from_search(self, contact):
+        search = self._search_wrapper()
+        if search is None:
+            return False
+        self._focus_whatsapp()
+        focused = False
+        try:
+            search.set_focus()
+            focused = bool(search.has_keyboard_focus())
+        except Exception:
+            focused = False
+        if not focused:
+            try:
+                rect = search.rectangle()
+                click_physical(*point_in_bounds([rect.left, rect.top, rect.right, rect.bottom], 0.5, 0.5))
+                time.sleep(0.08)
+            except Exception:
+                pass
+        # Down selects the first search result; Enter activates it.
+        try:
+            send_key_expression("down")
+            time.sleep(0.10)
+            send_key_expression("enter")
         except Exception:
             return False
-        return False
+        return self._wait_conversation_header(contact, 2.0)
 
-    def _wait_conversation_header(self, contact, timeout=1.5):
-        deadline = time.monotonic() + max(0.05, float(timeout))
-        while time.monotonic() < deadline:
-            if self._conversation_header_present(contact):
-                return True
-            time.sleep(0.10)
-        return self._conversation_header_present(contact)
+    def _physical_open_target(self, target, contact, double=False):
+        try:
+            rect = target.rectangle()
+            bounds = [rect.left, rect.top, rect.right, rect.bottom]
+            # Prefer the left/center text area, away from timestamp/pin controls.
+            point = point_in_bounds(bounds, 0.45, 0.50)
+            self._focus_whatsapp()
+            click_physical(*point, double=double)
+            return self._wait_conversation_header(contact, 2.0)
+        except Exception:
+            return False
 
-    def _matching_row_rects(self, target, contact):
-        """Return nested and outer matching DataItem rectangles, smallest first."""
-        rows = []
-        current = target
-        seen = set()
-
-        for _ in range(10):
-            try:
-                info = current.element_info
-                ctype = str(info.control_type or "")
-                name = str(info.name or "")
-                rect = current.rectangle()
-                bounds = (rect.left, rect.top, rect.right, rect.bottom)
-
-                if (
-                    ctype == "DataItem"
-                    and contact_accessible_name_matches(name, contact)
-                    and bounds not in seen
-                    and rect.right > rect.left
-                    and rect.bottom > rect.top
-                ):
-                    seen.add(bounds)
-                    rows.append(bounds)
-
-                parent = current.parent()
-                if parent is None or parent == current:
-                    break
-                current = parent
-            except Exception:
-                break
-
-        rows.sort(
-            key=lambda b: (
-                max(0, b[2] - b[0]) * max(0, b[3] - b[1])
-            )
-        )
-        return rows
-
-    @staticmethod
-    def _safe_row_point(bounds, variant=0):
-        """Choose a point inside the text area of a result row.
-
-        Points are derived from live UIA bounds; there are no fixed screen
-        coordinates. Avoid the far-right timestamp/pin area.
-        """
-        left, top, right, bottom = bounds
-        width = max(1, right - left)
-        height = max(1, bottom - top)
-
-        if variant == 0:
-            x = left + int(width * 0.45)
-            y = top + int(height * 0.50)
-        else:
-            x = left + int(width * 0.58)
-            y = top + int(height * 0.45)
-
-        x = min(max(x, left + 3), right - 3)
-        y = min(max(y, top + 3), bottom - 3)
-        return int(x), int(y)
-
-    def _physical_click_point(self, point, double=False):
-        """Human-like mouse activation at a live UIA-derived point."""
-        if os.name != "nt":
-            raise RuntimeError("Ativação física do WhatsApp exige Windows.")
-
-        from pywinauto import mouse
-
-        hwnd = int((self.window_metadata or {}).get("hwnd") or 0)
-        if hwnd:
-            _focus_native_hwnd(hwnd)
-        time.sleep(0.08)
-
-        if double:
-            mouse.double_click(button="left", coords=point, interval=0.10)
-        else:
-            mouse.click(button="left", coords=point)
-
-    def _reacquire_contact_target(self, contact, timeout=5.0):
-        """Re-search the contact and return a fresh wrapper after DOM/UI changes."""
+    def _raw_reacquire_contact(self, contact, timeout=5.0):
         deadline = time.monotonic() + max(0.5, float(timeout))
-        last_error = None
+        last = None
 
         while time.monotonic() < deadline:
+            win = self._attach()
+            if _raw_header_present(win, contact):
+                return None
+
+            search, meta = _raw_find_search_control(win)
+            if search is None or meta is None:
+                last = "campo raw de busca ausente"
+                time.sleep(0.12)
+                continue
+
             try:
-                snap = self.observe(contact, "__jarvis_phase4_reacquire__")
-                if not snap.get("ok"):
-                    last_error = snap.get("error") or "snapshot inválido"
-                    time.sleep(0.15)
-                    continue
-
-                if self._conversation_header_present(contact):
-                    return None
-
-                search = choose_text_field(snap.get("controls", []), purpose="search")
-                if snap.get("search_value") != contact:
-                    self.set_text(search["key"], contact)
+                if _raw_read_value(search) != contact:
+                    _raw_set_value(search, contact)
                     time.sleep(0.20)
                     continue
-
-                matches = [
-                    item for item in snap.get("contacts", [])
-                    if identity(item.get("name")) == identity(contact)
-                ]
-                if len(matches) == 1:
-                    key = matches[0]["key"]
-                    target = self.controls.get(key)
-                    if target is not None and target.is_visible() and target.is_enabled():
-                        return target
-
-                last_error = "resultado exato ainda não ficou único"
             except Exception as exc:
-                last_error = str(exc)
+                last = str(exc)
+                time.sleep(0.12)
+                continue
+
+            rows = _raw_contact_rows(win, contact, meta["bounds"])
+            if len(rows) == 1:
+                return rows[0]["ctrl"]
+
+            last = f"resultados lógicos encontrados: {len(rows)}"
             time.sleep(0.15)
 
         raise RuntimeError(
-            "Não consegui readquirir o resultado exato do WhatsApp após a "
-            f"mudança da interface: {last_error or 'tempo esgotado'}."
+            "Não consegui readquirir o resultado raw do WhatsApp: "
+            + str(last or "timeout")
         )
 
-    def _try_physical_row_activation(self, target, contact, double=False, variant=0):
-        rects = self._matching_row_rects(target, contact)
-        if not rects:
-            try:
-                rect = target.rectangle()
-                rects = [(rect.left, rect.top, rect.right, rect.bottom)]
-            except Exception:
-                return False
+    def _find_verified_contact_point(self, target, contact):
+        attempts = []
+        for candidate in _contact_click_candidates(target, contact):
+            point = tuple(candidate["point"])
+            hit = uia_hit_test_chain(*point, max_ancestors=10)
+            row = {
+                "point": list(point),
+                "source_bounds": candidate["bounds"],
+                "hit_ok": bool(hit.get("ok")),
+                "hit_chain": hit.get("chain", [])[:10],
+                "matches_contact": _hit_chain_matches_contact(hit, contact),
+            }
+            attempts.append(row)
+            if row["matches_contact"]:
+                return point, attempts
+        return None, attempts
 
-        # First use the most specific title/time row; then the widest matching row.
-        candidates = [rects[0]]
-        if len(rects) > 1 and rects[-1] != rects[0]:
-            candidates.append(rects[-1])
+    def _hit_tested_click_contact(self, target, contact, *, double=False):
+        self._focus_whatsapp()
+        point, attempts = self._find_verified_contact_point(target, contact)
+        self.last_activation_trace.append({
+            "phase": "hit_test",
+            "double": bool(double),
+            "candidates": attempts,
+            "chosen_point": list(point) if point else None,
+        })
+        if point is None:
+            return False
 
-        for bounds in candidates:
-            point = self._safe_row_point(bounds, variant=variant)
-            self._physical_click_point(point, double=double)
-            if self._wait_conversation_header(contact):
-                return True
+        click_physical(*point, double=double)
+        verified = self._wait_conversation_header(contact, 2.5)
+        self.last_activation_trace.append({
+            "phase": "post_click_verify",
+            "double": bool(double),
+            "point": list(point),
+            "verified": bool(verified),
+            "evidence": dict(self.last_conversation_evidence or {}),
+        })
+        return verified
 
-            # Do not reuse stale geometry after a DOM transition.
-            break
+    def _keyboard_activate_raw_result(self, target, contact):
+        """Use SelectionItem + Enter only when selection/focus evidence supports it."""
+        try:
+            target.iface_selection_item.Select()
+        except Exception:
+            return False
 
-        return False
+        selected = False
+        try:
+            selected = bool(target.iface_selection_item.CurrentIsSelected)
+        except Exception:
+            pass
+
+        focused = False
+        try:
+            target.set_focus()
+            focused = bool(target.has_keyboard_focus())
+        except Exception:
+            pass
+
+        self.last_activation_trace.append({
+            "phase": "selection_keyboard_probe",
+            "selected": selected,
+            "focused": focused,
+        })
+
+        # Selection evidence is required; focus is preferred but Chromium may
+        # keep actual keyboard focus on the search edit while moving selection.
+        if not selected:
+            return False
+
+        try:
+            send_key_expression("enter")
+        except Exception:
+            return False
+
+        verified = self._wait_conversation_header(contact, 2.5)
+        self.last_activation_trace.append({
+            "phase": "post_enter_verify",
+            "verified": bool(verified),
+            "evidence": dict(self.last_conversation_evidence or {}),
+        })
+        return verified
 
     def open_contact(self, key):
+        self.last_activation_trace = []
+        self.last_conversation_evidence = {}
+
         target = self._target(key)
         contact = self.contact_names.get(key, "")
         if not contact:
@@ -1288,75 +1936,96 @@ class WhatsAppUIA:
         if self._conversation_header_present(contact):
             return
 
-        # Attempt 1: one human-like physical click on the freshly discovered row.
-        if self._try_physical_row_activation(
-            target, contact, double=False, variant=0
-        ):
+        # 1. Hit-test BEFORE the click. We only click when UIA says the chosen
+        # screen point is actually inside this contact's result hierarchy.
+        if self._hit_tested_click_contact(target, contact, double=False):
             return
 
-        # The first click may mutate/clear the search DOM. Never reuse its wrapper.
-        target = self._reacquire_contact_target(contact)
-        if target is None and self._conversation_header_present(contact):
-            return
+        # Do not destroy useful evidence immediately. If the click changed the
+        # right pane but header matching still failed, keep the structural dump
+        # in last_activation_trace for the benchmark.
+        first_evidence = dict(self.last_conversation_evidence or {})
 
-        # Attempt 2: a second single click using fresh geometry and a different
-        # point inside the row's text area.
-        if self._try_physical_row_activation(
-            target, contact, double=False, variant=1
-        ):
-            return
-
-        target = self._reacquire_contact_target(contact)
-        if target is None and self._conversation_header_present(contact):
-            return
-
-        # Attempt 3: verified double click on a newly acquired row.
-        if self._try_physical_row_activation(
-            target, contact, double=True, variant=0
-        ):
-            return
-
-        # Compatibility-only fallback. It is used only if the fresh target
-        # actually exposes Invoke, and still requires right-pane verification.
-        target = self._reacquire_contact_target(contact)
-        if target is None and self._conversation_header_present(contact):
-            return
+        # 2. Reacquire fresh DOM and use UIA SelectionItem keyboard activation.
         try:
-            target.iface_invoke.Invoke()
-            if self._wait_conversation_header(contact):
+            target = self._raw_reacquire_contact(contact, timeout=3.0)
+            if target is None and self._conversation_header_present(contact):
                 return
-        except Exception:
-            pass
+            if target is not None and self._keyboard_activate_raw_result(target, contact):
+                return
+        except Exception as exc:
+            self.last_activation_trace.append({
+                "phase": "reacquire_for_keyboard_failed",
+                "error": str(exc),
+            })
 
+        # 3. Fresh hit-tested double click.
+        try:
+            target = self._raw_reacquire_contact(contact, timeout=3.0)
+            if target is None and self._conversation_header_present(contact):
+                return
+            if target is not None and self._hit_tested_click_contact(
+                target, contact, double=True
+            ):
+                return
+        except Exception as exc:
+            self.last_activation_trace.append({
+                "phase": "reacquire_for_double_failed",
+                "error": str(exc),
+            })
+
+        self.last_activation_trace.append({
+            "phase": "failure",
+            "first_post_click_evidence": first_evidence,
+            "final_evidence": dict(self.last_conversation_evidence or {}),
+        })
         raise RuntimeError(
-            "Localizei e readquiri o resultado correto do WhatsApp, mas nenhuma "
-            "ativação física verificada abriu a conversa no painel direito."
+            "O contato raw foi localizado, mas nenhuma ativação verificada abriu "
+            "a conversa. Consulte activation_trace: agora cada clique foi validado "
+            "por UIA ElementFromPoint antes da injeção de mouse."
         )
 
     def send(self, contact, message):
         snap = self.observe(contact, message)
-        if (
-            identity(snap.get("conversation")) != identity(contact)
-            or snap.get("draft") != message
-            or not snap.get("complete")
-        ):
-            raise RuntimeError("Conversa/campo mudou antes de enviar; operação interrompida.")
+        if identity(snap.get("conversation")) != identity(contact):
+            raise RuntimeError("A conversa correta não está aberta; envio bloqueado.")
+        if snap.get("draft") != message:
+            raise RuntimeError("O rascunho literal não corresponde à mensagem autorizada; envio bloqueado.")
+        if not snap.get("complete"):
+            raise RuntimeError("Árvore UIA incompleta antes do envio; operação interrompida.")
 
         composer = choose_text_field(snap["controls"], purpose="message")
+        if composer.get("synthetic") or composer.get("automation_id") == "__jarvis_keyboard_composer__":
+            # Explicit send path only: focus the verified composer and press Enter once.
+            current = self._read_keyboard_composer(contact)
+            if current != message:
+                raise RuntimeError("O compositor mudou imediatamente antes do envio.")
+            send_key_expression("enter")
+            return
+
         rect = composer["bounds"]
         buttons = [
-            c
-            for c in snap["controls"]
+            c for c in snap["controls"]
             if c["control_type"] == "Button"
             and c["enabled"]
-            and fold(c["name"]).strip()
-            in ("enviar", "send", "enviar mensagem", "send message")
+            and fold(c["name"]).strip() in ("enviar", "send", "enviar mensagem", "send message")
             and c["bounds"][0] >= rect[0]
             and abs(c["bounds"][1] - rect[1]) < 100
         ]
-        if len(buttons) != 1:
-            raise RuntimeError(
-                "Botão Enviar ausente ou ambíguo; não foi usado Enter como alternativa."
-            )
-        target = self._target(buttons[0]["key"])
-        target.iface_invoke.Invoke()
+        if len(buttons) == 1:
+            target = self._target(buttons[0]["key"])
+            try:
+                target.iface_invoke.Invoke()
+            except Exception:
+                target.click_input()
+            return
+
+        # No button exposed: Enter is acceptable only after exact draft re-read on
+        # the already verified conversation, and is executed exactly once.
+        try:
+            target = self._target(composer["key"])
+            target.set_focus()
+        except Exception:
+            pass
+        send_key_expression("enter")
+

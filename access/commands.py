@@ -22,25 +22,30 @@ def parse_access_command(text):
     if m:
         return {"action": "click_control", "name": _clean(m.group(1))}
 
-    # Natural aliases for literal desktop typing. WhatsApp-specific multi-turn
-    # commands are intercepted by Phase 4 before reaching this generic parser.
     m = re.match(r'^\s*(?:digite|escreva|insira|preencha)\s+["“\']?(.+?)["”\']?\s*$', t, re.I)
     if m:
-        literal = m.group(1).strip()
-        return {"action": "type_text", "text": literal}
+        return {"action": "type_text", "text": m.group(1).strip()}
 
+    # Runtime V2 accepts common shortcuts while keeping the same public tool.
     m = re.match(
-        r"^\s*pressione\s+(enter|tab|escape|esc|backspace|delete|"
-        r"seta\s+para\s+cima|seta\s+para\s+baixo|seta\s+para\s+esquerda|"
-        r"seta\s+para\s+direita)\s*$",
-        t, re.I
+        r"^\s*(?:pressione|aperte|use\s+(?:o\s+)?atalho|atalho)\s+(.+?)\s*$",
+        t,
+        re.I,
     )
     if m:
-        key = m.group(1).lower()
-        mapping = {
+        key = _clean(m.group(1)).lower()
+        replacements = {
             "seta para cima": "up", "seta para baixo": "down",
-            "seta para esquerda": "left", "seta para direita": "right"
+            "seta para esquerda": "left", "seta para direita": "right",
+            "página para baixo": "pagedown", "pagina para baixo": "pagedown",
+            "página para cima": "pageup", "pagina para cima": "pageup",
         }
-        return {"action": "press_key", "key": mapping.get(key, key)}
+        key = replacements.get(key, key)
+        return {"action": "press_key", "key": key}
+
+    if re.match(r"^\s*(?:role|rolar|desça|desca)\s+(?:a\s+)?(?:tela\s+)?(?:para\s+)?baixo\s*$", t, re.I):
+        return {"action": "press_key", "key": "pagedown"}
+    if re.match(r"^\s*(?:role|rolar|suba)\s+(?:a\s+)?(?:tela\s+)?(?:para\s+)?cima\s*$", t, re.I):
+        return {"action": "press_key", "key": "pageup"}
 
     return None

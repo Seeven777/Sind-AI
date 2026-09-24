@@ -15,7 +15,6 @@ def verify_message(before, after, contact, message):
     current = after.get('messages', [])
     old_ids = {x.get('id') for x in old}
     matches = lambda rows: [x for x in rows if x.get('text') == message and x.get('outgoing')]
-    # A stale bubble, received text, toast, draft, or changed runtime id alone is insufficient.
     return len(matches(current)) > len(matches(old)) and any(
         x.get('id') and x['id'] not in old_ids and x.get('state') in ('sent', 'delivered', 'read')
         for x in matches(current))
@@ -35,13 +34,11 @@ class WhatsAppExecutor:
         try:
             self.event(entry)
         except Exception:
-            # Logging failure must not lose an uncertain send or trigger a retry.
             pass
 
     def observe(self, contact, message):
         self.cancelled()
         snap = self.ui.observe(contact, message)
-        # Persist evidence summaries, never an entire chat history.
         entry = {'phase': 'observe', 'ok': bool(snap.get('ok')),
                  'conversation': snap.get('conversation'), 'complete': snap.get('complete'),
                  'message_count': len(snap.get('messages', [])), 'draft_chars': len(snap.get('draft') or '')}
@@ -86,7 +83,6 @@ class WhatsAppExecutor:
                 raise RuntimeError('A conversa já tem um rascunho. Ele foi preservado; limpe-o manualmente antes de tentar.')
             if snap.get('draft') is None:
                 raise RuntimeError('Não consegui ler o campo de mensagem para verificar se está vazio.')
-            # Policy confirmation happens before drafting; there is no effect on denial.
             if require_confirmation and (not confirm or not confirm('Enviar pelo WhatsApp Desktop', f'Contato: {contact}\n\nMensagem exata:\n{message}\n\nEnviar uma vez?')):
                 raise RuntimeError('Envio não autorizado pela confirmação configurada; nenhuma mensagem enviada.')
             snap = self.observe(contact, message)
@@ -98,7 +94,7 @@ class WhatsAppExecutor:
             if not before.get('complete'):
                 raise RuntimeError('Árvore UIA incompleta; não é seguro enviar sem observação anterior completa.')
             self.cancelled()
-            self.send_attempted = True  # Mark BEFORE invoking; exceptions may follow a real send.
+            self.send_attempted = True
             self.act('send', contact, message)
             tool_ok = True
             after = self.wait(contact, message, lambda s: verify_message(before, s, contact, message), 'Não encontrei uma nova mensagem de saída confirmada na conversa correta.')

@@ -428,7 +428,7 @@ class JarvisAgent:
             {"type":"function","function":{"name":"inspect_selected_window","description":"Lê os controles UI Automation da janela selecionada.","parameters":{"type":"object","properties":{}}}},
             {"type":"function","function":{"name":"click_control","description":"Aciona um controle visível pelo nome na janela selecionada.","parameters":{"type":"object","properties":{"name":{"type":"string"},"control_type":{"type":"string"}},"required":["name"]}}},
             {"type":"function","function":{"name":"type_text","description":"Digita texto na janela selecionada ou em um campo específico. Não usar para senhas/segredos.","parameters":{"type":"object","properties":{"text":{"type":"string"},"control_name":{"type":"string"},"clear_first":{"type":"boolean"}},"required":["text"]}}},
-            {"type":"function","function":{"name":"press_key","description":"Pressiona uma tecla ou atalho comum na janela selecionada (ex.: enter, tab, ctrl+f, ctrl+a, alt+f4, pagedown).","parameters":{"type":"object","properties":{"key":{"type":"string"}},"required":["key"]}}},
+            {"type":"function","function":{"name":"press_key","description":"Pressiona uma tecla segura na janela selecionada.","parameters":{"type":"object","properties":{"key":{"type":"string"}},"required":["key"]}}},
             {"type":"function","function":{"name":"fetch_public_url","description":"Lê uma URL HTTPS pública fornecida ou encontrada, extraindo texto/JSON sem abrir o navegador.","parameters":{"type":"object","properties":{"url":{"type":"string"}},"required":["url"]}}},
             {"type":"function","function":{"name":"read_rss","description":"Lê um feed RSS/Atom HTTPS público e retorna itens recentes.","parameters":{"type":"object","properties":{"url":{"type":"string"},"limit":{"type":"integer"}},"required":["url"]}}},
             {"type":"function","function":{"name":"search_capabilities","description":"Pesquisa no Capability Hub por uma capacidade pública/gratuita. Use antes de dizer que não há ferramenta para dados externos.","parameters":{"type":"object","properties":{"query":{"type":"string"},"limit":{"type":"integer"}},"required":["query"]}}},
@@ -499,7 +499,7 @@ class JarvisAgent:
         if any(k in text for k in ["arquivo","pasta","workspace","salve","documento local"]):
             names.update({"search_actions","execute_action"})
             names.update({"create_file","read_file","list_files","open_folder"})
-        if any(k in text for k in ["janela","clique","botão","botao","digite","pressione","atalho","tecla","menu","interface","desktop","mouse","rolar"]): names.update({"list_windows","select_window","inspect_selected_window","click_control","type_text","press_key"})
+        if any(k in text for k in ["janela","clique","botão","botao","digite","pressione","menu","interface","desktop"]): names.update({"list_windows","select_window","inspect_selected_window","click_control","type_text","press_key"})
         if any(k in text for k in ["abra","aplicativo","programa"]): names.update({"open_app","open_url"})
         if any(k in text for k in ["clipboard","área de transferência","area de transferencia"]): names.update({"get_clipboard","set_clipboard"})
         if any(k in text for k in ["screenshot","captura","tela"]): names.add("take_screenshot")
@@ -2910,26 +2910,6 @@ Entregue uma conclusão curta desta etapa para ser armazenada no checkpoint.
             self._phase4_context.session = previous_session
 
     def _run_internal(self, user_text, status=None, confirm_callback=None):
-        # COMPUTER_RUNTIME_V2_EARLY_WHATSAPP
-        # Compound WhatsApp execution must be handled before any generic/fast path.
-        try:
-            _computer_v2_wa = parse_whatsapp_interactive(
-                user_text, state=getattr(self, "_phase4_whatsapp_state", None)
-            )
-        except Exception:
-            _computer_v2_wa = None
-        _computer_v2_state = getattr(self, "_phase4_whatsapp_state", None) or {}
-        _computer_v2_partial = bool(
-            _computer_v2_wa and (
-                _computer_v2_wa.select or _computer_v2_wa.type_text or
-                (_computer_v2_wa.send and _computer_v2_state.get("contact"))
-            )
-        )
-        if _computer_v2_partial:
-            return self._run_whatsapp_interactive(
-                _computer_v2_wa, status=status, confirm_callback=confirm_callback
-            )
-
         self._cancel_event.clear()
         started_at = time.monotonic()
         if status:
