@@ -30,14 +30,14 @@ class Intent:
     message: str = ''
 
 
-# Physical/operational verbs. "escreva" is deliberately not universal here:
-# writing a document can be a content-generation request; desktop context and
-# other imperative verbs still make sequences such as the WhatsApp benchmark
-# executable.
+# Physical/operational verbs. Writing verbs are included because Phase 4 must
+# execute explicit desktop instructions such as 'escreva no campo de mensagem'.
+# Pure content-writing requests are filtered separately by _looks_informational.
 _ACTION_VERBS = (
     'abra', 'abrir', 'abre',
     'envie', 'enviar', 'envia', 'mande', 'mandar', 'manda',
     'digite', 'digitar', 'insira', 'inserir',
+    'escreva', 'escrever', 'escreve', 'preencha', 'preencher',
     'clique', 'clicar', 'pressione',
     'execute', 'executar', 'gere', 'gerar', 'faca',
     'agende', 'automatize', 'salve', 'salvar', 'crie', 'criar',
@@ -161,7 +161,7 @@ def classify_intent(text):
     wa_mentioned = bool(re.search(r'\bwhats\s*app\b', positive_command))
     desktop = wa_mentioned or bool(re.search(
         r'\b(?:janela|desktop|aplicativo|programa|botao|campo|tela|notepad|calculadora|'
-        r'bloco de notas|digite|clique|pressione|selecione|selecionar)\b',
+        r'bloco de notas|digite|escreva|insira|preencha|clique|pressione|selecione|selecionar)\b',
         positive_command,
     ))
 

@@ -1,5 +1,6 @@
 import re
 
+
 def fast_path(text, desktop):
     t = text.strip()
     l = t.lower()
@@ -11,14 +12,21 @@ def fast_path(text, desktop):
     if m:
         return "create_folder", {"path": str(desktop / m.group(1).strip().rstrip("."))}
 
-    if "abra" in l and "bloco de notas" in l:
+    # Fast paths are deliberately restricted to atomic open-only requests. A
+    # compound command must continue into the agent/Phase-4 runtime instead of
+    # being truncated after the first "abra" clause.
+    if re.fullmatch(r"\s*(?:por favor[, ]+)?(?:abra|abrir|abre)\s+(?:o\s+)?bloco de notas\s*[.!]?\s*", l):
         return "open_app", {"app": "notepad"}
-    if "abra" in l and "calculadora" in l:
+    if re.fullmatch(r"\s*(?:por favor[, ]+)?(?:abra|abrir|abre)\s+(?:a\s+)?calculadora\s*[.!]?\s*", l):
         return "open_app", {"app": "calc"}
-    if any(x in l for x in ["whatsapp", "whats app"]) and any(x in l for x in ["abra", "abrir", "abre", "inicie", "iniciar"]):
+    if re.fullmatch(
+        r"\s*(?:por favor[, ]+)?(?:abra|abrir|abre|inicie|iniciar)\s+(?:o\s+)?(?:whatsapp|whats app)(?:\s+desktop)?\s*[.!]?\s*",
+        l,
+    ):
         return "open_app", {"app": "whatsapp"}
-    if "abra" in l and ("área de trabalho" in l or "area de trabalho" in l):
+    if re.fullmatch(r"\s*(?:por favor[, ]+)?(?:abra|abrir|abre)\s+(?:a\s+)?(?:área|area) de trabalho\s*[.!]?\s*", l):
         return "open_folder", {"path": str(desktop)}
+
     if any(x in l for x in ["tire um screenshot", "tire uma captura", "capture a tela"]):
         return "take_screenshot", {}
     if "clipboard" in l and any(x in l for x in ["o que", "qual texto", "leia"]):

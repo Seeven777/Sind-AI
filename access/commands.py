@@ -1,7 +1,9 @@
 import re
 
+
 def _clean(v):
     return str(v).strip().strip('"').strip("'").rstrip(" .!?;:")
+
 
 def parse_access_command(text):
     t = str(text).strip()
@@ -20,7 +22,9 @@ def parse_access_command(text):
     if m:
         return {"action": "click_control", "name": _clean(m.group(1))}
 
-    m = re.match(r'^\s*digite\s+["“]?(.+?)["”]?\s*$', t, re.I)
+    # Natural aliases for literal desktop typing. WhatsApp-specific multi-turn
+    # commands are intercepted by Phase 4 before reaching this generic parser.
+    m = re.match(r'^\s*(?:digite|escreva|insira|preencha)\s+["“\']?(.+?)["”\']?\s*$', t, re.I)
     if m:
         literal = m.group(1).strip()
         return {"action": "type_text", "text": literal}

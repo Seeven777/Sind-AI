@@ -33,7 +33,6 @@ from runtime.phase4.intent import classify_intent
 from runtime.phase4.runtime import (ExecutionSession, DESKTOP_TOOLS, DESKTOP_ACTIONS, MUTATING_TOOLS,
                                     WHATSAPP_SCHEMA, observe_desktop)
 from runtime.phase4.whatsapp import WhatsAppExecutor, summarize_whatsapp
-from runtime.phase4.whatsapp_interactive import WhatsAppInteractiveExecutor, parse_whatsapp_interactive
 from runtime.phase4.whatsapp_uia import WhatsAppUIA
 from runtime.verifier import ResultVerifier
 from runtime.world_state import snapshot as world_snapshot
@@ -1694,147 +1693,6 @@ Entregue uma conclusão curta desta etapa para ser armazenada no checkpoint.
     def _execution_session(self):
         return getattr(getattr(self, "_phase4_context", None), "session", None)
 
-
-    def _run_whatsapp_interactive(self, command, status=None, confirm_callback=None):
-        """Execute a verified partial WhatsApp command across conversation turns."""
-        session = self._execution_session()
-        state = getattr(self, "_phase4_whatsapp_state", None)
-        if not isinstance(state, dict):
-            state = {"contact": "", "draft": "", "uncertain": False}
-            self._phase4_whatsapp_state = state
-
-        task_id = self.tasks.start(session.text if session else "Interação WhatsApp Desktop")
-        self._active_task_id = task_id
-        executor = None
-        try:
-            if status:
-                status("Executando interação verificada no WhatsApp Desktop")
-
-            def event(item):
-                if not self._active_task_id:
-                    return
-                try:
-                    step = len(executor.events) if executor is not None else 0
-                    self.tasks.event(
-                        self._active_task_id,
-                        step,
-                        "whatsapp_interactive_" + str(item.get("phase", "event")),
-                        {},
-                        {"ok": item.get("ok", item.get("verified", True)), **item},
-                    )
-                except Exception:
-                    pass
-
-            executor = WhatsAppInteractiveExecutor(
-                WhatsAppUIA(),
-                timeout=self.config.get("phase4_timeout_seconds", 12),
-                cancelled=self._check_cancelled,
-                event=event,
-            )
-
-            result = None
-
-            if command.select:
-                result = executor.select_conversation(command.contact)
-                if result.get("goal_verification", {}).get("verified"):
-                    state["contact"] = command.contact
-                    state["draft"] = result.get("draft") or ""
-                    state["uncertain"] = False
-                else:
-                    state["contact"] = ""
-                    state["draft"] = ""
-
-            if result is None or result.get("goal_verification", {}).get("verified"):
-                if command.type_text:
-                    contact = command.contact or state.get("contact", "")
-                    result = executor.type_draft(contact, command.message)
-                    if result.get("goal_verification", {}).get("verified"):
-                        state["contact"] = contact
-                        state["draft"] = command.message
-                        state["uncertain"] = False
-
-            if result is None or result.get("goal_verification", {}).get("verified"):
-                if command.send:
-                    contact = command.contact or state.get("contact", "")
-                    message = command.message if command.type_text else state.get("draft", "")
-                    if not message and contact:
-                        current = executor.read_current_draft(contact)
-                        if current.get("ok"):
-                            message = current.get("draft") or ""
-                            state["draft"] = message
-                        else:
-                            result = {
-                                "ok": False,
-                                "status": "failed",
-                                "error": current.get("error", "Não consegui ler o rascunho atual."),
-                                "goal_verification": {
-                                    "verified": False,
-                                    "scope": "goal",
-                                    "reason": current.get("error", "Não consegui ler o rascunho atual."),
-                                },
-                            }
-                    if result is None or result.get("goal_verification", {}).get("verified"):
-                        result = executor.send_current(
-                            contact,
-                            message,
-                            confirm=confirm_callback,
-                            require_confirmation=self.config.get("deep_access", {}).get(
-                                "confirm_risky_controls", True
-                            ),
-                        )
-                        if result.get("goal_verification", {}).get("verified"):
-                            state["contact"] = contact
-                            state["draft"] = ""
-                            state["uncertain"] = False
-                        elif result.get("tool_execution", {}).get("send_attempted"):
-                            state["uncertain"] = True
-
-            if result is None:
-                result = {
-                    "ok": False,
-                    "status": "failed",
-                    "error": "Nenhuma etapa executável foi reconhecida.",
-                    "goal_verification": {
-                        "verified": False,
-                        "scope": "goal",
-                        "reason": "Nenhuma etapa executável foi reconhecida.",
-                    },
-                }
-
-            verified = bool(result.get("goal_verification", {}).get("verified"))
-            if command.send:
-                answer = summarize_whatsapp(result)
-            elif command.type_text and verified:
-                answer = (
-                    f'Texto inserido e verificado no campo de mensagem da conversa '
-                    f'"{state.get("contact", "")}". Nenhuma mensagem foi enviada.'
-                )
-            elif command.select and verified:
-                answer = (
-                    f'Conversa "{state.get("contact", command.contact)}" aberta e verificada '
-                    'no WhatsApp. Nenhuma mensagem foi enviada.'
-                )
-            else:
-                answer = "Não concluí a interação no WhatsApp: " + str(
-                    result.get("error") or result.get("goal_verification", {}).get("reason") or
-                    "não foi possível verificar o objetivo."
-                )
-
-            if session:
-                session.result = result
-                session.special_answer = answer
-
-            self.tasks.finish(task_id, answer, status="completed" if verified else "failed")
-            self._last_response_metadata.update({
-                "real_execution": True,
-                "whatsapp_interactive": True,
-                "execution_status": result.get("status"),
-                "goal_verification": result.get("goal_verification"),
-            })
-            return answer
-        finally:
-            self._active_task_id = None
-
     def _run_whatsapp_goal(self, intent, status=None, confirm_callback=None):
         session = self._execution_session()
         if not intent.contact or not intent.message:
@@ -2918,14 +2776,6 @@ Entregue uma conclusão curta desta etapa para ser armazenada no checkpoint.
         execution_intent = classify_intent(user_text)
         if execution_intent.whatsapp:
             return self._run_whatsapp_goal(execution_intent, status=status, confirm_callback=confirm_callback)
-
-        interactive_whatsapp = parse_whatsapp_interactive(
-            user_text, state=getattr(self, "_phase4_whatsapp_state", None)
-        )
-        if interactive_whatsapp and interactive_whatsapp.handled:
-            return self._run_whatsapp_interactive(
-                interactive_whatsapp, status=status, confirm_callback=confirm_callback
-            )
 
         # Ensino por demonstração: aprende uma rotina observando ações de UI.
         demonstration = self.demonstration_teacher.handle(user_text)
