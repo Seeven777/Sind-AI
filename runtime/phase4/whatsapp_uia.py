@@ -1127,7 +1127,7 @@ class WhatsAppUIA:
             return False
         return False
 
-    def _wait_conversation_header(self, contact, timeout=1.2):
+    def _wait_conversation_header(self, contact, timeout=1.5):
         deadline = time.monotonic() + max(0.05, float(timeout))
         while time.monotonic() < deadline:
             if self._conversation_header_present(contact):
@@ -1135,57 +1135,202 @@ class WhatsAppUIA:
             time.sleep(0.10)
         return self._conversation_header_present(contact)
 
+    def _matching_row_rects(self, target, contact):
+        """Return nested and outer matching DataItem rectangles, smallest first."""
+        rows = []
+        current = target
+        seen = set()
+
+        for _ in range(10):
+            try:
+                info = current.element_info
+                ctype = str(info.control_type or "")
+                name = str(info.name or "")
+                rect = current.rectangle()
+                bounds = (rect.left, rect.top, rect.right, rect.bottom)
+
+                if (
+                    ctype == "DataItem"
+                    and contact_accessible_name_matches(name, contact)
+                    and bounds not in seen
+                    and rect.right > rect.left
+                    and rect.bottom > rect.top
+                ):
+                    seen.add(bounds)
+                    rows.append(bounds)
+
+                parent = current.parent()
+                if parent is None or parent == current:
+                    break
+                current = parent
+            except Exception:
+                break
+
+        rows.sort(
+            key=lambda b: (
+                max(0, b[2] - b[0]) * max(0, b[3] - b[1])
+            )
+        )
+        return rows
+
+    @staticmethod
+    def _safe_row_point(bounds, variant=0):
+        """Choose a point inside the text area of a result row.
+
+        Points are derived from live UIA bounds; there are no fixed screen
+        coordinates. Avoid the far-right timestamp/pin area.
+        """
+        left, top, right, bottom = bounds
+        width = max(1, right - left)
+        height = max(1, bottom - top)
+
+        if variant == 0:
+            x = left + int(width * 0.45)
+            y = top + int(height * 0.50)
+        else:
+            x = left + int(width * 0.58)
+            y = top + int(height * 0.45)
+
+        x = min(max(x, left + 3), right - 3)
+        y = min(max(y, top + 3), bottom - 3)
+        return int(x), int(y)
+
+    def _physical_click_point(self, point, double=False):
+        """Human-like mouse activation at a live UIA-derived point."""
+        if os.name != "nt":
+            raise RuntimeError("Ativação física do WhatsApp exige Windows.")
+
+        from pywinauto import mouse
+
+        hwnd = int((self.window_metadata or {}).get("hwnd") or 0)
+        if hwnd:
+            _focus_native_hwnd(hwnd)
+        time.sleep(0.08)
+
+        if double:
+            mouse.double_click(button="left", coords=point, interval=0.10)
+        else:
+            mouse.click(button="left", coords=point)
+
+    def _reacquire_contact_target(self, contact, timeout=5.0):
+        """Re-search the contact and return a fresh wrapper after DOM/UI changes."""
+        deadline = time.monotonic() + max(0.5, float(timeout))
+        last_error = None
+
+        while time.monotonic() < deadline:
+            try:
+                snap = self.observe(contact, "__jarvis_phase4_reacquire__")
+                if not snap.get("ok"):
+                    last_error = snap.get("error") or "snapshot inválido"
+                    time.sleep(0.15)
+                    continue
+
+                if self._conversation_header_present(contact):
+                    return None
+
+                search = choose_text_field(snap.get("controls", []), purpose="search")
+                if snap.get("search_value") != contact:
+                    self.set_text(search["key"], contact)
+                    time.sleep(0.20)
+                    continue
+
+                matches = [
+                    item for item in snap.get("contacts", [])
+                    if identity(item.get("name")) == identity(contact)
+                ]
+                if len(matches) == 1:
+                    key = matches[0]["key"]
+                    target = self.controls.get(key)
+                    if target is not None and target.is_visible() and target.is_enabled():
+                        return target
+
+                last_error = "resultado exato ainda não ficou único"
+            except Exception as exc:
+                last_error = str(exc)
+            time.sleep(0.15)
+
+        raise RuntimeError(
+            "Não consegui readquirir o resultado exato do WhatsApp após a "
+            f"mudança da interface: {last_error or 'tempo esgotado'}."
+        )
+
+    def _try_physical_row_activation(self, target, contact, double=False, variant=0):
+        rects = self._matching_row_rects(target, contact)
+        if not rects:
+            try:
+                rect = target.rectangle()
+                rects = [(rect.left, rect.top, rect.right, rect.bottom)]
+            except Exception:
+                return False
+
+        # First use the most specific title/time row; then the widest matching row.
+        candidates = [rects[0]]
+        if len(rects) > 1 and rects[-1] != rects[0]:
+            candidates.append(rects[-1])
+
+        for bounds in candidates:
+            point = self._safe_row_point(bounds, variant=variant)
+            self._physical_click_point(point, double=double)
+            if self._wait_conversation_header(contact):
+                return True
+
+            # Do not reuse stale geometry after a DOM transition.
+            break
+
+        return False
+
     def open_contact(self, key):
         target = self._target(key)
         contact = self.contact_names.get(key, "")
+        if not contact:
+            raise RuntimeError("Contato associado ao resultado UIA foi perdido.")
 
-        if contact and self._conversation_header_present(contact):
+        if self._conversation_header_present(contact):
             return
 
-        try:
-            target.click_input()
-            if not contact or self._wait_conversation_header(contact):
-                return
-        except Exception:
-            pass
+        # Attempt 1: one human-like physical click on the freshly discovered row.
+        if self._try_physical_row_activation(
+            target, contact, double=False, variant=0
+        ):
+            return
 
-        try:
-            target.iface_selection_item.Select()
-        except Exception:
-            pass
+        # The first click may mutate/clear the search DOM. Never reuse its wrapper.
+        target = self._reacquire_contact_target(contact)
+        if target is None and self._conversation_header_present(contact):
+            return
 
-        focused = False
-        try:
-            target.set_focus()
-            focused = bool(target.has_keyboard_focus())
-        except Exception:
-            focused = False
+        # Attempt 2: a second single click using fresh geometry and a different
+        # point inside the row's text area.
+        if self._try_physical_row_activation(
+            target, contact, double=False, variant=1
+        ):
+            return
 
-        if focused:
-            try:
-                target.type_keys("{ENTER}", set_foreground=True)
-                if not contact or self._wait_conversation_header(contact):
-                    return
-            except Exception:
-                pass
+        target = self._reacquire_contact_target(contact)
+        if target is None and self._conversation_header_present(contact):
+            return
 
-        try:
-            target.double_click_input()
-            if not contact or self._wait_conversation_header(contact):
-                return
-        except Exception:
-            pass
+        # Attempt 3: verified double click on a newly acquired row.
+        if self._try_physical_row_activation(
+            target, contact, double=True, variant=0
+        ):
+            return
 
+        # Compatibility-only fallback. It is used only if the fresh target
+        # actually exposes Invoke, and still requires right-pane verification.
+        target = self._reacquire_contact_target(contact)
+        if target is None and self._conversation_header_present(contact):
+            return
         try:
             target.iface_invoke.Invoke()
-            if not contact or self._wait_conversation_header(contact):
+            if self._wait_conversation_header(contact):
                 return
         except Exception:
             pass
 
         raise RuntimeError(
-            "O resultado correto foi localizado, mas o WhatsApp não abriu "
-            "a conversa no painel direito após as formas seguras de ativação."
+            "Localizei e readquiri o resultado correto do WhatsApp, mas nenhuma "
+            "ativação física verificada abriu a conversa no painel direito."
         )
 
     def send(self, contact, message):

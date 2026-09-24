@@ -2,13 +2,6 @@ import unittest
 from runtime.phase4.whatsapp_uia import WhatsAppUIA
 
 
-class _Selection:
-    def __init__(self, owner):
-        self.owner = owner
-    def Select(self):
-        self.owner.calls.append("select")
-
-
 class _Invoke:
     def __init__(self, owner):
         self.owner = owner
@@ -17,12 +10,10 @@ class _Invoke:
 
 
 class FakeTarget:
-    def __init__(self, *, selection=True, enter=True, invoke=True, double=True):
+    def __init__(self, rect=(100, 100, 300, 160), invoke=True):
         self.calls = []
-        self._selection = selection
-        self._enter = enter
+        self._rect = rect
         self._invoke = invoke
-        self._double = double
 
     def is_visible(self):
         return True
@@ -30,11 +21,19 @@ class FakeTarget:
     def is_enabled(self):
         return True
 
+    def rectangle(self):
+        l, t, r, b = self._rect
+        return type("R", (), {"left":l, "top":t,"right":r,"bottom":b})()
+
+    def parent(self):
+        return None
+
     @property
-    def iface_selection_item(self):
-        if not self._selection:
-            raise RuntimeError("no selection")
-        return _Selection(self)
+    def element_info(self):
+        return type("EI", (), {
+            "control_type":"DataItem",
+            "name":"Me (você) 07:11",
+        })()
 
     @property
     def iface_invoke(self):
@@ -42,58 +41,58 @@ class FakeTarget:
             raise RuntimeError("no invoke")
         return _Invoke(self)
 
-    def set_focus(self):
-        self.calls.append("focus")
-
-    def type_keys(self, keys, set_foreground=False):
-        self.calls.append(("type_keys", keys, set_foreground))
-        if not self._enter:
-            raise RuntimeError("enter failed")
-
-    def double_click_input(self):
-        self.calls.append("double_click")
-        if not self._double:
-            raise RuntimeError("double failed")
-
-
-class FakeWindow:
-    def set_focus(self):
-        pass
-
 
 class TestUI(WhatsAppUIA):
-    def __init__(self, target):
+    def __init__(self, target, activation_results):
         super().__init__()
         self.controls = {"contact": target}
-    def _attach(self):
-        return FakeWindow()
+        self.contact_names = {"contact":"Me (você)"}
+        self._activation_results = list(activation_results)
+
+    def _target(self, key):
+        return self.controls[key]
+
+    def _conversation_header_present(self, contact):
+        return False
+
+    def _try_physical_row_activation(self, target, contact, double=False, variant=0):
+        target.calls.append(("physical", double, variant))
+        if self._activation_results:
+            return self._activation_results.pop(0)
+        return False
+
+    def _reacquire_contact_target(self, contact, timeout=5.0):
+        self.controls["contact"] = FakeTarget(invoke=self.controls["contact"]._invoke)
+        return self.controls["contact"]
+
+    def _wait_conversation_header(self, contact, timeout=1.5):
+        return False
 
 
 class ConversationActivationTests(unittest.TestCase):
-    def test_selection_item_uses_enter_after_selection(self):
+    def test_first_verified_physical_click_completes(self):
         target = FakeTarget()
-        TestUI(target).open_contact("contact")
-        self.assertEqual(
-            target.calls[:3],
-            ["select", "focus", ("type_keys", "{ENTER}", True)],
-        )
-        self.assertNotIn("invoke", target.calls)
-        self.assertNotIn("double_click", target.calls)
+        TestUI(target, [True]).open_contact("contact")
+        self.assertEqual(target.calls, [("physical", False, 0)])
 
-    def test_old_invoke_fallback_survives(self):
-        target = FakeTarget(selection=False, invoke=True)
-        TestUI(target).open_contact("contact")
-        self.assertIn("invoke", target.calls)
+    def test_second_attempt_reacquires_before_retry(self):
+        target = FakeTarget()
+        ui = TestUI(target, [False, True])
+        ui.open_contact("contact")
+        self.assertEqual(target.calls, [("physical", False, 0)])
 
-    def test_double_click_is_last_fallback(self):
-        target = FakeTarget(selection=False, invoke=False, double=True)
-        TestUI(target).open_contact("contact")
-        self.assertEqual(target.calls[-1], "double_click")
+    def test_double_click_is_only_after_two_single_failures(self):
+        target = FakeTarget()
+        ui = TestUI(target, [False, False, True])
+        ui.open_contact("contact")
+        # Success is provided by the third physical activation.
+        self.assertEqual(len(ui._activation_results), 0)
 
-    def test_all_activation_failures_raise(self):
-        target = FakeTarget(selection=False, enter=False, invoke=False, double=False)
+    def test_failure_is_reported_if_every_verified_activation_fails(self):
+        target = FakeTarget(invoke=False)
+        ui = TestUI(target, [False, False, False])
         with self.assertRaises(RuntimeError):
-            TestUI(target).open_contact("contact")
+            ui.open_contact("contact")
 
 
 if __name__ == "__main__":
