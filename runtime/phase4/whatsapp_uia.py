@@ -1066,11 +1066,10 @@ class WhatsAppUIA:
 
     def open_contact(self, key):
         target = self._target(key)
-        try:
-            target.set_focus()
-        except Exception:
-            pass
 
+        # Current WhatsApp WebView2 exposes search rows as SelectionItem
+        # DataItems. Select() highlights the row but does NOT open the chat.
+        # Reliable semantic activation: select -> focus -> Enter.
         selected = False
         try:
             target.iface_selection_item.Select()
@@ -1079,18 +1078,32 @@ class WhatsAppUIA:
             pass
 
         try:
-            target.click_input()
-            return
+            target.set_focus()
         except Exception:
             pass
 
+        if selected:
+            try:
+                target.type_keys("{ENTER}", set_foreground=True)
+                return
+            except Exception:
+                pass
+
+        # Compatibility with older/native builds.
         try:
             target.iface_invoke.Invoke()
             return
         except Exception:
-            if selected:
-                return
-            raise RuntimeError("Não consegui ativar o resultado exato da pesquisa do WhatsApp.")
+            pass
+
+        # Last non-fixed-coordinate fallback.
+        try:
+            target.double_click_input()
+            return
+        except Exception:
+            pass
+
+        raise RuntimeError("Não consegui ativar o resultado exato da pesquisa do WhatsApp.")
 
     def send(self, contact, message):
         snap = self.observe(contact, message)
