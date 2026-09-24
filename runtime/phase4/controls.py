@@ -6,12 +6,19 @@ SEARCH = ('pesquisar', 'pesquise', 'buscar', 'search')
 COMPOSER = ('digite uma mensagem', 'escreva uma mensagem', 'type a message', 'message input', 'messageinput', 'compose', 'caixa de mensagem')
 
 
+def _positive_area(item):
+    bounds = item.get("bounds") or [0, 0, 0, 0]
+    return max(0, bounds[2] - bounds[0]) * max(0, bounds[3] - bounds[1])
+
+
 def choose_text_field(controls, name=None, purpose=None):
     ranked = []
     for item in controls:
         label = fold(item.get('name', '') + ' ' + item.get('automation_id', ''))
+        geometrically_present = _positive_area(item) > 20
         if (item.get('control_type') not in ('Edit', 'Document') or
-                not item.get('visible') or not item.get('enabled') or
+                (not item.get('visible') and not geometrically_present) or
+                not item.get('enabled') or
                 item.get('password') or item.get('read_only', True) or
                 any(x in label for x in SENSITIVE)):
             continue
@@ -29,6 +36,17 @@ def choose_text_field(controls, name=None, purpose=None):
                 continue
         elif purpose:
             score = 100
+            bounds = item.get('bounds') or [0, 0, 0, 0]
+            top = bounds[1]
+            if item.get('control_type') == 'Edit':
+                score += 8
+            if purpose == 'search':
+                # Search lives near the top of the WhatsApp shell.
+                score += max(0, 30 - max(0, top) // 120)
+            elif purpose == 'message':
+                # Composer lives near the bottom. Absolute Y is sufficient to
+                # break duplicate WebView2 wrappers inside the same window.
+                score += min(max(0, top) // 120, 30)
         else:
             score = 100 if item.get('focused') else 10
         ranked.append((score, item))
@@ -36,6 +54,8 @@ def choose_text_field(controls, name=None, purpose=None):
         raise RuntimeError('Nenhum campo de texto editável, visível e seguro foi identificado.')
     ranked.sort(key=lambda row: row[0], reverse=True)
     if len(ranked) > 1 and ranked[0][0] == ranked[1][0]:
+        # Fail closed. Two distinct UIA nodes may render at the same place in
+        # WebView2; silently choosing one is unsafe for send/write operations.
         raise RuntimeError('Campo de texto ambíguo. Informe o nome ou automation_id exato.')
     return ranked[0][1]
 

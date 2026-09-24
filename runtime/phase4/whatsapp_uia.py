@@ -187,41 +187,175 @@ def _window_alpha_zero(hwnd):
     return bool(ok and (flags.value & LWA_ALPHA) and alpha.value == 0)
 
 
+def _candidate_area(row):
+    bounds = row.get("bounds") or [0, 0, 0, 0]
+    return max(0, bounds[2] - bounds[0]) * max(0, bounds[3] - bounds[1])
+
+
+def _static_window_score(row):
+    """Rank plausible WhatsApp shells without trusting IsWindowVisible.
+
+    WinUI 3 / WebView2 can render a window that pywinauto/Win32 reports as
+    invisible or layered-alpha-zero. Those flags are retained for diagnostics
+    but are no longer absolute rejection criteria.
+    """
+    area = _candidate_area(row)
+    if area < 10000:
+        return -1
+
+    title = fold(row.get("title", ""))
+    exe = str(row.get("exe") or "").casefold()
+    cls = str(row.get("class_name") or "").casefold()
+
+    helper_markers = (
+        "default ime",
+        "msctfime",
+        "gdi+ hook",
+        "notifyicon",
+        "broadcast",
+        "crashpad",
+        "powermessagewindow",
+    )
+    if any(marker in (title + " " + cls) for marker in helper_markers):
+        return -1
+
+    score = 0
+
+    # Current Microsoft Store shell observed on the test machine.
+    if exe == "whatsapp.root.exe" and "winuidesktopwin32windowclass" in cls:
+        score += 320
+    if exe == WEBVIEW_EXE and "chrome_widgetwin_1" in cls:
+        score += 260
+
+    if "whatsapp" in title:
+        score += 180
+    if exe in WHATSAPP_EXES or exe.startswith("whatsapp."):
+        score += 130
+    if exe == WEBVIEW_EXE:
+        score += 90
+
+    # These are hints only; never hard filters on WinUI/WebView2.
+    if row.get("visible"):
+        score += 30
+    if row.get("foreground"):
+        score += 35
+    if row.get("alpha_zero"):
+        score -= 10
+
+    score += min(area // 50000, 30)
+    return score
+
+
 def choose_window_candidate(rows):
-    """Pure deterministic ranking; returns None when no usable native UI exists."""
+    """Pure ranking used after optional accessibility probing.
+
+    Layered/alpha-zero WebView helpers are accepted only when an actual UIA probe
+    proves they expose a useful accessibility tree. This preserves support for
+    WhatsApp's real Chrome_WidgetWin_1 while rejecting opaque helper guesses.
+    """
     usable = []
     for row in rows:
-        if not row.get("visible") or row.get("alpha_zero"):
-            continue
-        bounds = row.get("bounds") or [0, 0, 0, 0]
-        area = max(0, bounds[2] - bounds[0]) * max(0, bounds[3] - bounds[1])
-        if area < 10000:
+        score = _static_window_score(row)
+        if score < 0:
             continue
 
-        title = fold(row.get("title", ""))
-        exe = str(row.get("exe") or "").casefold()
-        cls = str(row.get("class_name") or "").casefold()
+        access = int(row.get("accessibility_score") or 0)
+        uia_ok = bool(row.get("uia_ok"))
 
-        score = 0
-        if "whatsapp" in title:
-            score += 120
-        if exe in WHATSAPP_EXES or exe.startswith("whatsapp."):
-            score += 100
-        if exe == WEBVIEW_EXE:
-            score += 80
-        if "chrome_widgetwin" in cls:
-            score += 35
-        if row.get("foreground"):
-            score += 25
+        if row.get("alpha_zero") and not (uia_ok and access > 0):
+            continue
 
-        # Larger normal windows beat tiny helpers but area cannot dominate identity.
-        score += min(area // 50000, 25)
-        usable.append((score, area, -int(row.get("hwnd") or 0), row))
+        area = _candidate_area(row)
+        usable.append((access, score, area, -int(row.get("hwnd") or 0), row))
 
     if not usable:
         return None
-    usable.sort(reverse=True, key=lambda x: (x[0], x[1], x[2]))
-    return usable[0][3]
+    usable.sort(reverse=True, key=lambda x: (x[0], x[1], x[2], x[3]))
+    return usable[0][4]
+
+
+def _probe_candidate_uia(hwnd):
+    """Read-only UIA richness probe for a candidate HWND."""
+    from pywinauto import Desktop
+
+    result = {
+        "uia_ok": False,
+        "uia_descendants": 0,
+        "uia_named": 0,
+        "uia_fields": 0,
+        "uia_buttons": 0,
+        "uia_whatsapp_hits": 0,
+        "accessibility_score": 0,
+        "uia_error": "",
+    }
+
+    try:
+        win = Desktop(backend="uia").window(handle=int(hwnd))
+        # Do not call is_visible(); that is exactly the unreliable signal.
+        descendants = win.descendants()
+        result["uia_ok"] = True
+        result["uia_descendants"] = len(descendants)
+
+        for ctrl in descendants[:4000]:
+            try:
+                info = ctrl.element_info
+                name = str(info.name or "")
+                ctype = str(info.control_type or "")
+                normalized = fold(name)
+
+                if name.strip():
+                    result["uia_named"] += 1
+                if ctype in ("Edit", "Document"):
+                    result["uia_fields"] += 1
+                if ctype == "Button":
+                    result["uia_buttons"] += 1
+                if any(token in normalized for token in (
+                    "whatsapp",
+                    "conversas",
+                    "pesquisar",
+                    "mensagem",
+                    "message",
+                )):
+                    result["uia_whatsapp_hits"] += 1
+            except Exception:
+                continue
+
+        # Accessibility richness outranks unreliable visibility flags.
+        result["accessibility_score"] = (
+            min(result["uia_descendants"], 800)
+            + result["uia_named"] * 2
+            + result["uia_fields"] * 180
+            + result["uia_buttons"] * 5
+            + result["uia_whatsapp_hits"] * 120
+        )
+    except Exception as exc:
+        result["uia_error"] = str(exc)[:300]
+
+    return result
+
+
+def _focus_native_hwnd(hwnd):
+    """Best-effort foreground activation without relying on pywinauto visibility."""
+    if os.name != "nt":
+        return False
+
+    from ctypes import wintypes
+
+    user32 = ctypes.WinDLL("user32", use_last_error=True)
+    SW_RESTORE = 9
+    user32.ShowWindow.argtypes = [wintypes.HWND, ctypes.c_int]
+    user32.ShowWindow.restype = wintypes.BOOL
+    user32.BringWindowToTop.argtypes = [wintypes.HWND]
+    user32.BringWindowToTop.restype = wintypes.BOOL
+    user32.SetForegroundWindow.argtypes = [wintypes.HWND]
+    user32.SetForegroundWindow.restype = wintypes.BOOL
+
+    try:
+        user32.ShowWindow(int(hwnd), SW_RESTORE)
+        user32.BringWindowToTop(int(hwnd))
+        return bool(user32.SetForegroundWindow(int(hwnd)))
+    except Exception:
+        return False
 
 
 
@@ -412,16 +546,26 @@ def discover_whatsapp_windows():
         except Exception:
             continue
 
+    # Probe only plausible, non-trivial shells. This is read-only and avoids
+    # trusting IsWindowVisible/alpha on WinUI 3 + WebView2.
+    plausible = [row for row in rows if _static_window_score(row) >= 0]
+    plausible.sort(
+        key=lambda row: (_static_window_score(row), _candidate_area(row)),
+        reverse=True,
+    )
+    for row in plausible[:6]:
+        row.update(_probe_candidate_uia(row["hwnd"]))
+
     chosen = choose_window_candidate(rows)
     return {
-        "ok": bool(chosen),
+        "ok": bool(chosen and chosen.get("uia_ok")),
         "roots": sorted(roots),
         "tree_pids": sorted(tree),
         "candidates": rows,
         "chosen": chosen,
-        "error": None if chosen else (
-            "Encontrei o processo do WhatsApp, mas nenhuma janela utilizável da árvore "
-            "WhatsApp.Root/WebView2 ficou disponível."
+        "error": None if chosen and chosen.get("uia_ok") else (
+            "Encontrei a árvore do WhatsApp, mas nenhum HWND candidato expôs "
+            "uma árvore UI Automation utilizável."
         ),
     }
 
@@ -487,9 +631,15 @@ class WhatsAppUIA:
             )
 
         hwnd = int(chosen["hwnd"])
+        _focus_native_hwnd(hwnd)
         win = Desktop(backend="uia").window(handle=hwnd)
-        if not win.exists(timeout=1.0):
-            raise RuntimeError("A janela WhatsApp descoberta não pôde ser conectada pelo backend UIA.")
+
+        # A successful accessibility probe is stronger evidence than
+        # WindowSpecification.exists()/is_visible() for this WinUI/WebView2 app.
+        if not chosen.get("uia_ok"):
+            raise RuntimeError(
+                "O HWND candidato do WhatsApp não expôs uma árvore UIA utilizável."
+            )
 
         self.window = win
         self.window_metadata = dict(chosen)
@@ -500,7 +650,12 @@ class WhatsAppUIA:
             raise RuntimeError("Execução desktop disponível somente no Windows.")
 
         try:
-            self._attach().set_focus()
+            win = self._attach()
+            _focus_native_hwnd(self.window_metadata.get("hwnd"))
+            try:
+                win.set_focus()
+            except Exception:
+                pass
             return
         except Exception:
             os.startfile("whatsapp:")
@@ -509,12 +664,124 @@ class WhatsAppUIA:
         last_error = None
         while time.monotonic() < deadline:
             try:
-                self._attach().set_focus()
+                win = self._attach()
+                _focus_native_hwnd(self.window_metadata.get("hwnd"))
+                try:
+                    win.set_focus()
+                except Exception:
+                    pass
                 return
             except Exception as exc:
                 last_error = exc
                 time.sleep(0.25)
         raise RuntimeError(f"WhatsApp abriu, mas a interface WebView2 não ficou acessível: {last_error}")
+
+    def probe_controls(self):
+        """Read-only structural probe for composer discovery.
+
+        Returns metadata only (names/types/ids/bounds/pattern support), never field
+        values or chat-history text bodies.
+        """
+        try:
+            win = self._attach()
+            wr = win.rectangle()
+            rows = []
+            descendants = win.descendants()
+            window_height = max(1, wr.bottom - wr.top)
+            bottom_threshold = wr.top + int(window_height * 0.58)
+
+            for index, ctrl in enumerate(descendants[:4000]):
+                try:
+                    info = ctrl.element_info
+                    rect = ctrl.rectangle()
+                    bounds = [rect.left, rect.top, rect.right, rect.bottom]
+                    area = max(0, rect.right - rect.left) * max(0, rect.bottom - rect.top)
+                    if area <= 0:
+                        continue
+
+                    name = str(info.name or "")
+                    automation_id = str(info.automation_id or "")
+                    ctype = str(info.control_type or "")
+                    label = fold(name + " " + automation_id)
+
+                    composer_hint = any(token in label for token in (
+                        "mensagem", "message", "compose", "textbox", "input",
+                        "editor", "contenteditable", "digite", "type a"
+                    ))
+                    near_bottom = rect.top >= bottom_threshold
+
+                    # Keep the output compact: likely interactive controls or
+                    # anything in the lower part of the WhatsApp content pane.
+                    if not (
+                        composer_hint
+                        or near_bottom
+                        or ctype in ("Edit", "Document", "Custom", "Group", "Pane")
+                    ):
+                        continue
+
+                    patterns = []
+                    for attr, label_name in (
+                        ("iface_value", "Value"),
+                        ("iface_text", "Text"),
+                        ("iface_invoke", "Invoke"),
+                        ("iface_legacy_iaccessible", "LegacyIAccessible"),
+                    ):
+                        try:
+                            getattr(ctrl, attr)
+                            patterns.append(label_name)
+                        except Exception:
+                            pass
+
+                    try:
+                        enabled = bool(ctrl.is_enabled())
+                    except Exception:
+                        enabled = False
+                    try:
+                        visible = bool(ctrl.is_visible())
+                    except Exception:
+                        visible = False
+                    try:
+                        focused = bool(ctrl.has_keyboard_focus())
+                    except Exception:
+                        focused = False
+
+                    rows.append({
+                        "key": f"control:{index}",
+                        "name": name[:180],
+                        "automation_id": automation_id[:180],
+                        "control_type": ctype,
+                        "visible": visible,
+                        "enabled": enabled,
+                        "focused": focused,
+                        "bounds": bounds,
+                        "near_bottom": near_bottom,
+                        "composer_hint": composer_hint,
+                        "patterns": patterns,
+                    })
+                except Exception:
+                    continue
+
+            rows.sort(
+                key=lambda item: (
+                    not item["composer_hint"],
+                    not item["near_bottom"],
+                    item["bounds"][1],
+                    item["bounds"][0],
+                )
+            )
+            return {
+                "ok": True,
+                "window": self.window_metadata,
+                "descendants": len(descendants),
+                "controls": rows[:250],
+            }
+        except Exception as exc:
+            return {
+                "ok": False,
+                "error": str(exc),
+                "diagnostic": self.diagnose(),
+                "controls": [],
+            }
 
     def probe_fields(self):
         """Read-only accessibility probe. Does not expose field values or chat history."""
@@ -525,7 +792,7 @@ class WhatsAppUIA:
             for index, ctrl in enumerate(descendants[:4000]):
                 try:
                     item = describe_control(ctrl, f"probe:{index}")
-                    if item["visible"] and item["control_type"] in ("Edit", "Document"):
+                    if item["control_type"] in ("Edit", "Document"):
                         item = dict(item)
                         item.pop("focused", None)
                         rows.append(item)

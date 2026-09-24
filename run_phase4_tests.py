@@ -56,6 +56,7 @@ def main():
         adapter = WhatsAppUIA()
         diagnosis = adapter.diagnose()
         probe = adapter.probe_fields()
+        control_probe = adapter.probe_controls()
 
         safe_candidates = []
         for row in diagnosis.get("candidates", []):
@@ -71,6 +72,14 @@ def main():
                     "foreground": row.get("foreground"),
                     "alpha_zero": row.get("alpha_zero"),
                     "bounds": row.get("bounds"),
+                    "uia_ok": row.get("uia_ok"),
+                    "uia_descendants": row.get("uia_descendants"),
+                    "uia_named": row.get("uia_named"),
+                    "uia_fields": row.get("uia_fields"),
+                    "uia_buttons": row.get("uia_buttons"),
+                    "uia_whatsapp_hits": row.get("uia_whatsapp_hits"),
+                    "accessibility_score": row.get("accessibility_score"),
+                    "uia_error": row.get("uia_error"),
                 }
             )
 
@@ -85,6 +94,9 @@ def main():
                     "chosen": diagnosis.get("chosen"),
                     "descendants": probe.get("descendants"),
                     "fields": probe.get("fields", []),
+                    "structural_probe_ok": control_probe.get("ok"),
+                    "structural_probe_error": control_probe.get("error"),
+                    "controls": control_probe.get("controls", []),
                 },
                 ensure_ascii=False,
                 indent=2,
