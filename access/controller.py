@@ -1,5 +1,6 @@
 import time
 from dataclasses import dataclass
+from runtime.phase4.controls import choose_text_field, describe_control
 
 from pywinauto import Desktop, keyboard
 from tools.clipboard import get_clipboard_text, set_clipboard_text
@@ -140,15 +141,7 @@ class DeepAccessController:
                 name = (info.name or "").strip()
                 aid = (info.automation_id or "").strip()
                 ctype = (info.control_type or "").strip()
-                if not name and not aid:
-                    continue
-                controls.append({
-                    "name": name,
-                    "control_type": ctype,
-                    "automation_id": aid,
-                    "enabled": bool(ctrl.is_enabled()),
-                    "visible": bool(ctrl.is_visible()),
-                })
+                controls.append(describe_control(ctrl))
             except Exception:
                 continue
 
@@ -167,8 +160,11 @@ class DeepAccessController:
                 ctype = (info.control_type or "").strip()
                 if wanted_type and ctype.lower() != wanted_type:
                     continue
+                if not ctrl.is_visible() or not ctrl.is_enabled() or not wanted:
+                    continue
                 low = cname.lower()
-                if low == wanted:
+                aid = (info.automation_id or "").strip().lower()
+                if low == wanted or aid == wanted:
                     score = 100
                 elif low.startswith(wanted):
                     score = 80
@@ -183,6 +179,8 @@ class DeepAccessController:
         if not matches:
             return None
         matches.sort(reverse=True, key=lambda x: (x[0], x[1]))
+        if len(matches) > 1 and matches[0][:2] == matches[1][:2]:
+            raise RuntimeError("Controle ambíguo; informe um identificador mais específico.")
         return matches[0][2]
 
     def is_risky_control(self, name):
@@ -220,57 +218,31 @@ class DeepAccessController:
             return {"ok": False, "error": f"Falha ao acionar controle: {exc}"}
 
     def type_text(self, text, control_name=None, clear_first=False):
-        text = str(text)
+        """Target an editable UIA value, never paste into an unknown focused field."""
         try:
             win = self._get_selected_wrapper()
-            win.set_focus()
-        except Exception as exc:
-            return {"ok": False, "error": str(exc)}
-
-        target = None
-        if control_name:
-            if self.is_sensitive_field(control_name):
-                return {"ok": False, "error": "Campo sensível bloqueado."}
-            target = self._find_control(control_name)
-            if target is None:
-                return {"ok": False, "error": f"Campo não encontrado: {control_name}"}
-        else:
-            for ctrl in win.descendants():
+            candidates = []
+            wrappers = {}
+            for index, ctrl in enumerate(win.descendants()):
                 try:
-                    ctype = (ctrl.element_info.control_type or "").lower()
-                    cname = (ctrl.element_info.name or "").strip()
-                    if ctype not in {"edit", "document"}:
-                        continue
-                    if self.is_sensitive_field(cname):
-                        continue
-                    if ctrl.is_enabled() and ctrl.is_visible():
-                        target = ctrl
-                        break
+                    row = describe_control(ctrl, index)
+                    candidates.append(row)
+                    wrappers[index] = ctrl
                 except Exception:
                     continue
-
-        try:
-            if target is not None:
-                target.set_focus()
-            if clear_first:
-                keyboard.send_keys("^a{BACKSPACE}")
-                time.sleep(0.05)
-
-            old = get_clipboard_text()
-            old_text = old.get("text", "") if old.get("ok") else None
-
-            set_clipboard_text(text)
-            keyboard.send_keys("^v")
-            time.sleep(0.08)
-
-            if old_text is not None:
-                set_clipboard_text(old_text)
-
-            return {
-                "ok": True, "window": self.selected.title,
-                "target": ((target.element_info.name or "").strip() if target else None),
-                "chars": len(text)
-            }
+            row = choose_text_field(candidates, name=control_name)
+            target = wrappers[row["key"]]
+            old = str(target.iface_value.CurrentValue)
+            expected = str(text) if clear_first else old + str(text)
+            win.set_focus()
+            target.set_focus()
+            target.iface_value.SetValue(expected)
+            actual = str(target.iface_value.CurrentValue)
+            verified = actual == expected
+            return {"ok": True, "window": self.selected.title, "target": row["name"],
+                    "chars": len(str(text)), "text_verified": verified,
+                    "verification": {"verified": verified, "scope": "tool",
+                                     "reason": "Valor relido do campo após SetValue."}}
         except Exception as exc:
             return {"ok": False, "error": f"Falha ao digitar: {exc}"}
 

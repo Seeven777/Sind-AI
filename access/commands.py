@@ -22,7 +22,8 @@ def parse_access_command(text):
 
     m = re.match(r'^\s*digite\s+["“]?(.+?)["”]?\s*$', t, re.I)
     if m:
-        return {"action": "type_text", "text": _clean(m.group(1))}
+        literal = m.group(1).strip()
+        return {"action": "type_text", "text": literal}
 
     m = re.match(
         r"^\s*pressione\s+(enter|tab|escape|esc|backspace|delete|"

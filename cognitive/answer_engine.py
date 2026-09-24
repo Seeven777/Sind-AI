@@ -1,4 +1,5 @@
 import re
+from runtime.phase4.intent import classify_intent
 from urllib.parse import urlsplit
 
 
@@ -54,6 +55,8 @@ class ConversationalAnswerEngine:
         return self._looks_like_question(text) and any(x in t for x in markers)
 
     def should_handle(self, text, selected_tools=None):
+        if classify_intent(text).executable:
+            return False
         # Conversa sem ferramentas candidatas é sempre leve.
         if not selected_tools:
             return True

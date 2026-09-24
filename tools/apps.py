@@ -34,11 +34,7 @@ def open_app(app):
                 return {"ok": True, "app": "WhatsApp", "method": "protocol"}
         except Exception:
             pass
-        try:
-            webbrowser.open("https://web.whatsapp.com/")
-            return {"ok": True, "app": "WhatsApp Web", "method": "browser_fallback"}
-        except Exception as exc:
-            return {"ok": False, "error": f"Não consegui abrir o WhatsApp: {exc}"}
+        return {"ok": False, "error": "WhatsApp Desktop indisponível. Instale/abra o aplicativo nativo; nenhum fallback Web foi executado."}
 
     subprocess.Popen(command)
     return {"ok": True, "app": app}
