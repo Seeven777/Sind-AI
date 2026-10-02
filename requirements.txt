@@ -5,6 +5,6 @@ requests>=2.32,<3
 beautifulsoup4>=4.12,<5
 playwright>=1.55,<2
 keyring>=25,<26
-pypdf>=5,<6
+pypdf>=6.19.0,<7
 python-docx>=1.1,<2
 pynput>=1.7,<2
