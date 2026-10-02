@@ -1,6 +1,7 @@
 import json
 import re
 import sqlite3
+from contextlib import contextmanager
 from datetime import datetime
 from pathlib import Path
 
@@ -18,10 +19,18 @@ class ConversationStore:
         self._init_db()
         self.current_session_id = self._latest_session_id() or self.new_session()["session_id"]
 
+    @contextmanager
     def _connect(self):
         conn = sqlite3.connect(self.db_path, timeout=20)
         conn.row_factory = sqlite3.Row
-        return conn
+        try:
+            yield conn
+            conn.commit()
+        except Exception:
+            conn.rollback()
+            raise
+        finally:
+            conn.close()
 
     def _now(self):
         return datetime.now().isoformat(timespec="seconds")

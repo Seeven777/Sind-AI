@@ -5,12 +5,15 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Jarvis • Sind AI</title>
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="habitat.css">
   <script src="qrc:///qtwebchannel/qwebchannel.js"></script>
 </head>
 <body>
 <div class="ambient ambient-a"></div><div class="ambient ambient-b"></div>
+<div class="space-field" aria-hidden="true"></div>
 <div class="app no-inspector" id="app">
-  <aside class="sidebar">
+  <button class="edge-trigger no-drag" id="historyToggle" title="Conversas e recursos" aria-label="Abrir conversas">⌁</button>
+  <aside class="sidebar" id="sidebar">
     <div class="brand drag-zone">
       <div class="brand-orb"><span>✦</span></div>
       <div class="brand-copy"><strong>Sind AI</strong><span>Personal GPT local</span></div>
@@ -60,17 +63,25 @@
       </div>
     </header>
 
+    <section class="jarvis-stage" id="jarvisStage" aria-label="Estado do Jarvis">
+      <canvas id="jarvisOrb" aria-hidden="true"></canvas>
+      <div class="orb-crosshair" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+      <div class="orb-identity"><span>J.A.R.V.I.S.</span><small id="orbStateLabel">SYSTEM ONLINE</small></div>
+      <div class="orb-activity" id="orbActivity" aria-live="polite">
+        <i></i><span id="orbActivityLabel">AGUARDANDO COMANDO</span>
+      </div>
+      <div class="telemetry telemetry-left"><span>LOCAL CORE</span><b id="telemetryModel">OLLAMA · READY</b></div>
+      <div class="telemetry telemetry-right"><span id="clockLabel">00:00</span><b>AMERICA / SÃO PAULO</b></div>
+    </section>
+    <div class="context-widgets" id="contextWidgets" aria-live="polite"></div>
+
     <section class="chat-scroll" id="chatScroll" tabindex="0" aria-label="Histórico da conversa">
       <div class="conversation" id="conversation">
         <div class="welcome" id="welcome">
-          <div class="welcome-visual">
-            <div class="halo h1"></div><div class="halo h2"></div><div class="halo h3"></div>
-            <div class="core-orb"><span>✦</span></div>
-          </div>
           <div class="welcome-copy">
             <div class="welcome-kicker"><i></i> COGNITIVE CORE ONLINE</div>
-            <h1>O que vamos construir hoje?</h1>
-            <p>Converse normalmente. Eu uso memória, documentos, web, dados públicos e ferramentas somente quando forem úteis.</p>
+            <h1>Presença ativa.</h1>
+            <p>Fale ou digite quando precisar.</p>
           </div>
           <div class="welcome-hints">
             <button data-prompt="Quero começar um novo projeto. Me ajude a organizar o contexto."><span>◇</span><b>Novo projeto</b><small>Organizar contexto e decisões</small></button>
@@ -92,6 +103,7 @@
         <div class="composer-row">
           <div class="composer-left">
             <button class="tool-btn" id="attachBtn" title="Anexar documento">＋</button>
+            <button class="voice-btn" id="voiceBtn" title="Conversar por voz" aria-label="Conversar por voz"><i></i></button>
             <div class="mode-note"><span>AUTO</span><b id="modeText">contexto + ferramentas sob demanda</b></div>
           </div>
           <div class="composer-actions">
@@ -214,6 +226,7 @@
     <div class="control-section"><div class="section-heading"><div><small>INTERNAL BROKERS</small><h3>Diagnóstico técnico</h3></div></div><p class="advanced-note">Actions, Workflows, automações, monitores e conectores continuam ativos por baixo. O Jarvis deve escolhê-los sozinho; use esta área apenas para inspeção.</p></div>
   </div>
 </div>
+<script src="orb.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

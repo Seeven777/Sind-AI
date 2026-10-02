@@ -1,10 +1,11 @@
 import json
+import os
 import re
 import threading
 import time
 from pathlib import Path
 
-from PySide6.QtCore import QObject, QThread, Qt, Signal, Slot, QUrl, QTimer
+from PySide6.QtCore import QObject, QThread, Qt, Signal, Slot, QUrl, QTimer, QProcess
 from PySide6.QtWidgets import (
     QMainWindow, QMessageBox, QFileDialog, QTabWidget, QWidget,
     QVBoxLayout, QHBoxLayout, QPushButton, QLineEdit, QLabel
@@ -12,6 +13,8 @@ from PySide6.QtWidgets import (
 from PySide6.QtWebChannel import QWebChannel
 from PySide6.QtWebEngineWidgets import QWebEngineView
 from PySide6.QtWebEngineCore import QWebEngineProfile, QWebEnginePage, QWebEngineSettings
+from PySide6.QtTextToSpeech import QTextToSpeech
+from PySide6.QtMultimedia import QAudioOutput, QMediaPlayer
 
 
 
@@ -256,6 +259,9 @@ class JarvisBridge(QObject):
     statusChanged = Signal(str, str)
     commandFinished = Signal(str, str, bool, str)
     snapshotChanged = Signal(str)
+    voiceStateChanged = Signal(str, str)
+    voiceLevelChanged = Signal(float)
+    voiceTranscript = Signal(str)
 
     def __init__(self, window):
         super().__init__()
@@ -284,6 +290,14 @@ class JarvisBridge(QObject):
     @Slot()
     def newChat(self):
         self.newChatRequested.emit()
+
+    @Slot(result=str)
+    def startVoiceInput(self):
+        return json.dumps(self.window.start_voice_input(), ensure_ascii=False)
+
+    @Slot()
+    def stopSpeaking(self):
+        self.window.stop_speaking()
 
     @Slot(int, result=str)
     def deleteConversation(self, session_id):
@@ -706,6 +720,16 @@ class HabitatWindow(QMainWindow):
         self.current_prompt = ""
         self._task_started_at = 0.0
         self._last_status_detail = ""
+        self._voice_process = None
+        self._voice_stdout = b""
+        self._voice_terminal_event = False
+        self._tts = None
+        self._cloud_tts_process = None
+        self._cloud_tts_stdout = b""
+        self._pending_voice_text = ""
+        self._voice_audio_path = None
+        self._audio_output = None
+        self._media_player = None
         self._heartbeat = QTimer(self)
         self._heartbeat.setInterval(
             max(1000, int(self.config.get("ui_task_heartbeat_seconds", 2)) * 1000)
@@ -761,6 +785,26 @@ class HabitatWindow(QMainWindow):
         self.bridge = JarvisBridge(self)
         self.channel.registerObject("jarvisBridge", self.bridge)
         self.view.page().setWebChannel(self.channel)
+
+        if self.config.get("voice_output_enabled", True):
+            try:
+                self._tts = QTextToSpeech(self)
+                self._tts.setRate(float(self.config.get("voice_rate", -0.08)))
+                self._tts.setVolume(float(self.config.get("voice_volume", 0.88)))
+                self._tts.stateChanged.connect(self._on_tts_state)
+            except Exception as exc:
+                self._tts = None
+                self.agent.diagnostics.error("voice_tts_init", exc)
+            try:
+                self._audio_output = QAudioOutput(self)
+                self._audio_output.setVolume(float(self.config.get("voice_volume", 0.88)))
+                self._media_player = QMediaPlayer(self)
+                self._media_player.setAudioOutput(self._audio_output)
+                self._media_player.playbackStateChanged.connect(self._on_media_state)
+            except Exception as exc:
+                self._audio_output = None
+                self._media_player = None
+                self.agent.diagnostics.error("voice_media_init", exc)
 
         self.bridge.commandSubmitted.connect(self.execute_command)
         self.bridge.modeRequested.connect(self.set_mode)
@@ -1197,15 +1241,236 @@ class HabitatWindow(QMainWindow):
     def _map_status(self, detail):
         d = (detail or "").lower()
 
-        if any(x in d for x in ["consultando", "processando", "interpretando"]):
+        if any(x in d for x in ["ouvindo", "escutando", "microfone"]):
+            return "listening"
+
+        if any(x in d for x in ["planejando", "criando plano", "selecionando ferramenta"]):
+            return "planning"
+
+        if any(x in d for x in ["observando", "capturando tela", "lendo janela", "inspecionando"]):
+            return "observing"
+
+        if any(x in d for x in ["verificando", "validando", "confirmando resultado"]):
+            return "verifying"
+
+        if any(x in d for x in ["falando", "sintetizando voz", "reproduzindo áudio"]):
+            return "speaking"
+
+        if any(x in d for x in ["consultando", "processando", "interpretando", "analisando"]):
             return "thinking"
 
-        if any(x in d for x in ["executando", "skill", "atualizando memória", "gerenciando"]):
+        if any(x in d for x in ["executando", "abrindo", "enviando", "digitando", "skill", "atualizando memória", "gerenciando"]):
             return "executing"
 
         return "thinking"
 
+    def start_voice_input(self):
+        """Start one local microphone turn without blocking the Qt UI thread."""
+        if not self.config.get("voice_input_enabled", True):
+            return {"ok": False, "error": "A entrada de voz está desativada na configuração."}
+        if self.thread is not None:
+            return {"ok": False, "error": "Aguarde a tarefa atual terminar antes de falar novamente."}
+        if self._voice_process and self._voice_process.state() != QProcess.ProcessState.NotRunning:
+            return {"ok": False, "error": "O Jarvis já está ouvindo."}
+
+        python_path = self.base_dir / ".venv-openjarvis" / "Scripts" / "python.exe"
+        helper_path = self.base_dir / "scripts" / "jarvis_voice_input.py"
+        if not python_path.exists() or not helper_path.exists():
+            return {
+                "ok": False,
+                "error": "O ambiente local de voz não foi encontrado. Execute a instalação integrada.",
+            }
+
+        self.stop_speaking()
+        self._voice_stdout = b""
+        self._voice_terminal_event = False
+        process = QProcess(self)
+        process.setProgram(str(python_path))
+        process.setArguments([str(helper_path)])
+        process.setWorkingDirectory(str(self.base_dir))
+        process.setProcessChannelMode(QProcess.ProcessChannelMode.SeparateChannels)
+        process.readyReadStandardOutput.connect(self._read_voice_output)
+        process.errorOccurred.connect(self._voice_process_error)
+        process.finished.connect(self._voice_process_finished)
+        self._voice_process = process
+        self.bridge.voiceStateChanged.emit("listening", "Ouvindo você")
+        process.start()
+        return {"ok": True, "state": "listening"}
+
+    def _read_voice_output(self):
+        if not self._voice_process:
+            return
+        self._voice_stdout += bytes(self._voice_process.readAllStandardOutput())
+        while b"\n" in self._voice_stdout:
+            raw, self._voice_stdout = self._voice_stdout.split(b"\n", 1)
+            if not raw.strip():
+                continue
+            try:
+                event = json.loads(raw.decode("utf-8", errors="replace"))
+            except json.JSONDecodeError:
+                continue
+            kind = str(event.get("event") or "")
+            if kind == "listening":
+                self.bridge.voiceStateChanged.emit("listening", "Ouvindo você")
+            elif kind == "level":
+                self.bridge.voiceLevelChanged.emit(float(event.get("value") or 0.0))
+            elif kind == "transcribing":
+                self.bridge.voiceStateChanged.emit("thinking", "Transcrevendo localmente")
+            elif kind == "transcript":
+                self._voice_terminal_event = True
+                text = str(event.get("text") or "").strip()
+                if text:
+                    self.bridge.voiceTranscript.emit(text)
+            elif kind == "empty":
+                self._voice_terminal_event = True
+                self.bridge.voiceStateChanged.emit("idle", str(event.get("message") or "Nada foi ouvido"))
+            elif kind == "error":
+                self._voice_terminal_event = True
+                self.bridge.voiceStateChanged.emit("error", str(event.get("message") or "Falha na voz"))
+
+    def _voice_process_error(self, _error):
+        if self._voice_terminal_event:
+            return
+        self._voice_terminal_event = True
+        detail = self._voice_process.errorString() if self._voice_process else "Falha ao iniciar o microfone"
+        self.bridge.voiceStateChanged.emit("error", detail)
+
+    def _voice_process_finished(self, exit_code, _exit_status):
+        self.bridge.voiceLevelChanged.emit(0.0)
+        if not self._voice_terminal_event and int(exit_code) != 0:
+            detail = "A captura de voz terminou inesperadamente."
+            if self._voice_process:
+                stderr = bytes(self._voice_process.readAllStandardError()).decode("utf-8", errors="replace").strip()
+                if stderr:
+                    detail = stderr.splitlines()[-1][:240]
+            self.bridge.voiceStateChanged.emit("error", detail)
+        process = self._voice_process
+        self._voice_process = None
+        if process:
+            process.deleteLater()
+
+    def _on_tts_state(self, state):
+        if state == QTextToSpeech.State.Speaking:
+            self.bridge.voiceStateChanged.emit("speaking", "Respondendo")
+            self.bridge.voiceLevelChanged.emit(0.52)
+        elif state == QTextToSpeech.State.Ready:
+            self.bridge.voiceLevelChanged.emit(0.0)
+            self.bridge.voiceStateChanged.emit("idle", "Aguardando comando")
+        elif state == QTextToSpeech.State.Error:
+            self.bridge.voiceLevelChanged.emit(0.0)
+            detail = self._tts.errorString() if self._tts else "Falha na síntese de voz"
+            self.bridge.voiceStateChanged.emit("error", detail)
+
+    def _speak_result(self, text):
+        if not self.config.get("voice_auto_speak", True):
+            return
+        value = str(text or "")
+        value = re.sub(r"```[\s\S]*?```", " trecho de código omitido ", value)
+        value = re.sub(r"https?://\S+", " link disponível na tela ", value)
+        value = re.sub(r"[*_#>`]", "", value)
+        value = re.sub(r"\s+", " ", value).strip()
+        if not value:
+            return
+        value = value[:3500]
+        provider = str(self.config.get("voice_provider", "local")).lower()
+        if provider == "elevenlabs" and os.environ.get("ELEVENLABS_API_KEY") and self._media_player:
+            self._speak_elevenlabs(value)
+            return
+        self._speak_local(value)
+
+    def _speak_local(self, value):
+        if self._tts:
+            self._tts.say(value)
+
+    def _speak_elevenlabs(self, value):
+        helper = self.base_dir / "scripts" / "jarvis_elevenlabs_tts.py"
+        python_path = self.base_dir / ".venv" / "Scripts" / "python.exe"
+        if not helper.exists() or not python_path.exists():
+            self._speak_local(value)
+            return
+        self._pending_voice_text = value
+        self._cloud_tts_stdout = b""
+        process = QProcess(self)
+        process.setProgram(str(python_path))
+        process.setArguments([str(helper)])
+        process.setWorkingDirectory(str(self.base_dir))
+        process.setProcessChannelMode(QProcess.ProcessChannelMode.SeparateChannels)
+        process.readyReadStandardOutput.connect(self._read_cloud_tts_output)
+        process.finished.connect(self._cloud_tts_finished)
+        self._cloud_tts_process = process
+        payload = {
+            "text": value,
+            "voice_id": self.config.get("elevenlabs_voice_id", "2CECaLAGTS5NRGxgbcxr"),
+            "model_id": self.config.get("elevenlabs_model_id", "eleven_multilingual_v2"),
+        }
+        encoded = json.dumps(payload, ensure_ascii=False).encode("utf-8")
+        process.started.connect(lambda: (process.write(encoded), process.closeWriteChannel()))
+        self.bridge.voiceStateChanged.emit("speaking", "Preparando voz neural")
+        process.start()
+
+    def _read_cloud_tts_output(self):
+        if self._cloud_tts_process:
+            self._cloud_tts_stdout += bytes(self._cloud_tts_process.readAllStandardOutput())
+
+    def _cloud_tts_finished(self, _exit_code, _exit_status):
+        self._read_cloud_tts_output()
+        payload = {}
+        for line in self._cloud_tts_stdout.decode("utf-8", errors="replace").splitlines():
+            try:
+                payload = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+        process = self._cloud_tts_process
+        self._cloud_tts_process = None
+        if process:
+            process.deleteLater()
+        path = Path(str(payload.get("path") or ""))
+        if payload.get("ok") and path.exists() and self._media_player:
+            self._cleanup_voice_audio()
+            self._voice_audio_path = path
+            self._media_player.setSource(QUrl.fromLocalFile(str(path)))
+            self._media_player.play()
+            return
+        if self.config.get("voice_fallback_local", True):
+            self._speak_local(self._pending_voice_text)
+        else:
+            self.bridge.voiceStateChanged.emit("error", str(payload.get("error") or "Falha na voz ElevenLabs"))
+
+    def _on_media_state(self, state):
+        if state == QMediaPlayer.PlaybackState.PlayingState:
+            self.bridge.voiceStateChanged.emit("speaking", "Respondendo")
+            self.bridge.voiceLevelChanged.emit(0.58)
+        elif state == QMediaPlayer.PlaybackState.StoppedState:
+            self.bridge.voiceLevelChanged.emit(0.0)
+            self.bridge.voiceStateChanged.emit("idle", "Aguardando comando")
+            self._cleanup_voice_audio()
+
+    def _cleanup_voice_audio(self):
+        path = self._voice_audio_path
+        self._voice_audio_path = None
+        if path:
+            try:
+                Path(path).unlink(missing_ok=True)
+            except OSError:
+                pass
+
+    def stop_speaking(self):
+        if self._tts and self._tts.state() == QTextToSpeech.State.Speaking:
+            self._tts.stop()
+        if self._media_player and self._media_player.playbackState() != QMediaPlayer.PlaybackState.StoppedState:
+            self._media_player.stop()
+        if self._cloud_tts_process and self._cloud_tts_process.state() != QProcess.ProcessState.NotRunning:
+            process = self._cloud_tts_process
+            try:
+                process.finished.disconnect(self._cloud_tts_finished)
+            except (RuntimeError, TypeError):
+                pass
+            process.kill()
+            process.deleteLater()
+            self._cloud_tts_process = None
+
     def execute_command(self, prompt):
+        self.stop_speaking()
         if self.thread is not None:
             self.bridge.commandFinished.emit(
                 prompt,
@@ -1313,6 +1578,8 @@ class HabitatWindow(QMainWindow):
                 ensure_ascii=False,
             )
         )
+        if ok:
+            self._speak_result(result)
 
     def _cleanup_worker(self):
         self._heartbeat.stop()

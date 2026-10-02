@@ -1,0 +1,148 @@
+/* JARVIS Habitat 3 — cinematic, context-first shell.
+   Loaded after styles.css so the mature controls remain available while the
+   default experience stops looking like a chat/dashboard. */
+:root {
+  --bg: #01060c; --bg2: #020a12; --panel: #06111b; --line: #103044;
+  --text: #e8f7ff; --muted: #648399; --soft: #a8cadb;
+  --violet: #21b9ff; --violet2: #83dcff; --violet3: #0878af;
+  --green: #62f6cf; --red: #ff6f7d;
+}
+
+html, body { background: #01060c; font-family: "Bahnschrift", "Segoe UI Variable", "Segoe UI", sans-serif; }
+body { background: radial-gradient(ellipse at 50% 48%, #07365735 0, #02101b 35%, #01060c 73%); }
+.space-field { position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: .42; background-image: radial-gradient(circle at 14% 22%, #71d7ff 0 1px, transparent 1.4px), radial-gradient(circle at 78% 36%, #268cc4 0 1px, transparent 1.5px), radial-gradient(circle at 64% 81%, #76cfff 0 .8px, transparent 1.2px), radial-gradient(circle at 34% 68%, #175f8c 0 .7px, transparent 1.1px); background-size: 311px 263px, 419px 373px, 271px 337px, 193px 227px; mask-image: radial-gradient(ellipse at center, #000 0, transparent 78%); }
+.ambient { filter: blur(150px); opacity: .16; }
+.ambient-a { background: #008ee8; }
+.ambient-b { background: #00b8ff; }
+.app, .app.no-inspector { display: block; height: 100vh; }
+.main { position: relative; display: block; height: 100vh; background: transparent; isolation: isolate; }
+
+/* Navigation is summoned instead of permanently consuming the scene. */
+.edge-trigger { position: fixed; left: 18px; top: 18px; z-index: 45; width: 32px; height: 32px; border: 1px solid #1b485f80; background: #04111aaa; color: #5f9dbb; border-radius: 50%; font-size: 17px; cursor: pointer; backdrop-filter: blur(12px); transition: .28s ease; }
+.edge-trigger:hover, .history-open .edge-trigger { color: #c7f3ff; border-color: #3aaee0; box-shadow: 0 0 24px #18aee52b; transform: rotate(12deg); }
+.sidebar { position: fixed; z-index: 40; inset: 0 auto 0 0; width: 250px; padding: 64px 12px 14px; background: #020910e8; border-right: 1px solid #16405a80; box-shadow: 22px 0 70px #000b; backdrop-filter: blur(28px); transform: translateX(-104%); transition: transform .42s cubic-bezier(.2,.82,.2,1); }
+.history-open .sidebar { transform: translateX(0); }
+.sidebar .brand { position: absolute; top: 14px; left: 56px; }
+.brand-orb { border-radius: 50%; background: radial-gradient(circle at 38% 30%, #e9fbff, #38c6ff 24%, #087eaf 52%, #02101a 76%); box-shadow: 0 0 28px #22bdff42; border-color: #51d2ff55; }
+.brand-copy strong { letter-spacing: .16em; font-size: 10px; }
+.brand-copy span { letter-spacing: .08em; }
+.new-chat { border-color: #18516e; background: #061722; color: #bcecff; border-radius: 2px; box-shadow: none; }
+.new-chat:hover { border-color: #37bce9; background: #09202d; }
+.search-wrap, .runtime-card { border-radius: 2px; background: #030d14; border-color: #123247; }
+.conversation-row, .conversation-item, .nav-card { border-radius: 2px; }
+.conversation-row.active { background: #071b28; outline-color: #16516e; box-shadow: inset 1px 0 #31c9ff; }
+
+.topbar { position: fixed; z-index: 30; left: 64px; right: 14px; top: 0; height: 58px; border: 0; background: transparent; padding: 0; pointer-events: none; }
+.top-title { display: none; }
+.top-actions { margin-left: auto; pointer-events: auto; }
+.project-chip, .soft-btn, .icon-btn { border-color: #12384d66; background: #03101a99; color: #5c8298; border-radius: 2px; backdrop-filter: blur(12px); }
+.project-chip:hover, .soft-btn:hover, .icon-btn:hover { border-color: #2a92bd; color: #bdefff; background: #061923; }
+
+.jarvis-stage { position: absolute; z-index: 1; inset: 7vh 7vw 18vh; display: grid; place-items: center; pointer-events: none; transition: transform .65s cubic-bezier(.2,.8,.2,1), opacity .5s ease; }
+#jarvisOrb { position: absolute; inset: 0; width: 100%; height: 100%; filter: saturate(1.08); pointer-events: auto; cursor: grab; touch-action: none; }
+#jarvisOrb:active { cursor: grabbing; }
+.orb-crosshair { position: absolute; width: min(48vw, 510px); aspect-ratio: 1; border: 1px solid #38b9ee0d; border-radius: 50%; animation: crosshair-drift 26s linear infinite; }
+.orb-crosshair::before, .orb-crosshair::after { content: ""; position: absolute; inset: 8%; border: 1px dashed #4bd1ff12; border-radius: 50%; }
+.orb-crosshair::after { inset: 22%; border-style: solid; box-shadow: 0 0 80px #00aaff0a inset; }
+.orb-crosshair i { position: absolute; background: linear-gradient(90deg, transparent, #4ed4ff55, transparent); }
+.orb-crosshair i:nth-child(1), .orb-crosshair i:nth-child(2) { height: 1px; width: 22%; top: 50%; }
+.orb-crosshair i:nth-child(1) { left: -8%; }
+.orb-crosshair i:nth-child(2) { right: -8%; }
+.orb-crosshair i:nth-child(3), .orb-crosshair i:nth-child(4) { width: 1px; height: 22%; left: 50%; background: linear-gradient(transparent, #4ed4ff55, transparent); }
+.orb-crosshair i:nth-child(3) { top: -8%; }
+.orb-crosshair i:nth-child(4) { bottom: -8%; }
+.orb-identity { position: absolute; top: calc(50% + min(24vw, 240px)); display: grid; text-align: center; gap: 5px; }
+.orb-identity span { font: 600 10px/1 "Bahnschrift", sans-serif; letter-spacing: .55em; color: #bdeeff; text-indent: .55em; text-shadow: 0 0 20px #42cfff66; }
+.orb-identity small { font: 500 7px/1.3 "Cascadia Mono", monospace; letter-spacing: .26em; color: #427e98; }
+.orb-activity { position: absolute; top: calc(50% + min(30vw, 292px)); display: flex; align-items: center; gap: 8px; opacity: .78; transition: .3s; }
+.orb-activity i { width: 4px; height: 4px; border-radius: 50%; background: #5de2ff; box-shadow: 0 0 12px #43d9ff; }
+.orb-activity span { font: 8px/1 "Cascadia Mono", monospace; letter-spacing: .18em; color: #5c92aa; }
+.telemetry { position: absolute; top: 50%; display: grid; gap: 5px; font: 7px/1 "Cascadia Mono", monospace; letter-spacing: .15em; color: #365b70; }
+.telemetry span { color: #7db3c9; }
+.telemetry-left { left: 4%; text-align: left; }
+.telemetry-right { right: 4%; text-align: right; }
+.telemetry::before { content: ""; width: 72px; height: 1px; background: linear-gradient(90deg, #2b9fc766, transparent); margin-bottom: 2px; }
+.telemetry-right::before { margin-left: auto; background: linear-gradient(270deg, #2b9fc766, transparent); }
+body[data-agent-state="error"] .orb-activity i { background: #ff6f7d; box-shadow: 0 0 12px #ff5266; }
+body[data-agent-state="success"] .orb-activity i { background: #62f6cf; box-shadow: 0 0 12px #62f6cf; }
+
+/* Context surfaces materialize beside the orb and leave when their value fades. */
+.context-widgets { position: fixed; z-index: 18; left: 7vw; top: 50%; width: min(340px, 27vw); transform: translate(-22px, -44%); opacity: 0; filter: blur(12px); pointer-events: none; transition: opacity .45s ease, transform .55s cubic-bezier(.2,.82,.2,1), filter .45s ease; }
+.context-widgets.visible { opacity: 1; transform: translate(0, -44%); filter: blur(0); pointer-events: auto; }
+.context-widget { position: relative; overflow: hidden; padding: 18px; color: #dff7ff; background: linear-gradient(135deg, #061722dc, #020b12e8); border: 1px solid #1d5a758f; border-radius: 2px; box-shadow: 0 22px 70px #0009, inset 0 0 40px #18b9ef08; backdrop-filter: blur(24px); animation: widget-materialize .65s cubic-bezier(.16,.8,.2,1) both; }
+.context-widget::before, .context-widget::after { content: ""; position: absolute; width: 34px; height: 1px; background: #68dcff; box-shadow: 0 0 10px #35cfff; }
+.context-widget::before { left: 0; top: 0; }.context-widget::after { right: 0; bottom: 0; }
+.widget-close { position: absolute; z-index: 2; right: 8px; top: 8px; width: 24px; height: 24px; border: 0; background: transparent; color: #4e8299; cursor: pointer; font-size: 15px; }.widget-close:hover { color: #d8f7ff; }
+.widget-scan { position: absolute; pointer-events: none; inset: -30% 0 auto; height: 26%; background: linear-gradient(transparent, #59d7ff0a, #78e5ff18, transparent); animation: widget-scan 5s linear infinite; }
+.context-widget header { display: flex; justify-content: space-between; align-items: flex-start; gap: 18px; padding-right: 17px; }.context-widget header small { font: 7px/1 "Cascadia Mono", monospace; letter-spacing: .2em; color: #43badf; }.context-widget header h2 { margin: 7px 0 2px; font-size: 15px; font-weight: 500; letter-spacing: .05em; }.context-widget header span { color: #7296a8; font-size: 9px; text-transform: uppercase; letter-spacing: .1em; }.weather-mark { color: #9ce8ff; font: 35px/1 "Segoe UI Symbol", sans-serif; text-shadow: 0 0 24px #43d8ff80; }
+.weather-now { display: grid; grid-template-columns: auto 1fr; align-items: end; gap: 23px; margin: 24px 0 18px; }.weather-now>strong { font-size: 50px; line-height: .85; font-weight: 200; letter-spacing: -.07em; text-shadow: 0 0 26px #47cfff25; }.weather-now sup { font-size: 12px; margin-left: 3px; vertical-align: top; color: #6db5cd; }.weather-now>div { display: grid; gap: 5px; border-left: 1px solid #19465d; padding-left: 13px; }.weather-now span { display: flex; justify-content: space-between; gap: 12px; font: 7px/1.3 "Cascadia Mono", monospace; letter-spacing: .1em; color: #4d768c; }.weather-now span b { color: #a4cedd; font-weight: 500; }
+.weather-days { display: grid; grid-template-columns: repeat(5,1fr); border-top: 1px solid #173c4f; border-bottom: 1px solid #173c4f; }.weather-days>div { padding: 10px 3px; display: grid; place-items: center; gap: 4px; border-right: 1px solid #102d3c; }.weather-days>div:last-child { border-right: 0; }.weather-days small { font: 6px/1 "Cascadia Mono",monospace; color: #568198; }.weather-days i { font-style: normal; color: #65d8fc; font-size: 15px; text-shadow: 0 0 12px #48d5ff55; }.weather-days b { font-size: 10px; font-weight: 500; }.weather-days span,.weather-days em { font-size: 7px; color: #55798b; font-style: normal; }.weather-days em { color: #429ec0; }
+.context-widget footer { display: flex; justify-content: space-between; margin-top: 11px; font: 6px/1 "Cascadia Mono", monospace; letter-spacing: .12em; color: #335d72; }.context-widget footer b { color: #3d829b; font-weight: 500; }
+.has-widget:not(.has-conversation) .jarvis-stage { transform: translateX(13vw) scale(.9); }
+
+/* Conversation is contextual information around the core, not the home. */
+.chat-scroll { position: absolute; z-index: 5; inset: 58px 0 112px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #174057 transparent; background: transparent; }
+.conversation { width: min(760px, calc(100% - 72px)); padding: 25px 0 90px; min-height: 100%; transition: .55s ease; }
+.welcome { min-height: calc(100vh - 210px); justify-content: flex-end; padding-bottom: 9vh; pointer-events: none; }
+.welcome-copy { display: none; }
+.welcome h1 { font-size: 12px; font-weight: 400; letter-spacing: .18em; text-transform: uppercase; margin: 8px 0 4px; }
+.welcome p { font-size: 9px; letter-spacing: .08em; }
+.welcome-hints { display: none; }
+.welcome-kicker { font-size: 7px; letter-spacing: .22em; color: #43bfe9; }
+.has-conversation .jarvis-stage { transform: translateX(-24vw) scale(.72); opacity: .88; }
+.has-conversation .conversation { width: min(660px, 44vw); margin-left: 51vw; padding-top: 8vh; }
+.has-conversation .chat-scroll { mask-image: linear-gradient(transparent 0, #000 7%, #000 91%, transparent 100%); }
+.message { grid-template-columns: 18px minmax(0, 1fr); gap: 10px; margin: 0 0 19px; animation: widget-in .45s cubic-bezier(.2,.8,.2,1) both; }
+.avatar { width: 16px; height: 16px; border-radius: 50%; font-size: 6px; background: #061927; border-color: #1a5b78; }
+.message.assistant .avatar { background: #06324a; border-color: #2a9fca; box-shadow: 0 0 17px #16baf329; }
+.message-head { font: 600 8px/1.2 "Cascadia Mono", monospace; letter-spacing: .13em; text-transform: uppercase; color: #7cb2c8; }
+.message-body { font-size: 11.5px; line-height: 1.65; color: #c7dce6; }
+.message.user .message-body { color: #85a6b5; }
+.message-body h1, .message-body h2, .message-body h3 { font-weight: 500; color: #dff7ff; }
+.thinking { margin-left: 28px; color: #5d91a8; }
+.thinking::before { color: #4bd5ff; }
+.message-sources a, .message-sources span { border-radius: 2px; border-color: #17425a; background: #04111a; }
+
+.composer-wrap { position: fixed; z-index: 20; left: 50%; bottom: 17px; width: min(590px, calc(100% - 104px)); transform: translateX(-50%); padding: 0; transition: .55s cubic-bezier(.2,.8,.2,1); }
+.has-conversation .composer-wrap { left: 73%; width: min(560px, 43vw); }
+.composer-glow { bottom: 8px; height: 34px; background: #00aefb20; }
+.composer { max-width: none; border-radius: 2px; border: 1px solid #17506b99; background: #03101ab8; padding: 10px 11px 7px; box-shadow: 0 18px 65px #0009, 0 0 30px #008fd10a; backdrop-filter: blur(22px); }
+.composer::before { content: ""; position: absolute; left: 0; top: 0; width: 28px; height: 1px; background: #6ce2ff; box-shadow: 0 0 8px #32cfff; }
+.composer:focus-within { border-color: #2588ac; box-shadow: 0 18px 65px #0009, 0 0 24px #1ac8ff0e; }
+.composer textarea { font-size: 11px; color: #dff8ff; }
+.mode-note span { color: #43cbf5; }
+.send { border-radius: 50%; background: #0b749c; border: 1px solid #44d1ff; box-shadow: 0 0 20px #18baff2d; }
+.send:hover { background: #139bc7; }
+.tool-btn { border-radius: 50%; border-color: #16465d; background: #04111a; }
+.voice-btn { position: relative; width: 29px; height: 29px; border: 1px solid #19506a; border-radius: 50%; background: #04131d; cursor: pointer; transition: .24s ease; }
+.voice-btn i { position: absolute; left: 50%; top: 50%; width: 6px; height: 10px; border: 1px solid #67d8ff; border-radius: 4px; transform: translate(-50%, -60%); }
+.voice-btn i::before { content: ""; position: absolute; left: 50%; top: 7px; width: 10px; height: 7px; border: 1px solid #67d8ff; border-top: 0; border-radius: 0 0 8px 8px; transform: translateX(-50%); }
+.voice-btn i::after { content: ""; position: absolute; left: 50%; top: 14px; width: 1px; height: 3px; background: #67d8ff; transform: translateX(-50%); }
+.voice-btn:hover { border-color: #62ddff; box-shadow: 0 0 18px #18baff2b; }
+.voice-btn.listening { border-color: #6ef0ff; background: #073048; box-shadow: 0 0 0 5px #26cfff0a, 0 0 24px #1ad4ff50; animation: voice-breathe 1.15s ease-in-out infinite; }
+.voice-btn.transcribing { border-style: dashed; animation: crosshair-drift 2s linear infinite; }
+.footnote { display: none; }
+
+.inspector { position: fixed; z-index: 42; right: 0; top: 0; bottom: 0; width: 334px; border-color: #174157; background: #020a11eb; box-shadow: -22px 0 70px #000b; transform: translateX(0); transition: .4s; }
+.inspector-head, .inspector-tabs { border-color: #14374a; }
+.context-card, .panel-block, .project-context, .mini { border-radius: 2px; border-color: #12384d; background: #04111a; }
+.inspector-tab.active { border-color: #2cc4f5; background: #061a25; }
+.panel-intro small, .inspector-head small { color: #45cffa; }
+
+@keyframes crosshair-drift { to { transform: rotate(360deg); } }
+@keyframes widget-in { from { opacity: 0; transform: translateY(12px) scale(.985); filter: blur(5px); } to { opacity: 1; transform: none; filter: blur(0); } }
+@keyframes voice-breathe { 50% { transform: scale(1.08); box-shadow: 0 0 0 10px #26cfff00, 0 0 30px #1ad4ff68; } }
+@keyframes widget-materialize { from { opacity: 0; transform: translateX(-15px) scale(.96); filter: blur(10px); clip-path: inset(0 100% 0 0); } to { opacity: 1; transform: none; filter: none; clip-path: inset(0); } }
+@keyframes widget-scan { from { transform: translateY(-100%); } to { transform: translateY(620%); } }
+@media (max-width: 900px) {
+  .telemetry { display: none; }
+  .has-conversation .jarvis-stage { transform: translateY(-24vh) scale(.58); }
+  .has-conversation .conversation { width: min(680px, calc(100% - 36px)); margin: 0 auto; padding-top: 30vh; }
+  .has-conversation .composer-wrap { left: 50%; width: calc(100% - 42px); }
+  .composer-wrap { width: calc(100% - 42px); }
+  .orb-crosshair { width: min(74vw, 440px); }
+  .context-widgets { left: 50%; top: auto; bottom: 118px; width: min(420px, calc(100vw - 34px)); transform: translate(-50%, 18px); }
+  .context-widgets.visible { transform: translate(-50%, 0); }
+  .has-widget:not(.has-conversation) .jarvis-stage { transform: translateY(-17vh) scale(.66); }
+}
+@media (prefers-reduced-motion: reduce) { .orb-crosshair { animation: none; } .message { animation: none; } }

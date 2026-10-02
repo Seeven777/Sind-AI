@@ -1,4 +1,5 @@
 import re
+from runtime.phase4.intent import classify_intent
 from urllib.parse import urlsplit
 
 
@@ -14,7 +15,7 @@ class ConversationalAnswerEngine:
     def __init__(
         self, model_router, conversations, learning, institutional,
         institutional_knowledge, web_search, context_orchestrator=None,
-        public_data=None
+        public_data=None, openjarvis=None
     ):
         self.models = model_router
         self.conversations = conversations
@@ -24,6 +25,7 @@ class ConversationalAnswerEngine:
         self.web_search = web_search
         self.context_orchestrator = context_orchestrator
         self.public_data = public_data
+        self.openjarvis = openjarvis
 
     def _looks_like_question(self, text):
         t = str(text or "").strip().lower()
@@ -54,6 +56,8 @@ class ConversationalAnswerEngine:
         return self._looks_like_question(text) and any(x in t for x in markers)
 
     def should_handle(self, text, selected_tools=None):
+        if classify_intent(text).executable:
+            return False
         # Conversa sem ferramentas candidatas é sempre leve.
         if not selected_tools:
             return True
@@ -235,7 +239,10 @@ class ConversationalAnswerEngine:
         messages.append({"role":"user","content":user_text})
 
         try:
-            response = self.models.chat(messages=messages, user_text=user_text, force="fast")
+            if self.openjarvis and self.openjarvis.health():
+                response = self.openjarvis.chat(messages)
+            else:
+                response = self.models.chat(messages=messages, user_text=user_text, force="fast")
             content = ((response.get("message") or {}).get("content") or "").strip()
             content = re.sub(r"<think>.*?</think>", "", content, flags=re.I|re.S).strip()
             if content:

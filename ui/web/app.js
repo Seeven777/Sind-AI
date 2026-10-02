@@ -1,6 +1,16 @@
-let bridge=null,snapshot=null,busy=false,lastUserPrompt='',pendingAttachments=[];
+let bridge=null,snapshot=null,busy=false,lastUserPrompt='',pendingAttachments=[],orb=null,orbResetTimer=null,widgetTimer=null;
 const $=id=>document.getElementById(id);
 const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+
+const STATE_LABELS={idle:'SYSTEM ONLINE',listening:'LISTENING',thinking:'ANALYZING',planning:'PLANNING',executing:'EXECUTING TASK',observing:'OBSERVING',verifying:'VERIFYING RESULT',speaking:'RESPONDING',success:'TASK COMPLETE',error:'ATTENTION REQUIRED'};
+function setAgentState(value,detail=''){
+  const state=STATE_LABELS[value]?value:'thinking';
+  clearTimeout(orbResetTimer);
+  document.body.dataset.agentState=state;
+  if(orb)orb.setState(state);
+  if($('orbStateLabel'))$('orbStateLabel').textContent=STATE_LABELS[state];
+  if($('orbActivityLabel'))$('orbActivityLabel').textContent=String(detail||STATE_LABELS[state]).replace(/\s*•.*$/,'').toUpperCase();
+}
 
 function safeUrl(raw){
   try{
@@ -74,13 +84,41 @@ function flashButton(btn,label='Copiado'){
   const old=btn.textContent;btn.textContent=label;setTimeout(()=>btn.textContent=old,900);
 }
 
+function weatherGlyph(code){
+  const n=Number(code||0);if(n===0)return '☼';if(n<=3)return '◒';if(n===45||n===48)return '≋';if(n>=95)return 'ϟ';if(n>=51&&n<=82)return '╱';return '○';
+}
+function dayLabel(value){
+  try{return new Intl.DateTimeFormat('pt-BR',{weekday:'short',timeZone:'UTC'}).format(new Date(`${value}T12:00:00Z`)).replace('.','').toUpperCase()}catch{return String(value||'').slice(5)}
+}
+function showContextWidget(widget){
+  const root=$('contextWidgets');if(!root||!widget||!widget.type)return;
+  clearTimeout(widgetTimer);
+  if(widget.type==='weather'){
+    const days=Array.isArray(widget.days)?widget.days.slice(0,5):[];
+    root.innerHTML=`<section class="context-widget weather-widget">
+      <button class="widget-close" aria-label="Fechar">×</button>
+      <div class="widget-scan"></div>
+      <header><div><small>ATMOSPHERIC DATA</small><h2>${esc(widget.title||'Clima')}</h2><span>${esc(widget.condition||'')}</span></div><div class="weather-mark">${weatherGlyph(widget.code)}</div></header>
+      <div class="weather-now"><strong>${esc(widget.temperature)}<sup>${esc(widget.temperature_unit||'°C')}</sup></strong><div><span>SENSAÇÃO <b>${esc(widget.apparent)}°</b></span><span>UMIDADE <b>${esc(widget.humidity)}%</b></span><span>VENTO <b>${esc(widget.wind)} km/h</b></span></div></div>
+      <div class="weather-days">${days.map(day=>`<div><small>${dayLabel(day.date)}</small><i>${weatherGlyph(day.code)}</i><b>${esc(day.max)}°</b><span>${esc(day.min)}°</span><em>${day.rain_probability==null?'—':esc(day.rain_probability)+'%'}</em></div>`).join('')}</div>
+      <footer><span>${esc(widget.provider||'Fonte pública')}</span><b>DADOS ATUALIZADOS</b></footer>
+    </section>`;
+  }else{
+    root.innerHTML=`<section class="context-widget"><button class="widget-close" aria-label="Fechar">×</button><header><div><small>${esc(widget.label||'CONTEXT')}</small><h2>${esc(widget.title||'Informação')}</h2></div></header><p>${esc(widget.summary||'')}</p></section>`;
+  }
+  root.classList.add('visible');document.body.classList.add('has-widget');
+  const close=()=>{root.classList.remove('visible');document.body.classList.remove('has-widget');widgetTimer=setTimeout(()=>root.innerHTML='',450)};
+  const button=root.querySelector('.widget-close');if(button)button.onclick=close;
+  widgetTimer=setTimeout(close,18000);
+}
+
 function setBusy(value,detail=''){
   busy=!!value;document.body.classList.toggle('busy',busy);
   $('sendBtn').disabled=busy;$('promptInput').disabled=busy;$('cancelBtn').classList.toggle('visible',busy);
   if(detail)$('statusText').textContent=detail;
   if(!busy)$('statusText').textContent='pronto';
 }
-function hideWelcome(){const w=$('welcome');if(w)w.style.display='none'}
+function hideWelcome(){const w=$('welcome');if(w)w.style.display='none';document.body.classList.add('has-conversation')}
 function chatEl(){return $('chatScroll')}
 function distanceFromBottom(){
   const c=chatEl();if(!c)return 0;
@@ -173,6 +211,7 @@ function fetchSnapshot(){if(bridge)bridge.getSnapshot(raw=>{try{renderSnapshot(J
 function renderSnapshot(data){
   snapshot=data||{};
   $('footerModel').textContent=snapshot.model||'adaptive local';
+  if($('telemetryModel'))$('telemetryModel').textContent=String(snapshot.model||'OLLAMA · READY').toUpperCase();
   const hw=snapshot.hardware||{};$('hardwareLabel').textContent=hw.tier?`${hw.tier} • ${hw.ram_gb||'?'} GB • ${hw.cpu_threads||'?'} threads`:'local • CPU';
   renderSessions();renderContext();renderSources();renderActivity();renderProjects();renderAttachments();renderMobile();renderUpdates();renderControlCenter();
 }
@@ -231,7 +270,9 @@ function deleteConversation(id,title){
 }
 
 function showWelcome(){
-  $('conversation').innerHTML=`<div class="welcome" id="welcome"><div class="welcome-orb">✦</div><h1>O que você precisa?</h1><p>Converse normalmente. O Jarvis lembra contexto, consulta dados, pesquisa e usa ferramentas quando isso realmente ajuda.</p><div class="welcome-hints"><button data-prompt="Quero começar um novo projeto. Me ajude a organizar o contexto.">Novo projeto</button><button data-prompt="Pesquise fontes oficiais sobre um assunto que eu indicar.">Pesquisar</button><button data-prompt="Faça um briefing do meu dia usando agenda, pendências, jobs e contexto atual.">Briefing do dia</button><button data-prompt="O que você lembra das nossas conversas recentes?">Lembrar</button></div></div>`;
+  document.body.classList.remove('has-conversation');
+  setAgentState('idle','AGUARDANDO COMANDO');
+  $('conversation').innerHTML=`<div class="welcome" id="welcome"><div class="welcome-copy"><div class="welcome-kicker"><i></i> COGNITIVE CORE ONLINE</div><h1>Presença ativa.</h1><p>Fale ou digite quando precisar.</p></div></div>`;
   bindPromptButtons();
 }
 
@@ -559,6 +600,7 @@ function initBridge(){
     bridge=channel.objects.jarvisBridge;
     bridge.statusChanged.connect((state,detail)=>{
       const raw=String(detail||state||'Jarvis está trabalhando…');
+      setAgentState(String(state||'thinking').toLowerCase(),raw);
       setBusy(true,raw);
       // Exibe o estágio real + tempo decorrido vindo do runtime.
       // Não reduz mais tarefas longas a uma mensagem genérica.
@@ -567,13 +609,46 @@ function initBridge(){
     bridge.commandFinished.connect((prompt,result,ok,metaRaw)=>{
       let meta={};try{meta=JSON.parse(metaRaw||'{}')}catch{}
       removeThinking();addMessage('assistant',result,ok,null,meta);setBusy(false);fetchSnapshot();
+      if(meta.widget)showContextWidget(meta.widget);
+      setAgentState(ok?'success':'error',ok?'RESULTADO VERIFICADO':'EXECUÇÃO NÃO CONFIRMADA');
+      orbResetTimer=setTimeout(()=>setAgentState('idle','AGUARDANDO COMANDO'),ok?1800:3200);
     });
     bridge.snapshotChanged.connect(raw=>{try{renderSnapshot(JSON.parse(raw))}catch(e){console.error(e)}});
+    if(bridge.voiceStateChanged)bridge.voiceStateChanged.connect((state,detail)=>{
+      const value=String(state||'idle').toLowerCase();
+      $('voiceBtn').classList.toggle('listening',value==='listening');
+      $('voiceBtn').classList.toggle('transcribing',value==='thinking');
+      setAgentState(value,detail||STATE_LABELS[value]||'VOICE');
+    });
+    if(bridge.voiceLevelChanged)bridge.voiceLevelChanged.connect(level=>{if(orb)orb.setAudioLevel(level)});
+    if(bridge.voiceTranscript)bridge.voiceTranscript.connect(text=>{
+      const transcript=String(text||'').trim();if(!transcript)return;
+      $('promptInput').value=transcript;resizeInput();sendPrompt(transcript);
+    });
     fetchSnapshot();
   });
 }
 
+function startVoiceConversation(){
+  if(!bridge||busy)return;
+  if(!bridge.startVoiceInput){setAgentState('error','ENTRADA DE VOZ INDISPONÍVEL');return}
+  bridge.startVoiceInput(raw=>{
+    let result={};try{result=JSON.parse(raw||'{}')}catch{}
+    if(result.ok===false)setAgentState('error',result.error||'MICROFONE INDISPONÍVEL');
+  });
+}
+
+function initHabitat(){
+  if(window.JarvisOrb&&$('jarvisOrb'))orb=new window.JarvisOrb($('jarvisOrb'));
+  setAgentState('idle','AGUARDANDO COMANDO');
+  const tick=()=>{if($('clockLabel'))$('clockLabel').textContent=new Intl.DateTimeFormat('pt-BR',{hour:'2-digit',minute:'2-digit',hour12:false,timeZone:'America/Sao_Paulo'}).format(new Date())};
+  tick();setInterval(tick,15000);
+  $('historyToggle').onclick=()=>document.body.classList.toggle('history-open');
+  document.addEventListener('pointerdown',e=>{if(document.body.classList.contains('history-open')&&!$('sidebar').contains(e.target)&&e.target!==$('historyToggle'))document.body.classList.remove('history-open')});
+}
+
 $('sendBtn').onclick=()=>sendPrompt($('promptInput').value);
+$('voiceBtn').onclick=startVoiceConversation;
 $('promptInput').addEventListener('input',resizeInput);
 $('promptInput').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendPrompt(e.target.value)}});
 $('cancelBtn').onclick=()=>bridge&&bridge.cancelTask();
@@ -599,7 +674,7 @@ document.addEventListener('keydown',e=>{
   if(e.ctrlKey&&e.key.toLowerCase()==='n'){e.preventDefault();$('newChatBtn').click()}
   if(e.key==='Escape'){document.querySelectorAll('.overlay').forEach(x=>x.classList.add('hidden'))}
 });
-bindPromptButtons();bindChatScrolling();toggleInspector(false);initBridge();
+bindPromptButtons();bindChatScrolling();toggleInspector(false);initHabitat();initBridge();
 
 $('updateCheckBtn').onclick=checkUpdate;
 $('updateInstallBtn').onclick=installUpdate;

@@ -1,6 +1,7 @@
 import json
 import re
 import sqlite3
+from contextlib import contextmanager
 from datetime import datetime
 from pathlib import Path
 
@@ -8,8 +9,17 @@ class LearningJournal:
     """Aprendizado persistente por experiência e correções explícitas, sem retreino de pesos."""
     def __init__(self, db_path):
         self.db_path=Path(db_path);self.db_path.parent.mkdir(parents=True,exist_ok=True);self._init_db()
+    @contextmanager
     def _connect(self):
-        c=sqlite3.connect(self.db_path,timeout=20);c.row_factory=sqlite3.Row;return c
+        c=sqlite3.connect(self.db_path,timeout=20);c.row_factory=sqlite3.Row
+        try:
+            yield c
+            c.commit()
+        except Exception:
+            c.rollback()
+            raise
+        finally:
+            c.close()
     def _now(self): return datetime.now().isoformat(timespec="seconds")
     def _init_db(self):
         with self._connect() as c:
