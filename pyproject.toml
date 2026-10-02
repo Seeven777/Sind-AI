@@ -4,14 +4,19 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "jarvis-next"
-version = "0.0.1"
-description = "Jarvis Next Personal Agent Operating System - Foundation"
+version = "1.0.0rc2"
+description = "Jarvis Next Personal Agent Operating System"
 requires-python = ">=3.11"
 dependencies = []
+
 
 [project.optional-dependencies]
 dev = [
   "pytest>=8.0",
+]
+desktop = [
+  "playwright>=1.50",
+  "pywinauto>=0.6.9",
 ]
 
 [project.scripts]

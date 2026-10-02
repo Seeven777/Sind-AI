@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Jarvis HQ</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <span class="eyebrow">JARVIS NEXT</span>
+    <strong>HQ</strong>
+  </div>
+  <div class="top-actions">
+    <a href="/">Companion</a><a href="/mission-control">Missões</a><a href="/agents">Agentes</a><a href="/projects">Projetos</a><a href="/memory">Memória</a><a href="/system">Sistema</a>
+    <span id="connection" class="pill">conectando</span>
+    <span id="needs" class="pill alert hidden">0 precisam de você</span>
+  </div>
+</header>
+
+<main>
+  <section class="world">
+    <div class="world-head">
+      <div>
+        <strong>Escritório de agentes</strong>
+        <span>cada personagem representa estado real do backend</span>
+      </div>
+      <div id="metrics" class="metrics"></div>
+    </div>
+
+    <div class="office-frame">
+      <div class="office-floor">
+        <div id="office" class="office-grid"></div>
+        <div class="core-room">
+          <div class="core-platform">
+            <div class="orb"><div class="orb-core"></div></div>
+          </div>
+          <strong>Jarvis</strong>
+          <span>Command</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <aside class="sidepanel">
+    <section id="attention-card" class="panel hidden">
+      <div class="panel-title"><h2>Precisa de você</h2><span>aprovações e bloqueios</span></div>
+      <div id="attention"></div>
+    </section>
+    <section class="panel">
+      <div class="panel-title"><h2>Missões</h2><span>pipeline atual</span></div>
+      <div id="missions" class="empty">Nenhuma missão ativa.</div>
+    </section>
+    <section class="panel timeline-panel">
+      <div class="panel-title"><h2>Atividade</h2><span>event bus</span></div>
+      <div id="timeline" class="timeline"></div>
+    </section>
+  </aside>
+</main>
+
+<dialog id="agent-dialog">
+  <button class="close" onclick="this.closest('dialog').close()">×</button>
+  <div id="agent-detail"></div>
+</dialog>
+<script src="/app.js"></script>
+</body>
+</html>

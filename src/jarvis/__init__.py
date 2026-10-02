@@ -1,3 +1,2 @@
-"""Jarvis Next foundation package."""
-
-__version__ = "0.0.1"
+"""Jarvis Next — Personal Agent Operating System."""
+__version__ = "1.0.0rc2"

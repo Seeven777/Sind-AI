@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Jarvis</title><link rel="stylesheet" href="/companion.css">
+</head>
+<body>
+<header><span>JARVIS</span><nav>
+<a href="/">Companion</a><a href="/hq">HQ</a><a href="/mission-control">Missões</a><a href="/agents">Agentes</a><a href="/projects">Projetos</a><a href="/memory">Memória</a><a href="/system">Sistema</a>
+</nav></header>
+<main>
+  <section class="hero">
+    <div id="orb" class="orb"><div></div></div>
+    <h1>Jarvis</h1>
+    <p id="status">Pronto.</p>
+  </section>
+  <section id="briefing" class="briefing"></section>
+  <section id="chat" class="chat"></section>
+  <form id="form">
+    <input id="input" autocomplete="off" placeholder="Pergunte ou delegue uma missão..." />
+    <button>Enviar</button>
+  </form>
+  <div class="hints">
+    <button data-prompt="Pesquise como podemos melhorar o Jarvis Next.">Pesquisa</button>
+    <button data-prompt="Monte uma equipe de agentes e desenvolva um plano para melhorar o Jarvis Next.">Missão em equipe</button>
+    <button data-prompt="Que horas são?">Operator</button>
+    <button data-prompt="Organize sua memória">Memória</button>
+    <button data-prompt="Resuma minha caixa de entrada">Inbox</button>
+    <button data-prompt="Me dê meu briefing do dia">Briefing</button>
+  </div>
+</main>
+<script src="/companion.js"></script>
+</body></html>

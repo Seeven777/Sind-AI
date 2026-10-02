@@ -1,44 +1,90 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass,field
 from pathlib import Path
 
 
 @dataclass(slots=True)
 class SystemConfig:
-    name: str = "Jarvis"
-    environment: str = "development"
+    name:str='Jarvis'
+    environment:str='development'
 
 
 @dataclass(slots=True)
 class LoggingConfig:
-    level: str = "INFO"
-    file: str = "logs/jarvis.jsonl"
+    level:str='INFO'
+    file:str='logs/jarvis.jsonl'
 
 
 @dataclass(slots=True)
 class StorageConfig:
-    database: str = "data/jarvis.db"
+    database:str='data/jarvis.db'
 
 
 @dataclass(slots=True)
 class RuntimeConfig:
-    resume_interrupted_tasks: bool = True
-    single_instance: bool = True
+    resume_interrupted_tasks:bool=True
+    single_instance:bool=True
+
+
+@dataclass(slots=True)
+class ModelsConfig:
+    default_provider:str='ollama'
+    default_model:str='qwen3.5:4b'
+    ollama_url:str='http://127.0.0.1:11434'
+    timeout_seconds:int=180
+    context_tokens:int=8192
+    temperature:float=.25
+
+
+@dataclass(slots=True)
+class AgentConfig:
+    research_enabled:bool=True
+
+
+@dataclass(slots=True)
+class PrivacyConfig:
+    mode:str='hybrid'  # hybrid | local_only
+
+
+@dataclass(slots=True)
+class FeatureConfig:
+    memory:bool=True
+    agents:bool=True
+    tools:bool=True
+    approvals:bool=True
+    scheduler:bool=True
+    connectors:bool=True
+    voice:bool=True
+    ui:bool=True
+    distributed:bool=True
+    capability_acquisition:bool=True
 
 
 @dataclass(slots=True)
 class AppConfig:
-    data_dir: Path
-    system: SystemConfig = field(default_factory=SystemConfig)
-    logging: LoggingConfig = field(default_factory=LoggingConfig)
-    storage: StorageConfig = field(default_factory=StorageConfig)
-    runtime: RuntimeConfig = field(default_factory=RuntimeConfig)
+    data_dir:Path
+    system:SystemConfig=field(default_factory=SystemConfig)
+    logging:LoggingConfig=field(default_factory=LoggingConfig)
+    storage:StorageConfig=field(default_factory=StorageConfig)
+    runtime:RuntimeConfig=field(default_factory=RuntimeConfig)
+    models:ModelsConfig=field(default_factory=ModelsConfig)
+    agents:AgentConfig=field(default_factory=AgentConfig)
+    privacy:PrivacyConfig=field(default_factory=PrivacyConfig)
+    features:FeatureConfig=field(default_factory=FeatureConfig)
 
     @property
-    def database_path(self) -> Path:
-        p = Path(self.storage.database)
-        return p if p.is_absolute() else self.data_dir / p
+    def database_path(self)->Path:
+        p=Path(self.storage.database)
+        return p if p.is_absolute() else self.data_dir/p
 
     @property
-    def log_path(self) -> Path:
-        p = Path(self.logging.file)
-        return p if p.is_absolute() else self.data_dir / p
+    def log_path(self)->Path:
+        p=Path(self.logging.file)
+        return p if p.is_absolute() else self.data_dir/p
+
+    @property
+    def artifacts_dir(self)->Path:
+        return self.data_dir/'artifacts'
+
+    @property
+    def local_only(self)->bool:
+        return self.privacy.mode.lower()=='local_only'

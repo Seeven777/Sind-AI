@@ -17,3 +17,14 @@ Thumbs.db
 *.db-wal
 *.db-shm
 *.jsonl
+
+
+# Jarvis persistent runtime / secrets
+.jarvis-data/
+JarvisData/
+**/google_client.json
+**/google_token.bin
+**/secrets/
+**/*.bin
+**/config/mcp_servers.json
+**/config/remote_agents.json

@@ -31,6 +31,19 @@ class EventRepository:
             (task_id,),
         ).fetchall()
 
+    def recent(self, limit: int = 30) -> list[dict]:
+        rows = self.connection.execute(
+            "SELECT * FROM events ORDER BY timestamp DESC,event_id DESC LIMIT ?",
+            (limit,),
+        ).fetchall()
+        out=[]
+        import json
+        for row in rows:
+            item=dict(row)
+            item['payload']=json.loads(item.pop('payload_json') or '{}')
+            out.append(item)
+        return out
+
     def count(self) -> int:
         row = self.connection.execute("SELECT COUNT(*) AS n FROM events").fetchone()
         return int(row["n"])
