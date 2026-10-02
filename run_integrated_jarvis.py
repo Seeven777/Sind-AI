@@ -1,4 +1,4 @@
-"""Inicializa o backend OpenJarvis e a interface legada como uma aplicação."""
+"""Inicializa o backend OpenJarvis e a interface JARVIS como uma aplicação."""
 
 from __future__ import annotations
 
@@ -8,6 +8,8 @@ import time
 from pathlib import Path
 from urllib.error import URLError
 from urllib.request import urlopen
+
+from runtime.local_secrets import load_local_secrets
 
 
 BASE = Path(__file__).resolve().parent
@@ -30,6 +32,8 @@ def require_file(path: Path, description: str) -> None:
 
 
 def main() -> int:
+    # Makes the configured ElevenLabs key available to the desktop child process.
+    load_local_secrets()
     require_file(OPENJARVIS, "Executável OpenJarvis")
     require_file(LEGACY_PYTHON, "Python do JARVIS")
 
@@ -56,7 +60,8 @@ def main() -> int:
 
     try:
         if "--check" in sys.argv[1:]:
-            print("JARVIS integrado: backend OpenJarvis saudável.")
+            voice = "configurada" if load_local_secrets().get("elevenlabs") else "sem chave"
+            print(f"JARVIS integrado: backend OpenJarvis saudável; voz ElevenLabs {voice}.")
             return 0
         return subprocess.call([str(LEGACY_PYTHON), str(BASE / "app.py")], cwd=BASE)
     finally:

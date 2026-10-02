@@ -5,6 +5,11 @@ from pathlib import Path
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QApplication, QMenu, QSystemTrayIcon
 
+from runtime.local_secrets import load_local_secrets
+
+# Load user-owned secrets before HabitatWindow checks the environment.
+load_local_secrets()
+
 from core.agent import JarvisAgent
 from ui.habitat import HabitatWindow
 from ui.hotkey import GlobalHotkey, HotkeyBridge
@@ -16,9 +21,14 @@ CONFIG_PATH = BASE / "data" / "config.json"
 
 
 def load_config():
-    return json.loads(
-        CONFIG_PATH.read_text(encoding="utf-8")
-    )
+    config = json.loads(CONFIG_PATH.read_text(encoding="utf-8"))
+    # The requested ElevenLabs voice is authoritative. Do not fall back to the
+    # low-quality native Windows voice when cloud TTS is unavailable.
+    config["voice_provider"] = "elevenlabs"
+    config["voice_fallback_local"] = False
+    config["elevenlabs_voice_id"] = "2CECaLAGTS5NRGxgbcxr"
+    config.setdefault("elevenlabs_model_id", "eleven_multilingual_v2")
+    return config
 
 
 def main():

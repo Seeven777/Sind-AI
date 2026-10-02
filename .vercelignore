@@ -1,7 +1,7 @@
-# Vercel recebe somente o launcher/PWA estático.
+# The Vercel deployment is only the static launcher/PWA.
+# Force the root project to stay small; Python/OpenJarvis remains local-only.
 /*
 !vercel.json
-!package.json
 !vercel_build.cjs
 !vercel_portal
 !vercel_portal/**
