@@ -1,8 +1,0 @@
-{
-  "product": "Jarvis Personal GPT",
-  "version": "1.9",
-  "channel": "main",
-  "min_python": "3.12",
-  "data_schema": 1,
-  "notes": "Adaptive Experience: feedback explícito, memória de sucesso/falha, regras de playbook, candidatos de adaptação, mapa de competências e criação de rotinas a partir de jobs."
-}
