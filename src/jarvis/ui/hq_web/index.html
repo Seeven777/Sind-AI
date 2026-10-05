@@ -1,68 +1,16 @@
-<!doctype html>
-<html lang="pt-BR">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Jarvis HQ</title>
-  <link rel="stylesheet" href="/styles.css">
-</head>
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#060910"><title>Jarvis HQ — Office</title><link rel="stylesheet" href="/office3d.css"><script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.min.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/"}}</script></head>
 <body>
-<header class="topbar">
-  <div class="brand">
-    <span class="eyebrow">JARVIS NEXT</span>
-    <strong>HQ</strong>
-  </div>
-  <div class="top-actions">
-    <a href="/">Companion</a><a href="/mission-control">Missões</a><a href="/agents">Agentes</a><a href="/projects">Projetos</a><a href="/memory">Memória</a><a href="/system">Sistema</a>
-    <span id="connection" class="pill">conectando</span>
-    <span id="needs" class="pill alert hidden">0 precisam de você</span>
-  </div>
-</header>
-
-<main>
-  <section class="world">
-    <div class="world-head">
-      <div>
-        <strong>Escritório de agentes</strong>
-        <span>cada personagem representa estado real do backend</span>
-      </div>
-      <div id="metrics" class="metrics"></div>
-    </div>
-
-    <div class="office-frame">
-      <div class="office-floor">
-        <div id="office" class="office-grid"></div>
-        <div class="core-room">
-          <div class="core-platform">
-            <div class="orb"><div class="orb-core"></div></div>
-          </div>
-          <strong>Jarvis</strong>
-          <span>Command</span>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <aside class="sidepanel">
-    <section id="attention-card" class="panel hidden">
-      <div class="panel-title"><h2>Precisa de você</h2><span>aprovações e bloqueios</span></div>
-      <div id="attention"></div>
-    </section>
-    <section class="panel">
-      <div class="panel-title"><h2>Missões</h2><span>pipeline atual</span></div>
-      <div id="missions" class="empty">Nenhuma missão ativa.</div>
-    </section>
-    <section class="panel timeline-panel">
-      <div class="panel-title"><h2>Atividade</h2><span>event bus</span></div>
-      <div id="timeline" class="timeline"></div>
-    </section>
-  </aside>
-</main>
-
-<dialog id="agent-dialog">
-  <button class="close" onclick="this.closest('dialog').close()">×</button>
-  <div id="agent-detail"></div>
-</dialog>
-<script src="/app.js"></script>
-</body>
-</html>
+<header class="hq-topbar"><div class="brand"><div class="brand-mark"><span></span><span></span><span></span></div><div><strong>JARVIS HQ</strong><small>AGENT OPERATIONS CENTER</small></div></div><nav><a href="/">Companion</a><a class="active" href="/hq">HQ</a><a href="/mission-control">Mission Control</a><a href="/agents">Agents</a><a href="/projects">Projects</a><a href="/system">System</a></nav><div class="top-state"><span class="live-dot"></span><span id="connection">CONNECTING</span><span class="version" id="version">—</span></div></header>
+<main class="hq-layout">
+<section class="office-stage" id="stage"><canvas id="office-canvas"></canvas><div id="room-labels" class="room-labels"></div>
+<div class="stage-top"><div><span class="eyebrow">LIVE ENVIRONMENT</span><h1>Operational Office</h1><p>Visualização em tempo real do Jarvis Core</p></div><div class="stage-actions"><button id="preset-overview">Overview</button><button id="preset-command">Command</button><button id="preset-floor">Floor</button><button id="auto-rotate" class="active">Auto</button><button id="reset-view">Reset</button></div></div>
+<div class="stage-bottom"><div class="status-strip"><span><i class="status-dot green"></i>Online</span><span><i class="status-dot blue"></i>Working</span><span><i class="status-dot amber"></i>Attention</span><span><i class="status-dot red"></i>Error</span></div><div class="zoom"><button id="zoom-out">−</button><button id="zoom-in">＋</button></div></div>
+<div id="fallback" class="fallback hidden"><div class="fallback-card"><div class="fallback-orb">J</div><h2>Modo visual alternativo</h2><p>O navegador não iniciou o renderer 3D. O sistema permanece operacional.</p><a href="/hq-classic">Abrir HQ clássico</a></div></div></section>
+<aside class="hq-inspector"><div class="inspector-head"><div><span class="eyebrow">JARVIS / HQ</span><h2>Mission cockpit</h2></div><a href="/" class="back">Companion ↗</a></div>
+<div id="summary" class="metric-grid"></div>
+<section class="inspector-card selected-card"><div class="card-head"><div><span class="eyebrow">SELECTION</span><h3 id="selected-title">Command Core</h3><small id="selected-subtitle">central orchestration</small></div><span id="selected-status" class="status-badge">READY</span></div><div id="selected-detail" class="selected-detail">Selecione um agente, sala ou núcleo no escritório.</div></section>
+<section class="inspector-card"><div class="card-head"><div><span class="eyebrow">LIVE MISSIONS</span><h3>Missões</h3></div><span id="mission-total" class="muted-count">0</span></div><div id="missions" class="list"></div></section>
+<section class="inspector-card"><div class="card-head"><div><span class="eyebrow">NEEDS YOU</span><h3>Atenção</h3></div><span id="attention-count" class="attention-count">0</span></div><div id="attention" class="list"></div></section>
+<section class="inspector-card mini-nav"><div class="card-head"><div><span class="eyebrow">NAVIGATION</span><h3>Departamentos</h3></div></div><div id="department-nav" class="department-nav"></div></section>
+</aside></main>
+<script type="module" src="/office3d.js"></script></body></html>

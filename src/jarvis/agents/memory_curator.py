@@ -34,6 +34,20 @@ class MemoryCuratorAgent:
         ))
         try:
             rows=self.memory_repository.recent(200)
+            tokens=[
+                token for token in re.findall(r"[\wÀ-ÿ]{4,}", str(objective).lower())
+                if token not in {
+                    'para','com','uma','sobre','seus','suas','como','este','esta',
+                    'missão','missao','precisa','deve','deverá','devera'
+                }
+            ]
+            relevant=[]
+            seen=set()
+            for token in tokens[:10]:
+                for item in self.memory_repository.search(token, limit=12):
+                    if item['memory_id'] not in seen:
+                        seen.add(item['memory_id'])
+                        relevant.append(item)
             groups={}
             for item in rows:
                 groups.setdefault(_normalize(item['content']),[]).append(item)
@@ -48,6 +62,12 @@ class MemoryCuratorAgent:
             ]
             for item in sorted(rows,key=lambda x:float(x.get('importance') or 0),reverse=True)[:12]:
                 report.append(f"- [{item['memory_type']}] {item['content']}")
+            report.extend(['','## Contexto relevante para a missão'])
+            if not relevant:
+                report.append('- Nenhuma memória relevante foi localizada por correspondência textual.')
+            else:
+                for item in relevant[:20]:
+                    report.append(f"- [{item['memory_type']}] {item['content']}")
             report.extend(['','## Duplicidades encontradas'])
             if not duplicates:
                 report.append('- Nenhuma duplicidade exata encontrada.')
@@ -72,7 +92,7 @@ class MemoryCuratorAgent:
             ))
             return AgentResult(
                 True,content,artifact['artifact_id'],artifact['path'],
-                {'memories_scanned':len(rows),'duplicate_groups':len(duplicates)}
+                {'memories_scanned':len(rows),'relevant_memories':len(relevant),'relevant_context':[x['content'] for x in relevant[:20]],'duplicate_groups':len(duplicates)}
             )
         except Exception as exc:
             self.agent_runs.finish(rid,error=str(exc))

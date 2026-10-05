@@ -1,5 +1,4 @@
-const $=s=>document.querySelector(s);
-const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-async function load(){const x=await fetch('/api/projects').then(r=>r.json());$('#projects').innerHTML=x.length?x.map(p=>`<div class="row"><b>${esc(p.name)} <span class="badge ${esc(p.status)}">${esc(p.status)}</span></b><small>${esc(p.objective||'Sem objetivo')}</small></div>`).join(''):'<div class="empty">Nenhum projeto.</div>'}
-$('#form').onsubmit=async e=>{e.preventDefault();const r=await fetch('/api/project',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:$('#name').value,objective:$('#objective').value})});const x=await r.json();if(!r.ok)return alert(x.error||'Erro');e.target.reset();load()};
-$('#refresh').onclick=load;load();
+const $=s=>document.querySelector(s),esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+async function api(url,opts){const r=await fetch(url,opts);const x=await r.json();if(!r.ok)throw new Error(x.error||r.status);return x}
+async function load(){try{const x=await api('/api/projects');$('#projects').innerHTML=x.length?x.map(p=>`<div class="row"><b>${esc(p.name)} <span class="badge ${esc(p.status)}">${esc(p.status)}</span></b><small>${esc(p.objective||'Sem objetivo definido.')}</small><small>${esc(p.updated_at)} · ${esc(p.project_id)}</small></div>`).join(''):'<div class="empty">Nenhum projeto criado.</div>'}catch(e){$('#projects').innerHTML=`<div class="empty">${esc(e.message)}</div>`}}
+$('#form').onsubmit=async e=>{e.preventDefault();const b=e.submitter;b.disabled=true;try{await api('/api/project',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:$('#name').value,objective:$('#objective').value})});$('#form').reset();await load()}catch(e){alert(e.message)}finally{b.disabled=false}};$('#refresh').onclick=load;load();

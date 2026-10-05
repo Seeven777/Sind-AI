@@ -45,15 +45,29 @@ class CapabilityResolver:
         }
 
     def inventory(self):
-        result={'agents':[],'tools':[],'skills':[],'connectors':[]}
+        result={'agents':[],'specialists':[],'tools':[],'skills':[],'connectors':[]}
         if self.agents:
+            cards = self.agents.cards()
+            # Keep the core Jarvis inventory stable and expose imported Agency
+            # specialists separately. This preserves the 8 built-in roles while
+            # making the external catalog discoverable to callers.
             result['agents']=[
                 {
                     'id':c.agent_id,'name':c.name,'department':c.department,
                     'capabilities':list(c.capabilities),
                     'active':c in self.agents.available(),
                 }
-                for c in self.agents.cards()
+                for c in cards
+                if not c.agent_id.startswith('agency.')
+            ]
+            result['specialists']=[
+                {
+                    'id':c.agent_id,'name':c.name,'department':c.department,
+                    'capabilities':list(c.capabilities),
+                    'active':c in self.agents.available(),
+                }
+                for c in cards
+                if c.agent_id.startswith('agency.')
             ]
         if self.tools:
             result['tools']=list(self.tools.list_ids())

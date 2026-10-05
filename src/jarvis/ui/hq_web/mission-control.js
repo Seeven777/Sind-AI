@@ -1,11 +1,14 @@
-const $=s=>document.querySelector(s);
-const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-function badge(s){return `<span class="badge ${esc(s)}">${esc(s)}</span>`}
-async function load(){
- const [h,t]=await Promise.all([fetch('/api/hq').then(r=>r.json()),fetch('/api/tool-runs').then(r=>r.json())]);
- $('#missions').innerHTML=h.missions.length?h.missions.map(m=>`<div class="row"><b>${esc(m.title)} ${badge(m.status)}</b><small>${esc(m.objective)}</small><div>${(m.steps||[]).map(s=>`<span class="badge ${esc(s.status)}">${esc(s.agent_id)} · ${esc(s.status)}</span>`).join(' ')}</div></div>`).join(''):'<div class="empty">Nenhuma missão.</div>';
- $('#attention').innerHTML=h.attention.length?h.attention.map(a=>`<div class="row"><b>${esc(a.title)}</b><small>${esc(a.kind)} · ${esc(a.risk)}</small></div>`).join(''):'<div class="empty">Nada aguardando você.</div>';
- $('#tools').innerHTML=t.length?t.slice(0,20).map(x=>`<div class="row"><b>${esc(x.tool_id)} ${badge(x.status)}</b><small>${esc(x.started_at)} · ${esc(x.error||'sem erro')}</small></div>`).join(''):'<div class="empty">Nenhuma execução.</div>';
- $('#events').innerHTML=h.timeline.slice(0,25).map(e=>`<div class="row"><b>${esc(e.type)}</b><small>${esc(e.agent_id||e.task_id||'sistema')} · ${esc(e.timestamp)}</small></div>`).join('');
+const $=s=>document.querySelector(s),esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+let data={missions:[],attention:[],tools:[],events:[]};
+function badge(s){return `<span class="badge ${esc(String(s||'unknown'))}">${esc(s||'unknown')}</span>`}
+function render(){
+ $('#missions').innerHTML=data.missions.length?data.missions.map(m=>`<div class="row"><b>${esc(m.title)} ${badge(m.status)}</b><small>${esc(m.objective)}</small><div class="actions">${(m.steps||[]).map(s=>`<span class="badge ${esc(s.status)}">${esc(s.agent_id)} · ${esc(s.status)}</span>`).join('')}</div><small>${esc(m.updated_at)} · ${esc(m.mission_id)}</small></div>`).join(''):'<div class="empty">Nenhuma missão registrada.</div>';
+ $('#attention').innerHTML=data.attention.length?data.attention.map(a=>`<div class="row"><b>${esc(a.title)} ${badge(a.kind)}</b><small>${esc(a.risk)} · ${esc(a.task_id||'')}</small>${a.kind==='approval'?`<div class="actions"><button class="secondary-action" data-approve="${esc(a.id)}">Aprovar</button></div>`:''}</div>`).join(''):'<div class="empty">Nada aguardando você.</div>';
+ $('#tools').innerHTML=data.tools.length?data.tools.slice(0,50).map(x=>`<div class="row"><b>${esc(x.tool_id)} ${badge(x.status)}</b><small>${esc(x.started_at)} · ${esc(x.error||'sem erro')}</small></div>`).join(''):'<div class="empty">Nenhuma execução.</div>';
+ $('#events').innerHTML=data.events.length?data.events.slice(0,50).map(e=>`<div class="row"><b>${esc(e.type)} ${badge(e.severity||'info')}</b><small>${esc(e.agent_id||e.task_id||'system')} · ${esc(e.timestamp)}</small></div>`).join(''):'<div class="empty">Nenhum evento.</div>';
+ document.querySelectorAll('[data-approve]').forEach(b=>b.onclick=()=>approve(b.dataset.approve));
 }
-$('#refresh').onclick=load;load();setInterval(load,2000);
+async function load(){try{const [h,t]=await Promise.all([fetch('/api/hq',{cache:'no-store'}).then(r=>r.json()),fetch('/api/tool-runs',{cache:'no-store'}).then(r=>r.json())]);data={missions:h.missions||[],attention:h.attention||[],tools:t||[],events:h.timeline||[]};render()}catch{}}
+async function approve(id){const r=await fetch('/api/approval/'+encodeURIComponent(id)+'/approve',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});if(r.ok)load()}
+$('#refresh').onclick=load;document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#tabs button').forEach(x=>x.classList.toggle('active',x===b));['missions','attention','tools','events'].forEach(k=>document.querySelector('#panel-'+k).classList.toggle('hidden',k!==b.dataset.tab))});
+$('#new-mission').onclick=()=>$('#mission-dialog').showModal();$('#mission-form').onsubmit=async e=>{e.preventDefault();const o=$('#mission-objective').value.trim();if(!o)return;const btn=$('#submit-mission');btn.disabled=true;try{const r=await fetch('/api/mission/team',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({objective:o,title:$('#mission-title').value.trim()||'Missão em equipe'})});const x=await r.json();if(!r.ok)throw new Error(x.error||'Falha');$('#mission-dialog').close();$('#mission-form').reset();load()}catch(e){alert(e.message)}finally{btn.disabled=false}};load();setInterval(load,2200);

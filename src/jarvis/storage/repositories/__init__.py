@@ -4,3 +4,6 @@ from .checkpoints import CheckpointRepository
 from .runs import RunRepository
 
 __all__ = ["EventRepository", "TaskRepository", "CheckpointRepository", "RunRepository"]
+
+from .preferences import PreferenceRepository
+__all__.append("PreferenceRepository")

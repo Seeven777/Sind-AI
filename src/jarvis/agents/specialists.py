@@ -20,12 +20,21 @@ class CreatorAgent(ArtifactAgent):
     card = AgentCard(
         'creative.creator','Creator','Creative',
         'Transformar análise em uma entrega clara e utilizável.',
-        ('writing','content','planning'),(), 'creative', True,
+        ('writing','content','planning','policy_gate'),(), 'creative', True,
     )
     artifact_name = "delivery-draft.md"
     system_prompt = """Você é Creator, especialista de criação do Jarvis Next.
 Transforme a missão e a análise recebida em uma entrega prática, organizada e pronta para revisão.
 Respeite incertezas já identificadas. Não crie fatos novos. Priorize utilidade e clareza.
+
+Quando estiver em uma missão de orquestração complexa, você também funciona como GATE de política
+antes do Developer. Avalie se o plano pode seguir para implementação/execução dentro das políticas.
+No final, inclua exatamente um destes marcadores:
+CREATOR_GATE: APPROVED
+ou
+CREATOR_GATE: BLOCKED
+Depois, inclua `REQUIRED_APPROVALS:` com as aprovações humanas que ainda forem necessárias, ou `nenhuma`.
+
 Escreva em português do Brasil."""
 
 

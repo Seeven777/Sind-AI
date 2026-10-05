@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import re
 
+
 from jarvis.core.events import Event
 from jarvis.models import ChatMessage
 from jarvis.tasks import TaskStatus
@@ -19,7 +20,7 @@ Ações de escrita exigem aprovação conforme política."""
 class JarvisOrchestrator:
     def __init__(
         self,*,intent_router,model_registry,model_router,agent_registry,task_service,
-        memory,bus,team_missions=None,briefing=None,tool_planner=None
+        memory,bus,team_missions=None,briefing=None,tool_planner=None,ai_mesh=None
     ):
         self.intent_router=intent_router
         self.model_registry=model_registry
@@ -31,8 +32,52 @@ class JarvisOrchestrator:
         self.team_missions=team_missions
         self.briefing=briefing
         self.tool_planner=tool_planner
+        self.ai_mesh=ai_mesh
 
-    async def handle(self,text):
+    async def handle(self,text,*,conversation_history=None,mode='auto'):
+        stripped=text.strip()
+        lowered=stripped.lower()
+        explicit_mode=str(mode or 'auto').lower().strip()
+        if lowered.startswith('/hermes'):
+            explicit_mode='hermes'
+            stripped=stripped[len('/hermes'):].strip()
+            lowered=stripped.lower()
+        if lowered.startswith('/deep'):
+            explicit_mode='deep'
+            stripped=stripped[len('/deep'):].strip()
+            lowered=stripped.lower()
+        if explicit_mode=='hermes' and self.ai_mesh is not None:
+            prompt=stripped
+            if not prompt:
+                return {'kind':'hermes','agent':'hermes','content':'Use: /hermes sua solicitação'}
+            if conversation_history:
+                prompt = self._with_history(prompt, conversation_history)
+            result=await self.ai_mesh.hermes.run(prompt)
+            return {
+                'kind':'hermes','agent':'hermes','content':result.content,
+                'metadata':result.metadata,
+            }
+        if explicit_mode=='deep':
+            prompt=stripped
+            if not prompt:
+                return {'kind':'deep','agent':'nvidia_nemotron','content':'Use: /deep sua solicitação','mode':'deep'}
+            route=self.model_router.route(
+                capability='reasoning',
+                privacy=self.model_router.privacy_mode,
+                budget='premium',
+            )
+            provider=self.model_registry.get(route.provider)
+            if conversation_history:
+                prompt=self._with_history(prompt, conversation_history)
+            response=await asyncio.to_thread(
+                provider.chat,[ChatMessage('user',prompt)],model=route.model,
+                system=JARVIS_SYSTEM+'\nVocê está no modo de raciocínio profundo. Entregue somente a resposta final.'
+            )
+            return {
+                'kind':'deep','agent':route.provider,'content':response.content,
+                'provider':response.provider,'model':response.model,
+                'metadata':{'route_reason':route.reason},'mode':'deep',
+            }
         intent=self.intent_router.classify(text)
         await self.bus.publish(Event(
             'jarvis.intent',
@@ -47,23 +92,24 @@ class JarvisOrchestrator:
             }
         if intent.name=='inbox':
             return await self._delegate_agent(
-                'administration.inbox','Triagem da caixa de entrada',text,min_chars=20
+                'administration.inbox','Triagem da caixa de entrada',text,min_chars=20,conversation_history=conversation_history
             )
         if intent.name=='tool_plan' and self.tool_planner:
             return await self._delegate_tool_plan(text)
         if intent.name=='team_mission' and self.team_missions:
-            return await self.team_missions.run(text,title='Missão delegada pelo Jarvis')
+            objective=self._with_history(text, conversation_history or []) if conversation_history else text
+            return await self.team_missions.run(objective,title='Missão delegada pelo Jarvis')
         if intent.name=='research':
             return await self._delegate_agent(
-                'research.general','Missão de pesquisa',text,min_chars=40
+                'research.general','Missão de pesquisa',text,min_chars=40,conversation_history=conversation_history
             )
         if intent.name=='developer':
             return await self._delegate_agent(
-                'engineering.developer','Missão de desenvolvimento',text,min_chars=60
+                'engineering.developer','Missão de desenvolvimento',text,min_chars=60,conversation_history=conversation_history
             )
         if intent.name=='memory_curator':
             return await self._delegate_agent(
-                'memory.curator','Curadoria de memória',text,min_chars=20
+                'memory.curator','Curadoria de memória',text,min_chars=20,conversation_history=conversation_history
             )
         if intent.name.startswith('operator_'):
             return await self._delegate_operator(intent.name,text)
@@ -74,12 +120,26 @@ class JarvisOrchestrator:
         block=''
         if memories:
             block='\n\nContexto persistente disponível:\n'+'\n'.join(f"- {x['content']}" for x in memories)
+        wire=[]
+        if conversation_history:
+            wire.extend(ChatMessage(x['role'],x['content']) for x in conversation_history[-24:])
+        wire.append(ChatMessage('user',text))
         response=await asyncio.to_thread(
-            provider.chat,[ChatMessage('user',text)],model=route.model,system=JARVIS_SYSTEM+block
+            provider.chat,wire,model=route.model,system=JARVIS_SYSTEM+block
         )
-        return {'kind':'chat','content':response.content,'provider':response.provider,'model':response.model}
+        return {'kind':'chat','content':response.content,'provider':response.provider,'model':response.model,'mode':explicit_mode}
 
-    async def _delegate_agent(self,agent_id,title,objective,*,min_chars=40):
+    @staticmethod
+    def _with_history(text, history):
+        rows=[]
+        for item in history[-24:]:
+            role=item.get('role','user')
+            content=str(item.get('content','')).strip()
+            if content:
+                rows.append(f"{role.upper()}: {content}")
+        return text + ("\n\nCONTEXTO DA CONVERSA ANTERIOR:\n" + "\n".join(rows) if rows else "")
+
+    async def _delegate_agent(self,agent_id,title,objective,*,min_chars=40,conversation_history=None):
         task=await self.task_service.create(
             title,objective,metadata={'delegated_by':'jarvis','agent':agent_id}
         )
@@ -92,7 +152,8 @@ class JarvisOrchestrator:
         await self.task_service.transition(task.task_id,TaskStatus.RUNNING)
         agent=self.agent_registry.runtime(agent_id)
         try:
-            result=await agent.run(objective,task_id=task.task_id)
+            context=self._with_history('', conversation_history or []) if conversation_history else ''
+            result=await agent.run(objective,task_id=task.task_id,context=context)
             await self.task_service.transition(task.task_id,TaskStatus.VERIFYING)
             if not result.success or len(result.summary.strip())<min_chars:
                 raise RuntimeError(f'{agent_id} produziu uma entrega insuficiente.')

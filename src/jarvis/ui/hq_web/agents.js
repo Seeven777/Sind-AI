@@ -1,7 +1,5 @@
-const $=s=>document.querySelector(s);
-const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-async function load(){
- const agents=await fetch('/api/agents').then(r=>r.json());
- $('#agents').innerHTML=agents.map(a=>`<section class="card span4"><div class="card-head"><h2>${esc(a.name)}</h2><span class="badge ${esc(a.status)}">${esc(a.status)}</span></div><div class="row"><b>${esc(a.department)}</b><small>${esc(a.id)}</small></div><div class="row"><b>Missão</b><small>${esc(a.mission)}</small></div><div class="row"><b>Atividade</b><small>${esc(a.activity||'—')}</small></div><div class="row"><b>Capacidades</b><small>${esc((a.capabilities||[]).join(' · '))}</small></div></section>`).join('');
-}
-load();setInterval(load,2500);
+const $=s=>document.querySelector(s),esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+let rows=[],filter='all';
+function render(){const q=$('#search').value.toLowerCase().trim();const out=rows.filter(a=>(filter==='all'||a.status===filter)&&(!q||(a.name+' '+a.department+' '+(a.capabilities||[]).join(' ')).toLowerCase().includes(q)));$('#summary').textContent=`${out.length} exibidos · ${rows.filter(a=>a.status==='working').length} trabalhando · ${rows.length} total`;$('#agents').innerHTML=out.map(a=>`<article class="agent-card"><div class="agent-head"><div class="agent-avatar">${esc(a.name.slice(0,1))}</div><div><strong>${esc(a.name)}</strong><small><i class="status-led ${esc(a.status)}"></i>${esc(a.department)} · ${esc(a.status)}</small></div></div><div class="agent-body">${esc(a.activity||a.mission||'Disponível')}</div><div class="agent-body">${(a.capabilities||[]).slice(0,6).map(c=>`<span class="badge">${esc(c)}</span>`).join('')}</div><div class="agent-footer"><span>${esc(a.model||'sem modelo')}</span><span>${Math.round((a.progress||0)*100)}%</span></div></article>`).join('')||'<div class="empty">Nenhum agente corresponde ao filtro.</div>'}
+async function load(){try{const r=await fetch('/api/agents',{cache:'no-store'});rows=await r.json();render()}catch{$('#agents').innerHTML='<div class="empty">Diretório indisponível.</div>'}}
+$('#search').addEventListener('input',render);document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>{filter=b.dataset.filter;document.querySelectorAll('#tabs button').forEach(x=>x.classList.toggle('active',x===b));render()});load();setInterval(load,4000);

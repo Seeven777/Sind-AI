@@ -109,6 +109,76 @@ class OperatorAgent:
             metadata={'status':result.status,'output':result.output,'evidence':result.evidence,'agent_run_id':rid}
         )
 
+    async def run(self, objective, *, task_id, context=""):
+        """Execute an optional machine-readable execution plan.
+
+        Operator remains the sole authority for physical/external actions.
+        An empty/no plan is a valid no-op for complex knowledge-only missions.
+        """
+        import json
+        import re
+
+        plan = None
+        match = re.search(r"EXECUTION_PLAN:\s*```(?:json)?\s*(\{.*?\})\s*```", context, re.S)
+        if not match:
+            match = re.search(r"EXECUTION_PLAN:\s*(\{.*\})", context, re.S)
+        if match:
+            try:
+                plan = json.loads(match.group(1))
+            except json.JSONDecodeError:
+                plan = None
+
+        if plan is None:
+            return AgentResult(
+                True,
+                'Operator não recebeu um plano de execução verificável; nenhuma ação física foi iniciada.',
+                metadata={'status': 'no_execution_plan', 'actions_executed': 0},
+            )
+
+        actions = plan.get('actions') if isinstance(plan, dict) else None
+        if not isinstance(actions, list):
+            return AgentResult(
+                False,
+                'EXECUTION_PLAN inválido: actions precisa ser uma lista.',
+                metadata={'status': 'invalid_execution_plan'},
+            )
+
+        executed = []
+        for index, action in enumerate(actions, 1):
+            if not isinstance(action, dict) or not action.get('tool_id'):
+                return AgentResult(
+                    False,
+                    f'EXECUTION_PLAN inválido na ação {index}.',
+                    metadata={'status': 'invalid_execution_plan', 'action': index},
+                )
+            result = await self.execute(
+                str(action['tool_id']), action.get('payload') or {}, task_id=task_id
+            )
+            executed.append({
+                'index': index,
+                'tool_id': action['tool_id'],
+                'success': result.success,
+                'status': result.metadata.get('status'),
+                'evidence': result.metadata.get('evidence', {}),
+            })
+            if not result.success:
+                return AgentResult(
+                    False,
+                    result.summary,
+                    metadata={
+                        'status': result.metadata.get('status', 'failed'),
+                        'actions_executed': len(executed),
+                        'actions': executed,
+                        'approval_id': result.metadata.get('approval_id'),
+                    },
+                )
+
+        return AgentResult(
+            True,
+            f'Operator concluiu {len(executed)} ação(ões) e recebeu evidência de execução.',
+            metadata={'status': 'completed', 'actions_executed': len(executed), 'actions': executed},
+        )
+
     async def resume_approval(self,approval_id):
         approval=self.tool_executor.approvals.get(approval_id)
         if not approval:

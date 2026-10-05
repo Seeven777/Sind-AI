@@ -1,7 +1,3 @@
-const $=s=>document.querySelector(s);
-const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-async function load(){
- const x=await fetch('/api/memory').then(r=>r.json());
- $('#memory').innerHTML=x.length?x.map(m=>`<div class="row"><b>${esc(m.memory_type)} · importância ${Number(m.importance||0).toFixed(2)}</b><small>${esc(m.content)}</small><small>origem: ${esc(m.source)} · confiança ${Number(m.confidence||0).toFixed(2)}</small></div>`).join(''):'<div class="empty">Nenhuma memória persistente.</div>';
-}
-$('#refresh').onclick=load;load();
+const $=s=>document.querySelector(s),esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+async function load(){try{const x=await fetch('/api/memory',{cache:'no-store'}).then(r=>r.json());$('#count').textContent=`${x.length} registros`;$('#memory').innerHTML=x.length?x.map(m=>`<div class="row"><b>${esc(m.memory_type)} <span class="badge">confiança ${Math.round((m.confidence||0)*100)}%</span></b><small>${esc(m.content)}</small><small>${esc(m.source)} · ${esc(m.scope)} · importância ${Number(m.importance||0).toFixed(2)} · ${esc(m.created_at)}</small></div>`).join(''):'<div class="empty">Nenhuma memória persistida.</div>'}catch(e){$('#memory').innerHTML='<div class="empty">Memória indisponível.</div>'}}
+$('#refresh').onclick=load;load();setInterval(load,6000);

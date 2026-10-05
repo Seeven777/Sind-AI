@@ -117,10 +117,11 @@ class WatcherService:
         fingerprint=None
         exists=path.is_file()
         if exists:
-            stat=path.stat()
-            fingerprint=hashlib.sha256(
-                f'{stat.st_size}|{stat.st_mtime_ns}'.encode('utf-8')
-            ).hexdigest()
+            try:
+                content=await __import__("asyncio").to_thread(path.read_bytes)
+                fingerprint=hashlib.sha256(content).hexdigest()
+            except OSError:
+                exists=False
         triggered=previous is not None and fingerprint!=previous
         self.repository.update_state(
             watcher['watcher_id'],

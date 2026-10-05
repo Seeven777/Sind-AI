@@ -72,11 +72,13 @@ if ($agencyStatus -match '"agents"\s*:\s*([1-9][0-9]*)') {
     Write-Host "Agency Agents não detectado; integração opcional permanece degradada com segurança." -ForegroundColor Yellow
 }
 
-Section "7/11 - BRIEFING / CAPABILITIES"
+Section "7/11 - BRIEFING / CAPABILITIES / AI MESH"
 & $Python -m jarvis briefing
 if ($LASTEXITCODE -ne 0) { throw "Briefing falhou." }
 & $Python -m jarvis inventory
 if ($LASTEXITCODE -ne 0) { throw "Inventário falhou." }
+& $Python -m jarvis ai-status
+if ($LASTEXITCODE -ne 0) { throw "AI Mesh status falhou." }
 
 Section "8/11 - COMPUTER USE"
 if ($SkipComputerUse) {
@@ -115,7 +117,7 @@ foreach ($route in $routes) {
 }
 
 Section "10/11 - APIS"
-$apis = @("/api/hq","/api/briefing","/api/system","/api/projects","/api/agents","/api/agency","/api/memory","/api/capabilities")
+$apis = @("/api/hq","/api/briefing","/api/system","/api/ai-mesh","/api/projects","/api/agents","/api/agency","/api/memory","/api/capabilities")
 foreach ($route in $apis) {
     $response = Invoke-WebRequest -UseBasicParsing -Uri ("http://127.0.0.1:4760" + $route) -TimeoutSec 5
     if ($response.StatusCode -ne 200) { throw "Falha na API: $route" }

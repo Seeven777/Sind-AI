@@ -36,6 +36,28 @@ class ModelsConfig:
 
 
 @dataclass(slots=True)
+class AIIntegrationsConfig:
+    hermes_enabled:bool=True
+    hermes_command:str='hermes'
+    hermes_profile:str=''
+    hermes_toolsets:str='safe'
+    hermes_timeout_seconds:int=300
+    nvidia_enabled:bool=True
+    nvidia_base_url:str='https://integrate.api.nvidia.com/v1'
+    nvidia_model:str='nvidia/nemotron-3-ultra-550b-a55b'
+    nvidia_thinking:bool=True
+    nvidia_max_tokens:int=16384
+    nvidia_thinking_token_budget:int=4096
+    wa_akg_url:str=''
+    wa_akg_session:str=''
+    wa_akg_timeout_seconds:int=30
+    creative_api_url:str='https://api.muapi.ai'
+    creative_timeout_seconds:int=60
+    creative_poll_seconds:int=3
+    creative_max_polls:int=100
+
+
+@dataclass(slots=True)
 class AgentConfig:
     research_enabled:bool=True
 
@@ -67,6 +89,7 @@ class AppConfig:
     storage:StorageConfig=field(default_factory=StorageConfig)
     runtime:RuntimeConfig=field(default_factory=RuntimeConfig)
     models:ModelsConfig=field(default_factory=ModelsConfig)
+    ai:AIIntegrationsConfig=field(default_factory=AIIntegrationsConfig)
     agents:AgentConfig=field(default_factory=AgentConfig)
     privacy:PrivacyConfig=field(default_factory=PrivacyConfig)
     features:FeatureConfig=field(default_factory=FeatureConfig)

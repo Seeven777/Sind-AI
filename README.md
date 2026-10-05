@@ -1,4 +1,4 @@
-# Jarvis Next 1.0 RC2
+# Jarvis Next 1.0 RC3
 ## Personal Agent Operating System
 
 Jarvis Next é um sistema pessoal de agentes local-first para Windows.
@@ -30,12 +30,13 @@ Abrir Jarvis:
 
 HQ:
 
-`Start-Jarvis-HQ.cmd`
+`Start-Jarvis-HQ.cmd` (escritório 3D)
 
 ## Superfícies
 
 - `/` — Companion
-- `/hq` — escritório de agentes
+- `/hq` — escritório 3D interativo de agentes
+- `/hq-classic` — escritório 2D de compatibilidade
 - `/mission-control` — tarefas, handoffs, approvals e evidências
 - `/agents` — Agent Directory
 - `/projects` — projetos
@@ -80,6 +81,33 @@ Comandos úteis:
 ```
 
 O Agent Directory (`/agents`) mostra o catálogo completo detectado. O escritório principal (`/hq`) permanece com os 8 agentes centrais para não ficar visualmente sobrecarregado.
+
+## Companion e histórico de conversas
+
+O Companion agora mantém o histórico local de conversas e oferece:
+
+- nova conversa;
+- busca por conteúdo/título;
+- renomear;
+- fixar;
+- arquivar;
+- excluir;
+- copiar respostas;
+- regenerar a última resposta;
+- editar uma mensagem para reenviar;
+- contexto das mensagens anteriores enviado ao modelo.
+
+Atalhos: `Ctrl+K` para focar a caixa de mensagem e `Ctrl+Shift+N` para nova conversa.
+
+## Escritório 3D
+
+O `/hq` usa Three.js 0.186.1 com `OrbitControls` para câmera orbital, zoom, rotação e seleção de agentes/departamentos. Os estados visuais continuam derivados de `/api/hq`.
+
+O renderer visual é uma dependência remota opcional; se WebGL/Three.js não carregar, use `/hq-classic`. O core Python não depende do renderer 3D.
+
+Comando direto:
+
+`Open-Jarvis-Office.cmd`
 
 ## Primeiros comandos
 
@@ -307,3 +335,27 @@ Registrar node remoto:
 A validação de release também executa smoke tests, UI routes e APIs locais.
 
 Consulte `docs/RELEASE_STATUS_v1.0_RC.md`.
+
+## AI Mesh — Hermes / Nemotron / WA-AKG / Creative
+
+RC2 now includes an optional AI Mesh layer. See `INSTALL_AI_MESH_RC2.md` and `docs/AI_MESH_ARCHITECTURE.md`. Status is also visible in `/system`.
+
+Quick diagnostics:
+
+```powershell
+.\AI-Status.cmd
+```
+
+Explicit deep reasoning in the Jarvis chat:
+
+```text
+/deep sua solicitação
+```
+
+Explicit Hermes advisory session:
+
+```text
+/hermes sua solicitação
+```
+
+Cloud credentials stay outside the repository. Use Jarvis SecretStore or environment variables.

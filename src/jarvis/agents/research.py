@@ -32,10 +32,11 @@ Escreva em português do Brasil."""
         self.tool_executor=tool_executor
         self.web_enabled=web_enabled
 
-    async def run(self,objective:str,*,task_id:str,context:str="")->AgentResult:
+    async def run(self,objective:str,*,task_id:str,context:str="",allow_external:bool|None=None)->AgentResult:
         web_context=""
         sources=[]
-        if self.tool_executor is not None and self.web_enabled:
+        use_external = self.web_enabled if allow_external is None else bool(allow_external)
+        if self.tool_executor is not None and use_external:
             await self.bus.publish(Event(
                 'agent.progress',task_id=task_id,agent_id=self.card.agent_id,
                 payload={'progress':0.12,'activity':'Pesquisando fontes públicas'}
@@ -82,7 +83,7 @@ Escreva em português do Brasil."""
                 parts.append(f"CONTEXTO RECEBIDO:\n{context}")
             if web_context:
                 parts.append(f"FONTES WEB COLETADAS PELO SISTEMA:\n{web_context}")
-            elif self.tool_executor is not None and self.web_enabled:
+            elif self.tool_executor is not None and use_external:
                 parts.append(
                     "OBSERVAÇÃO: a pesquisa web não retornou evidência utilizável. "
                     "Não trate conhecimento geral como verificado."

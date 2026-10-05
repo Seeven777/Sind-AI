@@ -27,12 +27,14 @@ from jarvis.memory import MemoryService
 from jarvis.missions import TeamMissionService,MissionPlanner
 from jarvis.proactivity import OpportunityEngine
 from jarvis.models import (
-    ModelRegistry,ModelRouter,OllamaProvider,OpenAICompatibleProvider
+    ModelRegistry,ModelRouter,OllamaProvider,OpenAICompatibleProvider,NvidiaNemotronProvider
 )
 from jarvis.runtime import GoalVerifier,ObserveActVerifyRuntime
+from jarvis.integrations import AIMesh,CreativeStudioClient,HermesAgentBridge,WhatsAppGatewayClient
 from jarvis.scheduler import SchedulerRepository,Scheduler
 from jarvis.security import PolicyEngine,SecretStore
 from jarvis.skills import SkillRegistry,SkillRepository,SkillManager,SkillRunner,SkillGenerationService
+from jarvis.storage.repositories.preferences import PreferenceRepository
 from jarvis.storage.repositories.product import (
     AgentRunRepository,ApprovalRepository,ArtifactRepository,ConversationRepository,
     MemoryRepository,MissionRepository,ToolRunRepository,WorkspaceRepository,
@@ -65,11 +67,14 @@ class ProductRuntime:
     foundation:Runtime
     model_registry:ModelRegistry
     model_router:ModelRouter
+    ai_mesh:AIMesh
     agent_registry:AgentRegistry
     tool_registry:ToolRegistry
     tool_executor:ToolExecutor
     memory:MemoryService
     chat:ChatService
+    conversations:ConversationRepository
+    preferences:PreferenceRepository
     orchestrator:JarvisOrchestrator
     tool_planner:ToolPlanner
     hq:HQService
@@ -129,6 +134,7 @@ async def start_product_runtime(data_dir:Path|None=None,*,model_provider=None):
         conn=foundation.database.conn()
 
         conversations=ConversationRepository(conn)
+        preferences=PreferenceRepository(conn)
         agent_runs=AgentRunRepository(conn)
         artifact_repo=ArtifactRepository(conn)
         memory_repo=MemoryRepository(conn)
@@ -141,6 +147,31 @@ async def start_product_runtime(data_dir:Path|None=None,*,model_provider=None):
         workspace=workspace_repo.get_or_create_default()
 
         secret_store=SecretStore(cfg.data_dir/'secrets')
+        nvidia_key=secret_store.get('nvidia_api_key') or os.environ.get('NVIDIA_API_KEY','')
+        wa_key=secret_store.get('wa_akg_api_key') or os.environ.get('JARVIS_WA_AKG_KEY','')
+        creative_key=secret_store.get('creative_api_key') or os.environ.get('JARVIS_CREATIVE_API_KEY','')
+        ai_mesh=AIMesh(
+            hermes=HermesAgentBridge(
+                command=cfg.ai.hermes_command,
+                profile=cfg.ai.hermes_profile,
+                toolsets=cfg.ai.hermes_toolsets,
+                timeout_seconds=cfg.ai.hermes_timeout_seconds,
+                enabled=cfg.ai.hermes_enabled,
+            ),
+            whatsapp_gateway=WhatsAppGatewayClient(
+                base_url=cfg.ai.wa_akg_url,
+                api_key=wa_key,
+                session_id=cfg.ai.wa_akg_session,
+                timeout_seconds=cfg.ai.wa_akg_timeout_seconds,
+            ),
+            creative=CreativeStudioClient(
+                base_url=cfg.ai.creative_api_url,
+                api_key=creative_key,
+                timeout_seconds=cfg.ai.creative_timeout_seconds,
+                poll_seconds=cfg.ai.creative_poll_seconds,
+                max_polls=cfg.ai.creative_max_polls,
+            ),
+        )
         artifact_store=ArtifactStore(cfg.artifacts_dir,artifact_repo)
         memory=MemoryService(memory_repo)
 
@@ -173,10 +204,29 @@ async def start_product_runtime(data_dir:Path|None=None,*,model_provider=None):
                 }
             )
 
+        if (not cfg.local_only) and cfg.ai.nvidia_enabled:
+            models.register(
+                NvidiaNemotronProvider(
+                    cfg.ai.nvidia_base_url,nvidia_key,cfg.ai.nvidia_model,
+                    timeout=cfg.models.timeout_seconds,
+                    enable_thinking=cfg.ai.nvidia_thinking,
+                    max_tokens=cfg.ai.nvidia_max_tokens,
+                    thinking_token_budget=cfg.ai.nvidia_thinking_token_budget,
+                ),
+                {
+                    'local':False,
+                    'paid':True,
+                    'capabilities':['chat','reasoning','coding','tool_use','general'],
+                }
+            )
+
+        premium_provider='nvidia_nemotron' if nvidia_key and not cfg.local_only and cfg.ai.nvidia_enabled else None
         router=ModelRouter(
             provider.provider_id,
             getattr(provider,'default_model',cfg.models.default_model),
             registry=models,
+            premium_provider=premium_provider,
+            privacy_mode=cfg.privacy.mode,
         )
 
         policy=PolicyEngine()
@@ -392,6 +442,7 @@ async def start_product_runtime(data_dir:Path|None=None,*,model_provider=None):
         )
         orchestrator=JarvisOrchestrator(
             intent_router=IntentRouter(),model_registry=models,model_router=router,
+            ai_mesh=ai_mesh,
             agent_registry=agents,task_service=foundation.task_service,
             memory=memory,bus=foundation.bus,team_missions=team_missions,
             briefing=briefing,tool_planner=tool_planner
@@ -405,7 +456,7 @@ async def start_product_runtime(data_dir:Path|None=None,*,model_provider=None):
         )
 
         return ProductRuntime(
-            foundation,models,router,agents,tools,tool_executor,memory,chat,
+            foundation,models,router,ai_mesh,agents,tools,tool_executor,memory,chat,conversations,preferences,
             orchestrator,tool_planner,hq,policy,team_missions,briefing,workspace,approvals,tool_runs,
             connector_registry,connector_repo,connector_service,
             watcher_repo,watchers,scheduler_repo,scheduler,

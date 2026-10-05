@@ -12,21 +12,24 @@ def now():
 
 class ConversationRepository:
     def __init__(self, conn): self.conn = conn
+
     def create(self, title='Nova conversa'):
-        cid=str(uuid4()); ts=now()
+        cid = str(uuid4()); ts = now()
         self.conn.execute(
-            'INSERT INTO conversations(conversation_id,title,created_at,updated_at) VALUES(?,?,?,?)',
-            (cid,title,ts,ts)
+            'INSERT INTO conversations(conversation_id,title,created_at,updated_at,archived,pinned) VALUES(?,?,?,?,0,0)',
+            (cid, title, ts, ts)
         ); self.conn.commit(); return cid
-    def add_message(self,cid,role,content,metadata=None):
-        mid=str(uuid4()); ts=now()
+
+    def add_message(self, cid, role, content, metadata=None):
+        mid = str(uuid4()); ts = now()
         self.conn.execute(
             'INSERT INTO messages(message_id,conversation_id,role,content,created_at,metadata_json) VALUES(?,?,?,?,?,?)',
-            (mid,cid,role,content,ts,json.dumps(metadata or {},ensure_ascii=False))
+            (mid, cid, role, content, ts, json.dumps(metadata or {}, ensure_ascii=False))
         )
         self.conn.execute('UPDATE conversations SET updated_at=? WHERE conversation_id=?',(ts,cid))
         self.conn.commit(); return mid
-    def recent_messages(self,cid,limit=20):
+
+    def recent_messages(self, cid, limit=20):
         rows=self.conn.execute(
             'SELECT role,content,created_at,metadata_json FROM messages WHERE conversation_id=? ORDER BY created_at DESC LIMIT ?',
             (cid,limit)
@@ -36,6 +39,85 @@ class ConversationRepository:
              'metadata':json.loads(r['metadata_json'] or '{}')}
             for r in reversed(rows)
         ]
+
+    def get(self, cid):
+        row=self.conn.execute(
+            'SELECT * FROM conversations WHERE conversation_id=?',(cid,)
+        ).fetchone()
+        if row is None: return None
+        item=dict(row)
+        item['archived']=bool(item.get('archived',0))
+        item['pinned']=bool(item.get('pinned',0))
+        item['messages']=self.recent_messages(cid,200)
+        return item
+
+    def list(self, *, search='', limit=100, include_archived=False):
+        limit=max(1,min(int(limit),500))
+        where=[]; params=[]
+        if not include_archived:
+            where.append('archived=0')
+        if search.strip():
+            q=f'%{search.strip()}%'
+            where.append('(conversation_id IN (SELECT conversation_id FROM messages WHERE content LIKE ?) OR title LIKE ?)')
+            params.extend([q,q])
+        clause=('WHERE '+ ' AND '.join(where)) if where else ''
+        rows=self.conn.execute(
+            f'SELECT conversation_id,title,created_at,updated_at,archived,pinned,\n            (SELECT COUNT(*) FROM messages m WHERE m.conversation_id=conversations.conversation_id) AS message_count,\n            (SELECT content FROM messages m WHERE m.conversation_id=conversations.conversation_id ORDER BY created_at DESC LIMIT 1) AS preview\n            FROM conversations {clause} ORDER BY pinned DESC, updated_at DESC LIMIT ?',
+            (*params,limit)
+        ).fetchall()
+        return [dict(r, archived=bool(r['archived']), pinned=bool(r['pinned']), preview=str(r['preview'] or '')[:180]) for r in rows]
+
+    def rename(self, cid, title):
+        title=' '.join(str(title).strip().split())[:160] or 'Nova conversa'
+        ts=now()
+        cur=self.conn.execute('UPDATE conversations SET title=?,updated_at=? WHERE conversation_id=?',(title,ts,cid))
+        self.conn.commit()
+        if cur.rowcount == 0: raise KeyError(cid)
+        return self.get(cid)
+
+    def set_flags(self, cid, *, pinned=None, archived=None):
+        row=self.conn.execute('SELECT pinned,archived FROM conversations WHERE conversation_id=?',(cid,)).fetchone()
+        if row is None: raise KeyError(cid)
+        new_pinned=int(bool(row['pinned'] if pinned is None else pinned))
+        new_archived=int(bool(row['archived'] if archived is None else archived))
+        ts=now()
+        self.conn.execute('UPDATE conversations SET pinned=?,archived=?,updated_at=? WHERE conversation_id=?',(new_pinned,new_archived,ts,cid))
+        self.conn.commit()
+        return self.get(cid)
+
+    def delete_last_assistant(self, cid):
+        row=self.conn.execute(
+            "SELECT message_id FROM messages WHERE conversation_id=? AND role='assistant' ORDER BY created_at DESC LIMIT 1",
+            (cid,)
+        ).fetchone()
+        if row is None: return False
+        self.conn.execute('DELETE FROM messages WHERE message_id=?',(row['message_id'],))
+        ts=now()
+        self.conn.execute('UPDATE conversations SET updated_at=? WHERE conversation_id=?',(ts,cid))
+        self.conn.commit()
+        return True
+
+    def delete(self, cid):
+        cur=self.conn.execute('DELETE FROM conversations WHERE conversation_id=?',(cid,))
+        self.conn.commit()
+        return cur.rowcount>0
+
+
+    def export_markdown(self, cid):
+        convo = self.get(cid)
+        if convo is None:
+            raise KeyError(cid)
+        lines = [f"# {convo['title']}", '', f"Criada: {convo['created_at']}", f"Atualizada: {convo['updated_at']}", '']
+        for message in convo['messages']:
+            role = 'Você' if message['role'] == 'user' else 'Jarvis'
+            lines.extend([f"## {role}", '', message['content'], ''])
+        return '\n'.join(lines).strip() + '\n'
+
+    def export_json(self, cid):
+        convo = self.get(cid)
+        if convo is None:
+            raise KeyError(cid)
+        return convo
 
 
 class AgentRunRepository:

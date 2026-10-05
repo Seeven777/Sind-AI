@@ -1,0 +1,23 @@
+{
+  "product": "Jarvis Next",
+  "version": "1.0.0rc2",
+  "component": "AI Mesh",
+  "base": "Sind-AI RC2 AI Mesh",
+  "validation": {
+    "pytest": "71 passed",
+    "return_code": 0
+  },
+  "fixed_after_user_log": [
+    "Hermes Windows extensionless shebang test shim",
+    "Capability inventory separates Agency specialists from 8 core agents",
+    "File watcher uses content fingerprint instead of size/mtime only",
+    "Nemotron request uses documented reasoning_budget and stream=false",
+    "AI Mesh exposed through /api/system and /api/ai-mesh"
+  ],
+  "external_current_docs_checked": [
+    "Hermes CLI/profile/toolsets",
+    "NVIDIA Nemotron 3 Ultra API examples",
+    "WA-AKG API routes",
+    "Open Generative AI / Muapi API pattern"
+  ]
+}

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+from concurrent.futures import Future
 import mimetypes
 import threading
 import urllib.error
@@ -9,7 +10,8 @@ import urllib.request
 import webbrowser
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import urlparse, parse_qs, unquote
+from jarvis import __version__
 
 from jarvis.app.product_runtime import start_product_runtime
 
@@ -21,6 +23,29 @@ class _State:
 
     def call(self, coro, timeout=900):
         future = asyncio.run_coroutine_threadsafe(coro, self.loop)
+        return future.result(timeout=timeout)
+
+    def call_sync(self, func, *args, timeout=900, **kwargs):
+        """Run synchronous runtime work on Jarvis' owner event-loop thread.
+
+        The local UI uses ThreadingHTTPServer, so request handlers run in worker
+        threads. Jarvis' SQLite connection is deliberately owned by the runtime
+        thread; executing repository/service methods from an HTTP worker would
+        violate sqlite3's same-thread contract. Queueing the callable onto the
+        owner loop keeps SQLite thread affinity intact without weakening SQLite's
+        safety checks with check_same_thread=False.
+        """
+        future = Future()
+
+        def invoke():
+            if future.cancelled():
+                return
+            try:
+                future.set_result(func(*args, **kwargs))
+            except BaseException as exc:
+                future.set_exception(exc)
+
+        self.loop.call_soon_threadsafe(invoke)
         return future.result(timeout=timeout)
 
 
@@ -72,31 +97,74 @@ def _handler(state: _State):
                 return self._send(200, {
                     "ok": True,
                     "service": "jarvis-ui",
-                    "run_id": state.runtime.foundation.run_id,
+                    "run_id": state.call_sync(lambda: state.runtime.foundation.run_id),
                 })
+            if path == "/api/conversations":
+                query=parse_qs(urlparse(self.path).query)
+                search=str((query.get("search") or [""])[0])
+                include_archived=str((query.get("archived") or ["0"])[0]).lower() in {"1","true","yes"}
+                rows=state.call_sync(state.runtime.chat.list_conversations,search=search,limit=100,include_archived=include_archived)
+                return self._send(200, rows)
+            if path.startswith("/api/conversations/") and path.endswith("/export"):
+                parts=path.split("/")
+                cid=unquote(parts[3] if len(parts)>3 else "")
+                query=parse_qs(urlparse(self.path).query)
+                fmt=str((query.get("format") or ["md"])[0]).lower()
+                try:
+                    exported=state.call_sync(state.runtime.chat.export_conversation,cid,fmt)
+                except KeyError:
+                    return self._send(404,{"error":"conversation not found"})
+                if fmt=="json":
+                    return self._send(200,exported)
+                return self._send(200,exported,"text/markdown; charset=utf-8")
+            if path.startswith("/api/conversations/"):
+                cid=unquote(path.split("/",3)[3] if len(path.split("/",3))>3 else "")
+                try:
+                    convo=state.call_sync(state.runtime.chat.get_conversation,cid)
+                except Exception:
+                    convo=None
+                if convo is None:
+                    return self._send(404,{"error":"conversation not found"})
+                return self._send(200, convo)
             if path == "/api/hq":
-                return self._send(200, state.runtime.hq.snapshot())
+                return self._send(200, state.call_sync(state.runtime.hq.snapshot))
             if path == "/api/briefing":
-                return self._send(200, state.runtime.briefing.snapshot())
+                return self._send(200, state.call_sync(state.runtime.briefing.snapshot))
+            if path == "/api/meta":
+                return self._send(200, state.call_sync(lambda: {
+                    "name": "Jarvis", "version": __version__,
+                    "privacy_mode": state.runtime.foundation.config.privacy.mode,
+                    "default_model": state.runtime.model_router.default_model,
+                    "default_provider": state.runtime.model_router.default_provider,
+                    "premium_provider": state.runtime.model_router.premium_provider,
+                    "ai_mesh": state.runtime.ai_mesh.health(),
+                }))
+            if path == "/api/preferences":
+                return self._send(200, state.call_sync(state.runtime.preferences.all))
+            if path == "/api/models":
+                return self._send(200, state.call_sync(lambda: state.runtime.model_registry.health()))
             if path == "/api/health":
-                return self._send(200, {
+                return self._send(200, state.call_sync(lambda: {
                     "foundation": state.runtime.foundation.health.snapshot(),
                     "privacy": {"mode": state.runtime.foundation.config.privacy.mode},
                     "models": state.runtime.model_registry.health(),
                     "connectors": state.runtime.connectors.health(),
-                })
+                }))
+            if path == "/api/ai-mesh":
+                return self._send(200, state.call_sync(state.runtime.ai_mesh.health))
             if path == "/api/connectors":
-                return self._send(200, {
+                return self._send(200, state.call_sync(lambda: {
                     "health": state.runtime.connectors.health(),
                     "sources": state.runtime.connector_repository.sources(),
                     "counts": state.runtime.connector_repository.counts(),
-                })
+                }))
             if path == "/api/watchers":
-                return self._send(200, state.runtime.watcher_repository.enabled())
+                return self._send(200, state.call_sync(state.runtime.watcher_repository.enabled))
             if path == "/api/system":
-                return self._send(200, {
+                return self._send(200, state.call_sync(lambda: {
                     "foundation": state.runtime.foundation.health.snapshot(),
                     "models": state.runtime.model_registry.health(),
+                    "ai_mesh": state.runtime.ai_mesh.health(),
                     "connectors": state.runtime.connectors.health(),
                     "browser": state.runtime.browser.health(),
                     "windows": state.runtime.windows.health(),
@@ -109,23 +177,23 @@ def _handler(state: _State):
                     "scheduler": state.runtime.scheduler_repository.all(),
                     "watchers": state.runtime.watcher_repository.enabled(),
                     "google": state.runtime.google_oauth.status(),
-                })
+                }))
             if path == "/api/projects":
-                return self._send(200, state.runtime.projects.list())
+                return self._send(200, state.call_sync(state.runtime.projects.list))
             if path == "/api/skills":
-                return self._send(200, state.runtime.skill_manager.repository.list())
+                return self._send(200, state.call_sync(state.runtime.skill_manager.repository.list))
             if path == "/api/capabilities":
-                return self._send(200, state.runtime.capabilities.inventory())
+                return self._send(200, state.call_sync(state.runtime.capabilities.inventory))
             if path == "/api/opportunities":
-                return self._send(200, state.runtime.opportunities.scan())
+                return self._send(200, state.call_sync(state.runtime.opportunities.scan))
             if path == "/api/tool-runs":
-                return self._send(200, state.runtime.tool_runs.recent(50))
+                return self._send(200, state.call_sync(state.runtime.tool_runs.recent, 50))
             if path == "/api/memory":
-                return self._send(200, state.runtime.memory.repository.recent(100))
+                return self._send(200, state.call_sync(state.runtime.memory.repository.recent, 100))
             if path == "/api/agents":
-                return self._send(200, state.runtime.hq.agent_directory())
+                return self._send(200, state.call_sync(state.runtime.hq.agent_directory))
             if path == "/api/agency":
-                return self._send(200, {
+                return self._send(200, state.call_sync(lambda: {
                     "status": state.runtime.agency_catalog.status(),
                     "router": state.runtime.agent_router.status(),
                     "runbooks": [
@@ -135,13 +203,15 @@ def _handler(state: _State):
                             "summary": x.get("summary"),
                         } for x in state.runtime.agency_catalog.runbooks()
                     ],
-                })
+                }))
             if path == "/api/google/status":
-                return self._send(200, state.runtime.google_oauth.status())
+                return self._send(200, state.call_sync(state.runtime.google_oauth.status))
             if path == "/":
                 target = assets / "companion.html"
-            elif path == "/hq":
+            elif path in {"/hq", "/office"}:
                 target = assets / "index.html"
+            elif path == "/hq-classic":
+                target = assets / "hq-classic.html"
             elif path == "/mission-control":
                 target = assets / "mission-control.html"
             elif path == "/system":
@@ -166,16 +236,59 @@ def _handler(state: _State):
             path = urlparse(self.path).path
             try:
                 payload = self._json_body()
+                if path == "/api/conversations":
+                    title=str(payload.get("title") or "Nova conversa")
+                    cid=state.call_sync(state.runtime.chat.new_conversation,title)
+                    return self._send(201,{"conversation_id":cid,"conversation":state.call_sync(state.runtime.chat.get_conversation,cid)})
+                if path.startswith("/api/conversations/"):
+                    cid=unquote(path.split("/",3)[3] if len(path.split("/",3))>3 else "")
+                    action=str(payload.get("action") or "")
+                    if action=="rename":
+                        convo=state.call_sync(state.runtime.chat.rename_conversation,cid,str(payload.get("title") or "Nova conversa"))
+                        return self._send(200,convo)
+                    if action=="pin":
+                        convo=state.call_sync(state.runtime.chat.set_conversation_flags,cid,pinned=bool(payload.get("value")))
+                        return self._send(200,convo)
+                    if action=="archive":
+                        convo=state.call_sync(state.runtime.chat.set_conversation_flags,cid,archived=bool(payload.get("value")))
+                        return self._send(200,convo)
+                    if action=="regenerate":
+                        mode=str(payload.get("mode") or "auto").lower().strip()
+                        if mode not in {"auto","fast","deep","hermes"}:
+                            return self._send(400,{"error":"mode inválido"})
+                        result=state.call(state.runtime.chat.regenerate(cid,mode=mode))
+                        result["conversation_id"]=cid
+                        return self._send(200,result)
+                    return self._send(400,{"error":"ação de conversa desconhecida"})
                 if path == "/api/chat":
                     cid = payload.get("conversation_id")
                     if not cid:
-                        cid = state.runtime.chat.new_conversation()
+                        cid = state.call_sync(state.runtime.chat.new_conversation)
                     text = str(payload.get("text") or "").strip()
                     if not text:
                         return self._send(400, {"error": "text obrigatório"})
-                    result = state.call(state.runtime.chat.send(cid, text))
+                    mode = str(payload.get("mode") or "auto").lower().strip()
+                    if mode not in {"auto","fast","deep","hermes"}:
+                        return self._send(400, {"error": "mode inválido"})
+                    attachments = payload.get("attachments") or []
+                    if not isinstance(attachments, list) or len(attachments) > 3:
+                        return self._send(400, {"error": "máximo de 3 anexos"})
+                    safe_attachments=[]
+                    for item in attachments:
+                        if not isinstance(item, dict):
+                            return self._send(400,{"error":"anexo inválido"})
+                        name=str(item.get("name") or "arquivo")[:160]
+                        content=str(item.get("content") or "")
+                        if len(content) > 800_000:
+                            return self._send(413,{"error":f"anexo excede o limite: {name}"})
+                        safe_attachments.append({"name":name,"content":content})
+                    result = state.call(state.runtime.chat.send(cid, text, mode=mode, attachments=safe_attachments))
                     result["conversation_id"] = cid
                     return self._send(200, result)
+                if path == "/api/preferences":
+                    values=payload.get("preferences") if isinstance(payload.get("preferences"),dict) else payload
+                    result=state.call_sync(state.runtime.preferences.update,values)
+                    return self._send(200,result)
                 if path == "/api/mission/team":
                     objective = str(payload.get("objective") or "").strip()
                     if not objective:
@@ -189,12 +302,12 @@ def _handler(state: _State):
                     return self._send(200, result)
                 if path.startswith("/api/approval/") and path.endswith("/approve"):
                     approval_id = path.split("/")[3]
-                    operator = state.runtime.agent_registry.runtime("operations.operator")
+                    operator = state.call_sync(state.runtime.agent_registry.runtime, "operations.operator")
                     result = state.call(operator.resume_approval(approval_id))
                     return self._send(200, result)
                 if path.startswith("/api/approval/") and path.endswith("/reject"):
                     approval_id = path.split("/")[3]
-                    operator = state.runtime.agent_registry.runtime("operations.operator")
+                    operator = state.call_sync(state.runtime.agent_registry.runtime, "operations.operator")
                     result = state.call(operator.reject_approval(approval_id))
                     return self._send(200, result)
                 if path == "/api/connectors/sync":
@@ -208,10 +321,11 @@ def _handler(state: _State):
                     name = str(payload.get("name") or "").strip()
                     if not name:
                         return self._send(400, {"error": "name obrigatório"})
-                    result = state.runtime.projects.create(
+                    result = state.call_sync(
+                        state.runtime.projects.create,
                         name,
                         str(payload.get("objective") or ""),
-                        state.runtime.workspace.get("workspace_id"),
+                        state.call_sync(state.runtime.workspace.get, "workspace_id"),
                         payload.get("metadata") or {},
                     )
                     return self._send(200, result)
@@ -227,13 +341,14 @@ def _handler(state: _State):
                         "has_refresh_token": bool(result.get("refresh_token")),
                     })
                 if path == "/api/google/disconnect":
-                    state.runtime.google_oauth.token_store.delete()
+                    state.call_sync(state.runtime.google_oauth.token_store.delete)
                     return self._send(200, {"status": "disconnected"})
                 if path == "/api/skill/scaffold":
                     skill_id = str(payload.get("skill_id") or "").strip()
                     if not skill_id:
                         return self._send(400, {"error": "skill_id obrigatório"})
-                    result = state.runtime.skill_manager.create_scaffold(
+                    result = state.call_sync(
+                        state.runtime.skill_manager.create_scaffold,
                         skill_id,
                         str(payload.get("description") or "Skill Jarvis"),
                         tuple(payload.get("capabilities") or ()),
@@ -242,6 +357,19 @@ def _handler(state: _State):
                 return self._send(404, {"error": "not found"})
             except Exception as exc:
                 return self._send(500, {"error": str(exc)})
+
+        def do_DELETE(self):
+            path=urlparse(self.path).path
+            try:
+                if path.startswith("/api/conversations/"):
+                    cid=unquote(path.split("/",3)[3] if len(path.split("/",3))>3 else "")
+                    result=state.call_sync(state.runtime.chat.delete_conversation,cid)
+                    return self._send(200,result)
+                return self._send(404,{"error":"not found"})
+            except KeyError:
+                return self._send(404,{"error":"conversation not found"})
+            except Exception as exc:
+                return self._send(500,{"error":str(exc)})
 
     return Handler
 

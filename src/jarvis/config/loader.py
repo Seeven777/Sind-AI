@@ -5,7 +5,7 @@ import tomllib
 from pathlib import Path
 
 from .models import (
-    AgentConfig,AppConfig,FeatureConfig,LoggingConfig,ModelsConfig,
+    AIIntegrationsConfig,AgentConfig,AppConfig,FeatureConfig,LoggingConfig,ModelsConfig,
     PrivacyConfig,RuntimeConfig,StorageConfig,SystemConfig
 )
 from jarvis.core.errors import ConfigError
@@ -39,6 +39,7 @@ def load_config(data_dir:Path|None=None)->AppConfig:
     agents=raw.get('agents',{})
     privacy=raw.get('privacy',{})
     features=raw.get('features',{})
+    ai=raw.get('ai',{})
 
     feature_defaults={
         'memory':True,'agents':True,'tools':True,'approvals':True,
@@ -68,6 +69,26 @@ def load_config(data_dir:Path|None=None)->AppConfig:
             int(models.get('context_tokens',8192)),
             float(models.get('temperature',.25)),
         ),
+        ai=AIIntegrationsConfig(
+            _as_bool(str(ai.get('hermes_enabled',True))),
+            str(ai.get('hermes_command','hermes')),
+            str(ai.get('hermes_profile','')),
+            str(ai.get('hermes_toolsets','safe')),
+            int(ai.get('hermes_timeout_seconds',300)),
+            _as_bool(str(ai.get('nvidia_enabled',True))),
+            str(ai.get('nvidia_base_url','https://integrate.api.nvidia.com/v1')).rstrip('/'),
+            str(ai.get('nvidia_model','nvidia/nemotron-3-ultra-550b-a55b')),
+            _as_bool(str(ai.get('nvidia_thinking',True))),
+            int(ai.get('nvidia_max_tokens',16384)),
+            int(ai.get('nvidia_thinking_token_budget',4096)),
+            str(ai.get('wa_akg_url','')).rstrip('/'),
+            str(ai.get('wa_akg_session','')),
+            int(ai.get('wa_akg_timeout_seconds',30)),
+            str(ai.get('creative_api_url','https://api.muapi.ai')).rstrip('/'),
+            int(ai.get('creative_timeout_seconds',60)),
+            int(ai.get('creative_poll_seconds',3)),
+            int(ai.get('creative_max_polls',100)),
+        ),
         agents=AgentConfig(bool(agents.get('research_enabled',True))),
         privacy=PrivacyConfig(str(privacy.get('mode','hybrid'))),
         features=FeatureConfig(**{
@@ -90,6 +111,30 @@ def load_config(data_dir:Path|None=None)->AppConfig:
         cfg.runtime.resume_interrupted_tasks=_as_bool(os.environ['JARVIS_RESUME_INTERRUPTED_TASKS'])
     if 'JARVIS_SINGLE_INSTANCE' in os.environ:
         cfg.runtime.single_instance=_as_bool(os.environ['JARVIS_SINGLE_INSTANCE'])
+    if 'JARVIS_HERMES_ENABLED' in os.environ:
+        cfg.ai.hermes_enabled=_as_bool(os.environ['JARVIS_HERMES_ENABLED'])
+    if 'JARVIS_HERMES_COMMAND' in os.environ:
+        cfg.ai.hermes_command=os.environ['JARVIS_HERMES_COMMAND']
+    if 'JARVIS_HERMES_PROFILE' in os.environ:
+        cfg.ai.hermes_profile=os.environ['JARVIS_HERMES_PROFILE']
+    if 'JARVIS_HERMES_TOOLSETS' in os.environ:
+        cfg.ai.hermes_toolsets=os.environ['JARVIS_HERMES_TOOLSETS']
+    if 'JARVIS_HERMES_TIMEOUT' in os.environ:
+        cfg.ai.hermes_timeout_seconds=max(10,int(os.environ['JARVIS_HERMES_TIMEOUT']))
+    if 'NVIDIA_ENABLED' in os.environ:
+        cfg.ai.nvidia_enabled=_as_bool(os.environ['NVIDIA_ENABLED'])
+    if 'NVIDIA_BASE_URL' in os.environ:
+        cfg.ai.nvidia_base_url=os.environ['NVIDIA_BASE_URL'].rstrip('/')
+    if 'NVIDIA_MODEL' in os.environ:
+        cfg.ai.nvidia_model=os.environ['NVIDIA_MODEL']
+    if 'NVIDIA_THINKING' in os.environ:
+        cfg.ai.nvidia_thinking=_as_bool(os.environ['NVIDIA_THINKING'])
+    if 'JARVIS_WA_AKG_URL' in os.environ:
+        cfg.ai.wa_akg_url=os.environ['JARVIS_WA_AKG_URL'].rstrip('/')
+    if 'JARVIS_WA_AKG_SESSION' in os.environ:
+        cfg.ai.wa_akg_session=os.environ['JARVIS_WA_AKG_SESSION']
+    if 'JARVIS_CREATIVE_API_URL' in os.environ:
+        cfg.ai.creative_api_url=os.environ['JARVIS_CREATIVE_API_URL'].rstrip('/')
     if cfg.privacy.mode not in {'hybrid','local_only'}:
         raise ConfigError('privacy.mode deve ser hybrid ou local_only.')
     return cfg
@@ -108,6 +153,14 @@ def ensure_default_config(config:AppConfig)->Path:
             '[models]\ndefault_provider = "ollama"\ndefault_model = "qwen3.5:4b"\n'
             'ollama_url = "http://127.0.0.1:11434"\ntimeout_seconds = 180\n'
             'context_tokens = 8192\ntemperature = 0.25\n\n'
+            '[ai]\nhermes_enabled = true\nhermes_command = "hermes"\nhermes_profile = ""\n'
+            'hermes_toolsets = "safe"\nhermes_timeout_seconds = 300\n'
+            'nvidia_enabled = true\nnvidia_base_url = "https://integrate.api.nvidia.com/v1"\n'
+            'nvidia_model = "nvidia/nemotron-3-ultra-550b-a55b"\n'
+            'nvidia_thinking = true\nnvidia_max_tokens = 16384\n'
+            'nvidia_thinking_token_budget = 4096\nwa_akg_url = ""\nwa_akg_session = ""\n'
+            'wa_akg_timeout_seconds = 30\ncreative_api_url = "https://api.muapi.ai"\n'
+            'creative_timeout_seconds = 60\ncreative_poll_seconds = 3\ncreative_max_polls = 100\n\n'
             '[agents]\nresearch_enabled = true\n\n'
             '[features]\nmemory = true\nagents = true\ntools = true\napprovals = true\n'
             'scheduler = true\nconnectors = true\nvoice = true\nui = true\n'

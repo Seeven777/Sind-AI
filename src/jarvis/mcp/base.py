@@ -76,7 +76,7 @@ class MCPStdioClient:
         return self._rpc('initialize',{
             'protocolVersion':'2025-06-18',
             'capabilities':{},
-            'clientInfo':{'name':'Jarvis Next','version':'1.0.0rc2'},
+            'clientInfo':{'name':'Jarvis Next','version':'1.0.0rc3'},
         })
 
     def list_tools(self):

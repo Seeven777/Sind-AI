@@ -24,7 +24,8 @@ def parser():
         'sync','connectors','briefing','inbox','scheduler-tick','watchers',
         'system-status','google-auth','google-disconnect','inventory',
         'skills','projects','browser-doctor','windows-doctor','voice-doctor',
-        'agency-status','agency-runbooks',
+        'agency-status','agency-runbooks','ai-status',
+        'creative-doctor','wa-doctor',
     ):
         sub.add_parser(name)
 
@@ -33,6 +34,15 @@ def parser():
 
     d=sub.add_parser('demo-agent')
     d.add_argument('--prompt',default='Pesquise como tornar agentes confiáveis.')
+
+    hr=sub.add_parser('hermes-run')
+    hr.add_argument('prompt')
+
+    cg=sub.add_parser('creative-generate')
+    cg.add_argument('endpoint')
+    cg.add_argument('--params',required=True,help='JSON com os parâmetros do endpoint Muapi.')
+
+    nb=sub.add_parser('nemotron-probe')
 
     t=sub.add_parser('demo-team')
     t.add_argument('--prompt',default='Crie uma missão completa para planejar uma campanha educativa.')
@@ -121,6 +131,7 @@ async def doctor(data_dir):
         report={
             'foundation':rt.foundation.health.snapshot(),
             'models':rt.model_registry.health(),
+            'ai_mesh':rt.ai_mesh.health(),
             'active_agents':[c.agent_id for c in rt.agent_registry.available()],
             'tools':rt.tool_registry.list_ids(),
             'workspace':rt.workspace,
@@ -341,6 +352,31 @@ async def utility_command(args):
             print(json.dumps(rt.skill_manager.test(args.path),ensure_ascii=False,indent=2));return 0
         if c=='skill-install':
             print(json.dumps(rt.skill_manager.install(args.path),ensure_ascii=False,indent=2));return 0
+        if c=='ai-status':
+            print(json.dumps({
+                'models':rt.model_registry.health(),
+                'mesh':rt.ai_mesh.health(),
+                'premium_provider':rt.model_router.premium_provider,
+            },ensure_ascii=False,indent=2));return 0
+        if c=='hermes-run':
+            result=await rt.ai_mesh.hermes.run(args.prompt)
+            print(result.content)
+            return 0
+        if c=='nemotron-probe':
+            provider=rt.model_registry.get('nvidia_nemotron')
+            result=provider.probe() if hasattr(provider,'probe') else provider.health()
+            print(json.dumps(result,ensure_ascii=False,indent=2));return 0 if result.get('status')=='healthy' else 1
+        if c=='creative-doctor':
+            print(json.dumps(rt.ai_mesh.creative.health(),ensure_ascii=False,indent=2));return 0
+        if c=='wa-doctor':
+            print(json.dumps(rt.ai_mesh.whatsapp_gateway.health(),ensure_ascii=False,indent=2));return 0
+        if c=='creative-generate':
+            try: params=json.loads(args.params)
+            except json.JSONDecodeError as exc: raise RuntimeError(f'--params inválido: {exc}') from exc
+            if not isinstance(params,dict): raise RuntimeError('--params deve conter um objeto JSON.')
+            result=await asyncio.to_thread(rt.ai_mesh.creative.generate,args.endpoint,params)
+            print(json.dumps(result,ensure_ascii=False,indent=2))
+            return 0
         if c=='agency-status':
             print(json.dumps(rt.agency_catalog.status(),ensure_ascii=False,indent=2));return 0
         if c=='agency-agents':
@@ -457,6 +493,7 @@ async def utility_command(args):
             print(json.dumps({
                 'foundation':rt.foundation.health.snapshot(),
                 'models':rt.model_registry.health(),
+                'ai_mesh':rt.ai_mesh.health(),
                 'connectors':rt.connectors.health(),
                 'browser':rt.browser.health(),
                 'windows':rt.windows.health(),
