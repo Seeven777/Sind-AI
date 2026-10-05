@@ -121,3 +121,14 @@ def test_hermes_bridge_resolves_extensionless_path_entry_on_windows(tmp_path, mo
 
     bridge = HermesAgentBridge(profile="", toolsets="safe")
     assert Path(bridge.executable()).resolve() == exe.resolve()
+
+
+def test_hermes_bridge_forces_utf8_subprocess_environment(tmp_path, monkeypatch):
+    exe = tmp_path / "hermes"
+    exe.write_text("#!/usr/bin/env python3\nimport os\nprint(os.environ.get('PYTHONIOENCODING'))\n", encoding="utf-8")
+    exe.chmod(exe.stat().st_mode | stat.S_IXUSR)
+    monkeypatch.setenv("PATH", str(tmp_path))
+
+    bridge = HermesAgentBridge(profile="", toolsets="safe")
+    result = asyncio.run(bridge.run("ação"))
+    assert "utf-8" in result.content.lower()

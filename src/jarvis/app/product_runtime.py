@@ -42,7 +42,7 @@ from jarvis.storage.repositories.product import (
 )
 from jarvis.tools import (
     ListDirectoryTool,ReadTextFileTool,SystemTimeTool,ToolExecutor,ToolRegistry,
-    WriteWorkspaceTextTool,WebSearchTool,WebFetchTool,
+    WriteWorkspaceTextTool,WriteWorkspacePdfTool,WebSearchTool,WebFetchTool,
     BrowserOpenTool,BrowserSnapshotTool,BrowserFillTool,BrowserClickTool,
     WindowsListTool,WindowsInspectTool,WindowsActivateTool,WindowsSetTextTool,
     WindowsClickTool,WhatsAppSendMessageTool,MCPToolAdapter
@@ -240,6 +240,7 @@ async def start_product_runtime(data_dir:Path|None=None,*,model_provider=None):
         tools.register(ReadTextFileTool())
         tools.register(ListDirectoryTool())
         tools.register(WriteWorkspaceTextTool(cfg.data_dir/'workspace_files'))
+        tools.register(WriteWorkspacePdfTool(cfg.data_dir/'workspace_files'))
         if not cfg.local_only:
             tools.register(WebSearchTool())
             tools.register(WebFetchTool())

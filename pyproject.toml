@@ -4,10 +4,13 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "jarvis-next"
-version = "1.0.0rc4"
+version = "1.0.0rc5.post1"
 description = "Jarvis Next Personal Agent Operating System"
 requires-python = ">=3.11"
-dependencies = []
+dependencies = [
+  "reportlab>=4.0",
+  "pypdf>=6.0",
+]
 
 
 [project.optional-dependencies]

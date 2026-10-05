@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+from datetime import datetime
 
 from jarvis.agents.artifact_agent import ArtifactAgent
 from jarvis.agents.base import AgentCard,AgentResult
@@ -20,6 +21,7 @@ class ResearchAgent(ArtifactAgent):
 Trabalhe somente com o contexto e as fontes explicitamente entregues.
 Quando houver fontes web:
 - cite URLs junto aos achados relevantes;
+- nunca invente data, nome, número, documento ou status que não apareça no material recebido;
 - diferencie fato encontrado, inferência e hipótese;
 - não invente acesso a fontes que não estejam no material;
 - destaque conflitos e lacunas;
@@ -41,30 +43,48 @@ Escreva em português do Brasil."""
                 'agent.progress',task_id=task_id,agent_id=self.card.agent_id,
                 payload={'progress':0.12,'activity':'Pesquisando fontes públicas'}
             ))
-            search=await self.tool_executor.execute(
-                'web.search',{'query':objective,'limit':5},task_id=task_id
-            )
-            if search.success:
-                results=search.output.get('results',[])[:5]
-                fetched=[]
-                for item in results[:3]:
-                    fetch=await self.tool_executor.execute(
-                        'web.fetch',{'url':item['url']},task_id=task_id
-                    )
-                    record={'title':item.get('title'),'url':item.get('url')}
-                    if fetch.success:
-                        record['content']=fetch.output.get('content','')[:5000]
-                        record['page_title']=fetch.output.get('title','')
-                    fetched.append(record)
-                sources=fetched or results
-                blocks=[]
-                for i,item in enumerate(sources,1):
-                    blocks.append(
-                        f"FONTE {i}\nURL: {item.get('url','')}\n"
-                        f"TÍTULO: {item.get('page_title') or item.get('title') or ''}\n"
-                        f"CONTEÚDO EXTRAÍDO:\n{item.get('content','(apenas resultado de busca)')}"
-                    )
-                web_context="\n\n".join(blocks)
+            queries=[objective]
+            lowered=objective.lower()
+            if 'sindpetshop' in lowered:
+                queries += [
+                    'site:sindpetshop.org.br SindPetshop-SP',
+                    'site:sindpetshop.org.br convenção coletiva SindPetshop-SP',
+                    'site:sindpetshop.org.br sindicato pet shop São Paulo',
+                    '"SindPetshop-SP" trabalhadores São Paulo',
+                ]
+            queries=list(dict.fromkeys(queries))[:5]
+            collected=[];seen=set()
+            for idx,query in enumerate(queries,1):
+                search=await self.tool_executor.execute('web.search',{'query':query,'limit':8},task_id=task_id)
+                if search.success:
+                    for item in search.output.get('results',[]):
+                        url=str(item.get('url') or '').strip()
+                        if not url or url in seen: continue
+                        seen.add(url);collected.append(item)
+                        if len(collected)>=10: break
+                await self.bus.publish(Event(
+                    'agent.progress',task_id=task_id,agent_id=self.card.agent_id,
+                    payload={'progress':min(.40,.16+idx*.055),'activity':f'Fontes coletadas: {len(collected)}'}
+                ))
+                if len(collected)>=10: break
+            fetched=[]
+            for item in collected[:6]:
+                fetch=await self.tool_executor.execute('web.fetch',{'url':item['url']},task_id=task_id)
+                record={'title':item.get('title'),'url':item.get('url')}
+                if fetch.success:
+                    record['content']=fetch.output.get('content','')[:8000]
+                    record['page_title']=fetch.output.get('title','')
+                fetched.append(record)
+            sources=fetched or collected
+            blocks=[]
+            for i,item in enumerate(sources,1):
+                blocks.append(
+                    f"FONTE {i}\nURL: {item.get('url','')}\n"
+                    f"TÍTULO: {item.get('page_title') or item.get('title') or ''}\n"
+                    f"CONTEÚDO EXTRAÍDO:\n{item.get('content','(apenas resultado de busca)')}"
+                )
+            web_context='\n\n'.join(blocks)
+
 
         route=self.model_router.route(capability=self.card.model_capability,privacy='local')
         provider=self.model_registry.get(route.provider)
@@ -78,7 +98,7 @@ Escreva em português do Brasil."""
             payload={'agent_run_id':rid,'model':route.model,'activity':'Analisando pesquisa'}
         ))
         try:
-            parts=[f"MISSÃO:\n{objective}"]
+            parts=[f"DATA ATUAL DO SISTEMA: {datetime.now().astimezone().strftime('%Y-%m-%d')}\nMISSÃO:\n{objective}"]
             if context:
                 parts.append(f"CONTEXTO RECEBIDO:\n{context}")
             if web_context:

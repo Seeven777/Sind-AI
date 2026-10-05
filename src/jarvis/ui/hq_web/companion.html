@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#070a0f">
+<meta name="theme-color" content="#05080d">
 <title>Jarvis — Companion</title>
 <link rel="stylesheet" href="/companion.css">
 </head>
@@ -16,24 +16,30 @@
       <button class="icon-btn mobile-only" id="close-sidebar" aria-label="Fechar">×</button>
     </div>
 
+    <div class="sidebar-headline">
+      <div><span class="eyebrow">WORKSPACE</span><strong>Principal</strong></div>
+      <span class="online-pill"><i></i> ONLINE</span>
+    </div>
+
     <button class="primary-action" id="new-chat"><span>＋</span><span>Nova conversa</span><kbd>Ctrl⇧N</kbd></button>
 
     <div class="sidebar-section search-section">
-      <div class="search-box"><span class="search-icon">⌕</span><input id="history-search" placeholder="Buscar conversas" autocomplete="off"><kbd>⌘K</kbd></div>
+      <div class="search-box"><span class="search-icon">⌕</span><input id="history-search" placeholder="Buscar conversas" autocomplete="off"><kbd>Ctrl K</kbd></div>
     </div>
 
     <div class="history-toolbar"><span>Conversas</span><div><button id="show-archived">Arquivadas</button><button id="history-refresh" title="Atualizar">↻</button></div></div>
     <div id="history" class="history-list"></div>
 
     <div class="sidebar-bottom">
-      <a href="/hq"><span class="nav-icon">◈</span>Escritório <em id="hq-count">—</em></a>
-      <a href="/mission-control"><span class="nav-icon">◫</span>Missões <em id="mission-count">—</em></a>
-      <a href="/agents"><span class="nav-icon">◇</span>Agentes</a>
-      <a href="/projects"><span class="nav-icon">▣</span>Projetos</a>
-      <a href="/memory"><span class="nav-icon">◎</span>Memória</a>
-      <a href="/system"><span class="nav-icon">⌘</span>Sistema</a>
+      <div class="nav-group-title">AMBIENTE</div>
+      <a href="/hq"><span class="nav-icon">◈</span><span>Escritório</span><em id="hq-count">—</em></a>
+      <a href="/mission-control"><span class="nav-icon">◫</span><span>Missões</span><em id="mission-count">—</em></a>
+      <a href="/agents"><span class="nav-icon">◇</span><span>Agentes</span></a>
+      <a href="/projects"><span class="nav-icon">▣</span><span>Projetos</span></a>
+      <a href="/memory"><span class="nav-icon">◎</span><span>Memória</span></a>
+      <a href="/system"><span class="nav-icon">⌘</span><span>Sistema</span></a>
       <div class="sidebar-user">
-        <div class="avatar user">M</div><div><strong>Workspace Principal</strong><small>local-first</small></div><button class="icon-btn" id="open-settings">⚙</button>
+        <div class="avatar user">M</div><div><strong>Workspace Principal</strong><small>local-first · verificado</small></div><button class="icon-btn" id="open-settings" title="Preferências">⚙</button>
       </div>
     </div>
   </aside>
@@ -55,7 +61,10 @@
       </div>
     </header>
 
-    <section id="chat" class="chat-thread" aria-live="polite"></section>
+    <section class="chat-canvas">
+      <section id="chat" class="chat-thread" aria-live="polite"></section>
+      <button class="jump-bottom hidden" id="jump-bottom">↓ Novas mensagens</button>
+    </section>
 
     <section class="composer-area">
       <div class="mode-row">
@@ -66,15 +75,15 @@
           <button data-mode="hermes">Hermes</button>
         </div>
         <div class="composer-tools">
-          <button class="chip-btn" id="focus-hq">Abrir HQ</button>
+          <button class="chip-btn" id="focus-hq">Escritório 3D</button>
           <button class="chip-btn" id="focus-mission">Nova missão</button>
           <span id="model-hint">roteamento automático</span>
         </div>
       </div>
       <div id="attachment-strip" class="attachment-strip hidden"></div>
       <form id="form" class="composer">
-        <input type="file" id="file-input" hidden multiple accept=".txt,.md,.csv,.json,.py,.js,.ts,.html,.css,.log">
-        <button type="button" class="composer-icon" id="attach-btn" title="Anexar arquivo">＋</button>
+        <input type="file" id="file-input" hidden multiple accept=".txt,.md,.csv,.json,.py,.js,.ts,.html,.css,.log,.yaml,.yml">
+        <button type="button" class="composer-icon" id="attach-btn" title="Anexar arquivos">＋</button>
         <textarea id="input" rows="1" autocomplete="off" placeholder="Converse com Jarvis…"></textarea>
         <button type="button" class="composer-icon" id="voice-btn" title="Ditado">◉</button>
         <button type="submit" class="send-btn" id="send"><span>Enviar</span><span class="send-arrow">↗</span></button>
@@ -84,14 +93,14 @@
   </main>
 
   <aside class="context-panel" id="context-panel">
-    <div class="context-head"><div><span class="eyebrow">CONTEXT</span><h2>Centro de controle</h2></div><button class="icon-btn" id="close-context">×</button></div>
+    <div class="context-head"><div><span class="eyebrow">LIVE CONTEXT</span><h2>Centro de controle</h2></div><button class="icon-btn" id="close-context" aria-label="Fechar painel">×</button></div>
     <section class="context-card hero-card">
-      <div class="orb-wrap"><div class="orb" id="orb"><i></i></div></div>
-      <div class="hero-copy"><span class="eyebrow">ESTADO</span><strong id="orb-state">Pronto</strong><small id="orb-detail">Jarvis está disponível para conversar.</small></div>
+      <div class="orb-wrap"><div class="orb" id="orb"><i></i><span></span></div></div>
+      <div class="hero-copy"><span class="eyebrow">ESTADO DO CORE</span><strong id="orb-state">Pronto</strong><small id="orb-detail">Jarvis está disponível para conversar.</small></div>
     </section>
-    <section class="context-card">
+    <section class="context-card briefing-card">
       <div class="card-title"><span>BRIEFING</span><button id="refresh-briefing">Atualizar</button></div>
-      <div id="briefing" class="briefing-text">Carregando…</div>
+      <div class="briefing-grid" id="briefing"><div><b>0</b><span>tarefas</span></div><div><b>0</b><span>aprovações</span></div><div><b>0</b><span>inbox</span></div><div><b>0</b><span>eventos</span></div></div>
     </section>
     <section class="context-card">
       <div class="card-title"><span>ATENÇÃO</span><span class="counter" id="attention-count">0</span></div>
@@ -101,11 +110,11 @@
       <div class="card-title"><span>SISTEMA</span><a href="/system">abrir</a></div>
       <div id="system-mini" class="system-mini"></div>
     </section>
-    <section class="context-card shortcut-card">
+    <section class="context-card quick-card">
       <div class="card-title"><span>ATALHOS</span></div>
-      <div class="shortcut"><kbd>Ctrl K</kbd><span>Focar conversa</span></div>
+      <div class="shortcut"><kbd>Ctrl K</kbd><span>Command palette</span></div>
       <div class="shortcut"><kbd>Ctrl ⇧ N</kbd><span>Nova conversa</span></div>
-      <div class="shortcut"><kbd>Esc</kbd><span>Fechar painel</span></div>
+      <div class="shortcut"><kbd>Esc</kbd><span>Fechar overlays</span></div>
     </section>
   </aside>
 </div>
@@ -126,9 +135,8 @@
 </dialog>
 
 <div class="palette hidden" id="palette">
-  <div class="palette-dialog"><input id="palette-input" placeholder="Buscar uma ação…" autocomplete="off"><div id="palette-list"></div><div class="palette-help"><span>↑↓ navegar</span><span>Enter executar</span><span>Esc fechar</span></div></div>
+  <div class="palette-dialog"><div class="palette-top"><span class="eyebrow">COMMAND CENTER</span><kbd>ESC</kbd></div><input id="palette-input" placeholder="Buscar uma ação, página ou modo…" autocomplete="off"><div id="palette-list"></div><div class="palette-help"><span>↑↓ navegar</span><span>Enter executar</span><span>Esc fechar</span></div></div>
 </div>
-
 <script src="/companion.js"></script>
 </body>
 </html>

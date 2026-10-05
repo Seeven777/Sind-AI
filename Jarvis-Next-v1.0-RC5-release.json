@@ -1,0 +1,21 @@
+{
+  "version": "1.0.0rc5",
+  "package": "Jarvis-Next-v1.0-RC5-Full.zip",
+  "sha256": "7894dac3f3486ec448aa7a1d5d870bc1426023c8629e292ed977e12cd9dae220",
+  "validation": {
+    "pytest": "87 passed",
+    "compileall": "PASS",
+    "companion_js": "PASS",
+    "office3d_js": "PASS",
+    "mission_control_js": "PASS"
+  },
+  "highlights": [
+    "Companion UX redesign",
+    "chat scroll fix",
+    "interactive zero-dependency spatial HQ",
+    "Mission Control operational upgrade",
+    "memory remember/forget",
+    "verified PDF workspace tool",
+    "research search fallback and query expansion"
+  ]
+}

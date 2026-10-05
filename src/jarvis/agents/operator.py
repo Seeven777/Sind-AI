@@ -11,7 +11,7 @@ class OperatorAgent:
         'Executar ações reais usando ferramentas autorizadas e verificar o resultado.',
         ('execution','tool_use','verification'),
         (
-            'system.time','files.read_text','files.list_directory','files.write_workspace_text',
+            'system.time','files.read_text','files.list_directory','files.write_workspace_text','files.write_workspace_pdf',
             'web.search','web.fetch','browser.open','browser.snapshot','browser.fill',
             'browser.click','windows.list','windows.inspect','windows.activate',
             'windows.set_text','windows.click','whatsapp.send_message'
@@ -218,6 +218,12 @@ class OperatorAgent:
                 'path':result.output.get('path'),
                 'sha256':result.evidence.get('sha256')
             }
+        if tool_id=='files.write_workspace_pdf':
+            return {
+                'kind':'file_sha256',
+                'path':result.output.get('path'),
+                'sha256':result.evidence.get('sha256')
+            }
         if tool_id in {'files.read_text','files.list_directory'}:
             return {'kind':'evidence_key','key':'exists'}
         if tool_id=='system.time':
@@ -248,6 +254,13 @@ class OperatorAgent:
             return (
                 f"Arquivo criado e verificado no workspace do Jarvis:\n"
                 f"{output.get('path')}\nSHA-256: {evidence.get('sha256')}"
+            )
+        if tool_id=='files.write_workspace_pdf':
+            return (
+                f"PDF criado e verificado no workspace do Jarvis:\n"
+                f"{output.get('path')}\n"
+                f"Páginas: {evidence.get('pages', output.get('pages','—'))}\n"
+                f"SHA-256: {evidence.get('sha256')}"
             )
         if tool_id=='web.search':
             lines=[f"Resultados para: {output.get('query')}"]

@@ -24,6 +24,10 @@ _TOOL_SPECS={
         'description':'Criar/alterar arquivo somente no workspace seguro do Jarvis. Exige aprovação.',
         'payload':{'relative_path':'arquivo.txt','content':'texto'},
     },
+    'files.write_workspace_pdf':{
+        'description':'Criar PDF somente no workspace seguro do Jarvis, validar que o PDF abre e contém páginas. Exige aprovação.',
+        'payload':{'relative_path':'relatorio.pdf','title':'Título','content':'conteúdo do documento'},
+    },
     'web.search':{
         'description':'Pesquisar informação pública na web.',
         'payload':{'query':'consulta','limit':5},

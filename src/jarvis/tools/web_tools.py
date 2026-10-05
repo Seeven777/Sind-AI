@@ -50,6 +50,31 @@ class _DDGParser(HTMLParser):
             self._text=[]
 
 
+class _BingParser(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.results=[]
+        self._in_link=False
+        self._href=''
+        self._text=[]
+    def handle_starttag(self,tag,attrs):
+        attrs=dict(attrs)
+        if tag=='a' and 'b_algo' in attrs.get('class',''):
+            self._in_link=True
+            self._href=attrs.get('href','')
+            self._text=[]
+    def handle_data(self,data):
+        if self._in_link:self._text.append(data)
+    def handle_endtag(self,tag):
+        if tag=='a' and self._in_link:
+            title=html.unescape(''.join(self._text)).strip()
+            href=self._href.strip()
+            if title and href.startswith(('http://','https://')):
+                self.results.append({'title':title,'url':href})
+            self._in_link=False
+            self._href=''
+            self._text=[]
+
 class _TextParser(HTMLParser):
     SKIP={"script","style","noscript","svg"}
     def __init__(self):
@@ -115,30 +140,41 @@ class WebSearchTool:
         self.timeout=timeout
         self.max_results=max_results
 
+    def _request_html(self,url):
+        req=urllib.request.Request(url,headers={
+            "User-Agent":_UA,
+            "Accept":"text/html,application/xhtml+xml",
+        })
+        with urllib.request.urlopen(req,timeout=self.timeout) as response:
+            return response.read(2_000_000).decode("utf-8","replace")
+
     def execute(self,payload):
         query=str(payload.get("query") or "").strip()
         if not query:
             return ToolResult(False,error="query obrigatório")
         limit=max(1,min(int(payload.get("limit",self.max_results)),10))
-        url="https://html.duckduckgo.com/html/?" + urllib.parse.urlencode({"q":query})
-        req=urllib.request.Request(url,headers={
-            "User-Agent":_UA,
-            "Accept":"text/html,application/xhtml+xml",
-        })
+        ddg_url="https://html.duckduckgo.com/html/?" + urllib.parse.urlencode({"q":query})
+        results=[];engine='duckduckgo_html';request_url=ddg_url;last_error=None
         try:
-            with urllib.request.urlopen(req,timeout=self.timeout) as response:
-                body=response.read(2_000_000).decode("utf-8","replace")
+            body=self._request_html(ddg_url)
+            parser=_DDGParser();parser.feed(body);results=parser.results[:limit]
         except Exception as exc:
-            return ToolResult(False,error=f"Falha na pesquisa web: {exc}")
-        parser=_DDGParser()
-        parser.feed(body)
-        results=parser.results[:limit]
-        return ToolResult(
-            bool(results),
-            {"query":query,"results":results,"count":len(results)},
-            {"engine":"duckduckgo_html","request_url":url,"results":len(results)},
-            None if results else "Nenhum resultado encontrado."
-        )
+            last_error=exc
+        if not results:
+            bing_url='https://www.bing.com/search?' + urllib.parse.urlencode({'q':query,'setlang':'pt-BR'})
+            try:
+                body=self._request_html(bing_url)
+                parser=_BingParser();parser.feed(body);results=parser.results[:limit]
+                if results:
+                    engine='bing_html';request_url=bing_url;last_error=None
+            except Exception as exc:
+                last_error=exc
+        if results:
+            return ToolResult(True,{"query":query,"results":results,"count":len(results)},
+                               {"engine":engine,"request_url":request_url,"results":len(results)},None)
+        return ToolResult(False,{"query":query,"results":[],"count":0},
+                          {"engine":engine,"request_url":request_url,"results":0},
+                          'Nenhum resultado encontrado.' if last_error is None else f'Falha na pesquisa web: {last_error}')
 
     def verify(self,payload,result):
         ok=bool(result.success and result.output.get("results"))

@@ -117,6 +117,10 @@ class HermesAgentBridge:
             raise HermesError("Prompt Hermes vazio.")
 
         env = os.environ.copy()
+        # Keep Unicode prompts/responses stable on Windows. Python subprocesses
+        # otherwise may inherit the legacy console encoding.
+        env['PYTHONIOENCODING'] = 'utf-8'
+        env['PYTHONUTF8'] = '1'
         resolved = self.executable()
         if resolved is None:
             raise HermesError("Executável Hermes não está disponível.")

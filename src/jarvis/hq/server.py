@@ -188,6 +188,8 @@ def _handler(state: _State):
                 return self._send(200, state.call_sync(state.runtime.opportunities.scan))
             if path == "/api/tool-runs":
                 return self._send(200, state.call_sync(state.runtime.tool_runs.recent, 50))
+            if path == "/api/events":
+                return self._send(200, state.call_sync(state.runtime.foundation.events.recent, 100))
             if path == "/api/memory":
                 return self._send(200, state.call_sync(state.runtime.memory.repository.recent, 100))
             if path == "/api/agents":
@@ -289,6 +291,20 @@ def _handler(state: _State):
                     values=payload.get("preferences") if isinstance(payload.get("preferences"),dict) else payload
                     result=state.call_sync(state.runtime.preferences.update,values)
                     return self._send(200,result)
+                if path == "/api/memory":
+                    content=str(payload.get("content") or "").strip()
+                    if not content:
+                        return self._send(400,{"error":"content obrigatório"})
+                    mid=state.call_sync(
+                        state.runtime.memory.remember,
+                        content,
+                        memory_type=str(payload.get("memory_type") or "semantic"),
+                        source="user",
+                        scope=str(payload.get("scope") or "global"),
+                        importance=float(payload.get("importance") or .7),
+                        metadata=payload.get("metadata") or {},
+                    )
+                    return self._send(201,{"memory_id":mid,"created":True})
                 if path == "/api/mission/team":
                     objective = str(payload.get("objective") or "").strip()
                     if not objective:
@@ -361,6 +377,11 @@ def _handler(state: _State):
         def do_DELETE(self):
             path=urlparse(self.path).path
             try:
+                if path.startswith("/api/memory/"):
+                    mid=unquote(path.split("/",3)[3] if len(path.split("/",3))>3 else "")
+                    ok=state.call_sync(state.runtime.memory.repository.delete,mid)
+                    if not ok: return self._send(404,{"error":"memory not found"})
+                    return self._send(200,{"memory_id":mid,"deleted":True})
                 if path.startswith("/api/conversations/"):
                     cid=unquote(path.split("/",3)[3] if len(path.split("/",3))>3 else "")
                     result=state.call_sync(state.runtime.chat.delete_conversation,cid)

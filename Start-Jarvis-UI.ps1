@@ -1,4 +1,4 @@
-﻿param(
+param(
     [ValidateSet("companion", "hq")]
     [string]$Page = "companion"
 )
@@ -65,18 +65,45 @@ if (Test-JarvisUI) {
 
 Stop-LegacyJarvisIfNeeded
 
+$StartupLogDir = Join-Path $DataDir "logs"
+New-Item -ItemType Directory -Path $StartupLogDir -Force | Out-Null
+$Stamp = Get-Date -Format "yyyyMMdd-HHmmss"
+$StdoutLog = Join-Path $StartupLogDir "startup-$Stamp.out.log"
+$StderrLog = Join-Path $StartupLogDir "startup-$Stamp.err.log"
+
 Write-Host "Iniciando instância unificada do Jarvis..." -ForegroundColor Cyan
-$proc = Start-Process -FilePath $Python -ArgumentList @("-m", "jarvis", "ui", "--no-open") -WorkingDirectory $Project -PassThru
+$proc = Start-Process -FilePath $Python -ArgumentList @("-m", "jarvis", "ui", "--no-open") -WorkingDirectory $Project -RedirectStandardOutput $StdoutLog -RedirectStandardError $StderrLog -WindowStyle Hidden -PassThru
 
 $ready = $false
-for ($i=0; $i -lt 120; $i++) {
+for ($i=0; $i -lt 240; $i++) {
     Start-Sleep -Milliseconds 250
     if (Test-JarvisUI) { $ready = $true; break }
     if ($proc.HasExited) { break }
 }
 
 if (-not $ready) {
-    throw "Jarvis não abriu o servidor local em $BaseUrl. Execute Validate-Jarvis-Base.cmd para diagnóstico."
+    Write-Host "`nJarvis não ficou disponível em $BaseUrl dentro do tempo esperado." -ForegroundColor Red
+    Write-Host "PID: $($proc.Id) | Encerrado: $($proc.HasExited)" -ForegroundColor Yellow
+    Write-Host "Log stdout: $StdoutLog" -ForegroundColor DarkGray
+    Write-Host "Log stderr: $StderrLog" -ForegroundColor DarkGray
+    if (Test-Path $StderrLog) {
+        $err = Get-Content $StderrLog -Tail 80 -ErrorAction SilentlyContinue
+        if ($err) {
+            Write-Host "`n--- STDERR ---" -ForegroundColor Yellow
+            $err | ForEach-Object { Write-Host $_ }
+        }
+    }
+    if (Test-Path $StdoutLog) {
+        $out = Get-Content $StdoutLog -Tail 40 -ErrorAction SilentlyContinue
+        if ($out) {
+            Write-Host "`n--- STDOUT ---" -ForegroundColor Yellow
+            $out | ForEach-Object { Write-Host $_ }
+        }
+    }
+    if ($proc.HasExited) {
+        throw "Jarvis encerrou durante a inicialização. Consulte os logs acima."
+    }
+    throw "Jarvis não abriu o servidor local em $BaseUrl dentro do tempo esperado."
 }
 
 Start-Process $TargetUrl

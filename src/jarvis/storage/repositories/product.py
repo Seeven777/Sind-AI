@@ -195,6 +195,10 @@ class MemoryRepository:
         return [dict(r) for r in self.conn.execute(
             'SELECT * FROM memories ORDER BY importance DESC,created_at DESC LIMIT ?',(limit,)
         ).fetchall()]
+    def delete(self,memory_id):
+        cur=self.conn.execute('DELETE FROM memories WHERE memory_id=?',(memory_id,))
+        self.conn.commit()
+        return bool(cur.rowcount)
 
 
 class ApprovalRepository:
