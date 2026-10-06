@@ -1,41 +1,16 @@
-<!doctype html>
-<html lang="pt-BR">
-<head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#05090f"><title>Jarvis HQ — Agent Office</title>
-<link rel="stylesheet" href="/office3d.css">
-</head>
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#060910"><title>Jarvis HQ — Office</title><link rel="stylesheet" href="/office3d.css"><script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.min.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/"}}</script></head>
 <body>
-<header class="topbar">
-  <div class="brand"><div class="mark"><i></i><i></i><i></i></div><div><b>JARVIS HQ</b><small>AGENT OPERATIONS CENTER</small></div></div>
-  <nav><a href="/">Companion</a><a class="active" href="/hq">HQ</a><a href="/mission-control">Mission Control</a><a href="/agents">Agents</a><a href="/projects">Projects</a><a href="/memory">Memory</a><a href="/system">System</a></nav>
-  <div class="status"><span class="live"></span><span id="connection">CONNECTING</span><em id="sync-age">—</em></div>
-</header>
-<main class="layout">
-  <section class="world-panel">
-    <div class="world-head">
-      <div><span class="eyebrow">LIVE ENVIRONMENT</span><h1>Jarvis Office</h1><p>Espaço operacional híbrido · 3D visual + HUD 2D · estado real do runtime</p></div>
-      <div class="controls"><button data-view="overview" class="active">Overview</button><button data-view="command">Command</button><button data-view="working">Working</button><button id="auto">Auto</button><button id="reset">Reset</button></div>
-    </div>
-    <div class="world" id="world">
-      <canvas id="scene" aria-label="Escritório 3D visual interativo"></canvas>
-      <div class="hud-corner left"><span>JARVIS / SPATIAL MAP</span><small>AGENTS · TASKS · MODELS</small></div>
-      <div class="hud-corner right"><span id="clock">—</span><small>LOCAL RUNTIME</small></div>
-      <div id="labels"></div>
-      <div class="crosshair" id="crosshair"></div>
-      <div class="world-bottom"><div class="legend"><span><i class="g"></i>ONLINE</span><span><i class="b"></i>WORKING</span><span><i class="a"></i>ATTENTION</span><span><i class="r"></i>ERROR</span></div><div class="help">arraste · roda · clique</div></div>
-      <div id="toast" class="toast"></div>
-    </div>
-    <div class="live-flow"><div class="flow-title"><span class="live"></span>LIVE FLOW</div><div id="flow" class="flow"></div></div>
-  </section>
-  <aside class="inspector">
-    <div class="inspect-head"><div><span class="eyebrow">JARVIS / HQ</span><h2 id="selection-title">Command Core</h2><p id="selection-sub">Orquestração central</p></div><a href="/">Companion ↗</a></div>
-    <div class="stats" id="stats"></div>
-    <section class="card primary"><div class="card-head"><div><span class="eyebrow">SELECTED NODE</span><h3 id="node-name">Command Core</h3><small id="node-role">Central orchestration</small></div><span id="node-badge" class="badge">READY</span></div><div class="node-meta" id="node-meta">sistema · coordinator</div><div class="what">O QUE ESTÁ FAZENDO AGORA</div><div id="node-activity" class="activity">Selecione uma estação para acompanhar exatamente o trabalho atual.</div><div id="node-task" class="task hidden"></div><div class="prog"><span>progresso</span><b id="node-progress">0%</b></div><div class="bar"><i id="node-bar"></i></div></section>
-    <section class="card"><div class="card-head"><div><span class="eyebrow">WORKING NOW</span><h3>Atividade</h3></div><span id="working-total" class="count">0</span></div><div id="working" class="working"></div></section>
-    <section class="card"><div class="card-head"><div><span class="eyebrow">CURRENT TASK</span><h3>Execução</h3></div><span id="task-badge" class="badge">—</span></div><div id="task" class="task-detail empty">Nenhuma tarefa vinculada.</div></section>
-    <section class="card"><div class="card-head"><div><span class="eyebrow">AGENT MATRIX</span><h3>Departamentos</h3></div></div><div id="departments" class="departments"></div></section>
-  </aside>
-</main>
-<script src="/office3d.js"></script>
-</body></html>
+<header class="hq-topbar"><div class="brand"><div class="brand-mark"><span></span><span></span><span></span></div><div><strong>JARVIS HQ</strong><small>AGENT OPERATIONS CENTER</small></div></div><nav><a href="/">Companion</a><a class="active" href="/hq">HQ</a><a href="/mission-control">Mission Control</a><a href="/agents">Agents</a><a href="/projects">Projects</a><a href="/system">System</a></nav><div class="top-state"><span class="live-dot"></span><span id="connection">CONNECTING</span><span class="version" id="version">—</span></div></header>
+<main class="hq-layout">
+<section class="office-stage" id="stage"><canvas id="office-canvas"></canvas><div id="room-labels" class="room-labels"></div>
+<div class="stage-top"><div><span class="eyebrow">LIVE ENVIRONMENT</span><h1>Operational Office</h1><p>Visualização em tempo real do Jarvis Core</p></div><div class="stage-actions"><button id="preset-overview">Overview</button><button id="preset-command">Command</button><button id="preset-floor">Floor</button><button id="auto-rotate" class="active">Auto</button><button id="reset-view">Reset</button></div></div>
+<div class="stage-bottom"><div class="status-strip"><span><i class="status-dot green"></i>Online</span><span><i class="status-dot blue"></i>Working</span><span><i class="status-dot amber"></i>Attention</span><span><i class="status-dot red"></i>Error</span></div><div class="zoom"><button id="zoom-out">−</button><button id="zoom-in">＋</button></div></div>
+<div id="fallback" class="fallback hidden"><div class="fallback-card"><div class="fallback-orb">J</div><h2>Modo visual alternativo</h2><p>O navegador não iniciou o renderer 3D. O sistema permanece operacional.</p><a href="/hq-classic">Abrir HQ clássico</a></div></div></section>
+<aside class="hq-inspector"><div class="inspector-head"><div><span class="eyebrow">JARVIS / HQ</span><h2>Mission cockpit</h2></div><a href="/" class="back">Companion ↗</a></div>
+<div id="summary" class="metric-grid"></div>
+<section class="inspector-card selected-card"><div class="card-head"><div><span class="eyebrow">SELECTION</span><h3 id="selected-title">Command Core</h3><small id="selected-subtitle">central orchestration</small></div><span id="selected-status" class="status-badge">READY</span></div><div id="selected-detail" class="selected-detail">Selecione um agente, sala ou núcleo no escritório.</div></section>
+<section class="inspector-card"><div class="card-head"><div><span class="eyebrow">LIVE MISSIONS</span><h3>Missões</h3></div><span id="mission-total" class="muted-count">0</span></div><div id="missions" class="list"></div></section>
+<section class="inspector-card"><div class="card-head"><div><span class="eyebrow">NEEDS YOU</span><h3>Atenção</h3></div><span id="attention-count" class="attention-count">0</span></div><div id="attention" class="list"></div></section>
+<section class="inspector-card mini-nav"><div class="card-head"><div><span class="eyebrow">NAVIGATION</span><h3>Departamentos</h3></div></div><div id="department-nav" class="department-nav"></div></section>
+</aside></main>
+<script type="module" src="/office3d.js"></script></body></html>

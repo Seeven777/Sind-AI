@@ -93,7 +93,35 @@ class TeamMissionService:
             review=artifacts[-1]['content']
             if artifacts[-1]['agent_id']!='review.verifier':raise RuntimeError('Missão terminou sem Reviewer.')
             passed='VERDICT: PASS' in review.upper()
-            await self.bus.publish(Event('verification.passed' if passed else 'verification.uncertain',severity=None if passed else 'warning',task_id=task.task_id,agent_id='review.verifier',payload={'mission_id':mission_id,'verdict':'PASS' if passed else 'REVISE','review_artifact_id':artifacts[-1]['artifact_id']}))
+            await self.bus.publish(Event(
+                'verification.passed' if passed else 'verification.failed',
+                severity=None if passed else 'error',
+                task_id=task.task_id,
+                agent_id='review.verifier',
+                payload={
+                    'mission_id':mission_id,
+                    'verdict':'PASS' if passed else 'REVISE',
+                    'review_artifact_id':artifacts[-1]['artifact_id'],
+                },
+            ))
+            if not passed:
+                error='Reviewer reprovou a entrega (VERDICT: REVISE).'
+                await self.task_service.transition(task.task_id,TaskStatus.FAILED,error=error)
+                self.missions.complete(mission_id,error=error)
+                await self.bus.publish(Event(
+                    'mission.failed',severity='error',task_id=task.task_id,
+                    payload={
+                        'mission_id':mission_id,'error':error,
+                        'review_artifact_id':artifacts[-1]['artifact_id'],
+                    },
+                ))
+                return {
+                    'kind':'team_mission_review_failed','mission_id':mission_id,
+                    'task_id':task.task_id,'agents':list(pipeline),
+                    'plan_reason':plan.reason,'mission_mode':plan.mode,
+                    'content':'','review':review,'review_passed':False,
+                    'artifacts':artifacts,'error':error,
+                }
             delivery=next((item for item in reversed(artifacts[:-1]) if item.get('artifact_path') or item.get('artifact_id')), artifacts[-1])
             await self.task_service.transition(task.task_id,TaskStatus.COMPLETED); self.missions.complete(mission_id)
             await self.bus.publish(Event('mission.completed',task_id=task.task_id,payload={'mission_id':mission_id,'artifacts':[a['artifact_id'] for a in artifacts],'review_passed':passed,'mission_mode':plan.mode}))

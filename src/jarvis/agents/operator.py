@@ -188,6 +188,24 @@ class OperatorAgent:
         if task_id:
             current=self.task_service.tasks.get(task_id)
             if current.status==TaskStatus.BLOCKED:
+                # A team mission has remaining pipeline stages (especially the
+                # independent Reviewer). Tool verification alone must not turn
+                # that mission into a successful task.
+                if current.metadata.get('mode')=='team':
+                    await self.bus.publish(Event(
+                        'mission.resume_required',severity='warning',task_id=task_id,
+                        agent_id=self.card.agent_id,
+                        payload={
+                            'approval_id':approval_id,'tool_id':result.tool_id,
+                            'tool_status':result.status,
+                            'reason':'A missão em equipe requer retomada pelo orquestrador e revisão final.',
+                        },
+                    ))
+                    return {
+                        'status':result.status,'tool_id':result.tool_id,'task_id':task_id,
+                        'output':result.output,'evidence':result.evidence,'error':result.error,
+                        'mission_resume_required':True,
+                    }
                 await self.task_service.transition(task_id,TaskStatus.READY)
                 await self.task_service.transition(task_id,TaskStatus.RUNNING)
                 if result.success:
