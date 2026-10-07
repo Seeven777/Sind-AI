@@ -194,9 +194,10 @@
   }
 
   class LivingCore{
-    constructor(canvas){this.canvas=canvas;this.state='IDLE';this.target={...STATE.IDLE};this.current={...STATE.IDLE};this.audio=0;this.pointer={x:.5,y:.5};this.running=true;this.started=performance.now();this.raf=0;this.resizeObserver=null;this.gl=null;this.ctx=null;this._bound=[];this._init();}
+    constructor(canvas,options={}){this.canvas=canvas;this.options=options||{};this.state='IDLE';this.target={...STATE.IDLE};this.current={...STATE.IDLE};this.audio=0;this.pointer={x:.5,y:.5};this.running=true;this.started=performance.now();this.raf=0;this.resizeObserver=null;this.gl=null;this.ctx=null;this._bound=[];this._quality=this._resolveQuality();this._hidden=document.hidden;this._visibility=()=>{this._hidden=document.hidden;if(!this._hidden&&this.running&&!this.raf){this.started=performance.now();this.gl?this._frameGL():this._frame2D();}};document.addEventListener('visibilitychange',this._visibility);this._init();}
+    _resolveQuality(){const requested=this.options.quality||'auto';if(requested==='mobile')return {shell:2200,inner:560,dpr:1.55};if(requested==='low')return {shell:1500,inner:360,dpr:1.25};if(requested==='high')return {shell:3600,inner:980,dpr:2};const mobile=matchMedia('(max-width:700px)').matches,mem=Number(navigator.deviceMemory||4),cores=Number(navigator.hardwareConcurrency||4);return mobile||mem<=3||cores<=4?{shell:2200,inner:560,dpr:1.55}:{shell:3600,inner:980,dpr:2};}
     _init(){try{this.gl=this.canvas.getContext('webgl2',{alpha:true,antialias:true,premultipliedAlpha:false,powerPreference:'high-performance'});if(!this.gl)throw new Error('WebGL2 unavailable');this._initGL();}catch(err){console.warn('Jarvis Core WebGL fallback',err);this.gl=null;this.ctx=this.canvas.getContext('2d');this._init2D();}}
-    _resize(){const r=this.canvas.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,2);const w=Math.max(2,Math.round(r.width*d)),h=Math.max(2,Math.round(r.height*d));if(this.canvas.width!==w||this.canvas.height!==h){this.canvas.width=w;this.canvas.height=h;}if(this.gl)this.gl.viewport(0,0,w,h);}
+    _resize(){const r=this.canvas.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,this._quality.dpr);const w=Math.max(2,Math.round(r.width*d)),h=Math.max(2,Math.round(r.height*d));if(this.canvas.width!==w||this.canvas.height!==h){this.canvas.width=w;this.canvas.height=h;}if(this.gl)this.gl.viewport(0,0,w,h);}
     _listen(type,fn){this.canvas.addEventListener(type,fn,{passive:type!=='pointerdown'});this._bound.push([type,fn]);}
     _events(){this._listen('pointermove',e=>{const r=this.canvas.getBoundingClientRect();this.pointer.x=(e.clientX-r.left)/Math.max(1,r.width);this.pointer.y=1-(e.clientY-r.top)/Math.max(1,r.height);this.audio=Math.max(this.audio,.10);});this._listen('pointerleave',()=>{this.pointer.x=.5;this.pointer.y=.5});this._listen('pointerdown',()=>{this.audio=Math.max(this.audio,.62)});}
     _initGL(){
@@ -204,7 +205,7 @@
       this.membraneU=uniformMap(gl,this.membraneProgram,['u_resolution','u_pointer','u_time','u_speed','u_energy','u_turb','u_pulse','u_hue','u_audio','u_filament']);
       this.pointU=uniformMap(gl,this.pointProgram,['u_time','u_speed','u_energy','u_turb','u_pulse','u_hue','u_audio','u_points','u_pointer','u_dpr']);
       this.quad=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,this.quad);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,-1,1,1,-1,1,1]),gl.STATIC_DRAW);
-      const cloud=sphereCloud();this.pointCount=cloud.total;this.pointBuffers={};
+      const cloud=sphereCloud(this._quality.shell,this._quality.inner);this.pointCount=cloud.total;this.pointBuffers={};
       this.pointBuffers.pos=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,this.pointBuffers.pos);gl.bufferData(gl.ARRAY_BUFFER,cloud.pos,gl.STATIC_DRAW);
       this.pointBuffers.seed=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,this.pointBuffers.seed);gl.bufferData(gl.ARRAY_BUFFER,cloud.seed,gl.STATIC_DRAW);
       this.pointBuffers.layer=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,this.pointBuffers.layer);gl.bufferData(gl.ARRAY_BUFFER,cloud.layer,gl.STATIC_DRAW);
@@ -213,7 +214,7 @@
     _lerp(){for(const k of ['speed','energy','turbulence','pulse','hue','points','filament'])this.current[k]+=(this.target[k]-this.current[k])*.032;this.audio*=.91;}
     _commonUniforms(program,u,t){const gl=this.gl;gl.useProgram(program);if(u.u_time)gl.uniform1f(u.u_time,t);if(u.u_speed)gl.uniform1f(u.u_speed,this.current.speed);if(u.u_energy)gl.uniform1f(u.u_energy,this.current.energy);if(u.u_turb)gl.uniform1f(u.u_turb,this.current.turbulence);if(u.u_pulse)gl.uniform1f(u.u_pulse,this.current.pulse);if(u.u_hue)gl.uniform1f(u.u_hue,this.current.hue);if(u.u_audio)gl.uniform1f(u.u_audio,this.audio);if(u.u_pointer)gl.uniform2f(u.u_pointer,this.pointer.x,this.pointer.y);}
     _frameGL=()=>{
-      if(!this.running)return;this._resize();this._lerp();const gl=this.gl,t=(performance.now()-this.started)/1000;
+      if(!this.running)return;if(this._hidden){this.raf=0;return;}this._resize();this._lerp();const gl=this.gl,t=(performance.now()-this.started)/1000;
       gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT);
       // restrained membrane first
       this._commonUniforms(this.membraneProgram,this.membraneU,t);gl.uniform2f(this.membraneU.u_resolution,this.canvas.width,this.canvas.height);gl.uniform1f(this.membraneU.u_filament,this.current.filament);gl.bindBuffer(gl.ARRAY_BUFFER,this.quad);const q=gl.getAttribLocation(this.membraneProgram,'a_position');gl.enableVertexAttribArray(q);gl.vertexAttribPointer(q,2,gl.FLOAT,false,0,0);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);gl.drawArrays(gl.TRIANGLES,0,6);
@@ -228,15 +229,15 @@
       const cloud=sphereCloud(1700,420);this.fallbackPoints=[];for(let i=0;i<cloud.total;i++)this.fallbackPoints.push({x:cloud.pos[i*3],y:cloud.pos[i*3+1],z:cloud.pos[i*3+2],seed:cloud.seed[i],layer:cloud.layer[i]});this._frame2D();
     }
     _frame2D=()=>{
-      if(!this.running)return;this._resize();this._lerp();const c=this.ctx,w=this.canvas.width,h=this.canvas.height,d=Math.min(w,h),cx=w/2,cy=h/2,t=(performance.now()-this.started)/1000*this.current.speed,scale=d*.325;c.clearRect(0,0,w,h);c.save();c.globalCompositeOperation='lighter';
+      if(!this.running)return;if(this._hidden){this.raf=0;return;}this._resize();this._lerp();const c=this.ctx,w=this.canvas.width,h=this.canvas.height,d=Math.min(w,h),cx=w/2,cy=h/2,t=(performance.now()-this.started)/1000*this.current.speed,scale=d*.325;c.clearRect(0,0,w,h);c.save();c.globalCompositeOperation='lighter';
       const col=this.current.hue>.34?'255,70,70':this.current.hue>.10?'255,180,70':this.current.hue<-.05?'80,235,205':'80,195,255';
       const ring=(phase,width,alpha)=>{c.beginPath();for(let i=0;i<=220;i++){const a=i/220*Math.PI*2,r=scale*(1+Math.sin(a*3-t*.6+phase)*.018*this.current.turbulence+Math.sin(a*7+t*.31+phase)*.008);const x=cx+Math.cos(a)*r,y=cy+Math.sin(a)*r;if(i)c.lineTo(x,y);else c.moveTo(x,y)}c.strokeStyle=`rgba(${col},${alpha})`;c.lineWidth=width;c.stroke()};ring(0,1.3*this.current.filament,.42);ring(1.7,.7*this.current.filament,.24);
       const ax=t*.10+(this.pointer.y-.5)*.12,ay=t*.18+(this.pointer.x-.5)*.18,ca=Math.cos(ax),sa=Math.sin(ax),cb=Math.cos(ay),sb=Math.sin(ay);for(const p of this.fallbackPoints){let x=p.x,y=p.y,z=p.z;const y1=y*ca-z*sa,z1=y*sa+z*ca,x2=x*cb+z1*sb,z2=-x*sb+z1*cb;const depth=z2*.5+.5,px=cx+x2*scale,py=cy+y1*scale,rad=(.58+p.layer*.52)*(devicePixelRatio||1)*(1+depth*.45);c.fillStyle=`rgba(${col},${(.14+.66*depth)*(.62+p.layer*.38)})`;c.beginPath();c.arc(px,py,rad,0,Math.PI*2);c.fill()}c.restore();this.audio*=.91;this.raf=requestAnimationFrame(this._frame2D);
     }
     setState(name){name=String(name||'IDLE').toUpperCase();if(!STATE[name])name='IDLE';this.state=name;this.target={...STATE[name]};if(name==='ATTENTION'||name==='ERROR')this.audio=Math.max(this.audio,.34);}
     setAudio(level){this.audio=Math.max(this.audio,Math.max(0,Math.min(1,Number(level)||0)));}
-    destroy(){this.running=false;if(this.raf)cancelAnimationFrame(this.raf);this.resizeObserver?.disconnect();for(const [t,fn] of this._bound)this.canvas.removeEventListener(t,fn);this._bound=[];}
+    destroy(){this.running=false;if(this.raf)cancelAnimationFrame(this.raf);this.resizeObserver?.disconnect();document.removeEventListener('visibilitychange',this._visibility);for(const [t,fn] of this._bound)this.canvas.removeEventListener(t,fn);this._bound=[];}
   }
 
-  window.JarvisCore={create:(canvas)=>new LivingCore(canvas),states:Object.keys(STATE)};
+  window.JarvisCore={create:(canvas,options={})=>new LivingCore(canvas,options),states:Object.keys(STATE)};
 })();

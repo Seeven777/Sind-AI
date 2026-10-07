@@ -141,10 +141,44 @@ def _handler(state: _State):
                 return {}
             return json.loads(self.rfile.read(length).decode("utf-8"))
 
+        def _request_is_local(self):
+            """Return True only for a direct localhost request.
+
+            Reverse proxies (Tailscale Funnel, Cloudflare Tunnel, etc.) connect
+            to Jarvis through localhost, so ``client_address`` alone is not a
+            trustworthy signal.  A public Host or forwarding header always
+            turns the request into a remote request and therefore requires the
+            mobile access token/session.
+            """
+            forwarded = str(
+                self.headers.get("CF-Connecting-IP")
+                or self.headers.get("X-Forwarded-For")
+                or ""
+            ).split(",", 1)[0].strip()
+            if forwarded and not _is_loopback(forwarded):
+                return False
+
+            host = str(self.headers.get("Host") or "").strip().lower()
+            host_name = host
+            if host.startswith("[") and "]" in host:
+                host_name = host[1:host.index("]")]
+            elif ":" in host:
+                host_name = host.rsplit(":", 1)[0]
+            if host_name and host_name not in {"localhost", "127.0.0.1", "::1"}:
+                return False
+            return _is_loopback(self.client_address[0])
+
+        def _request_is_https(self):
+            proto = str(self.headers.get("X-Forwarded-Proto") or "").lower().strip()
+            if proto == "https":
+                return True
+            host = str(self.headers.get("Host") or "").lower()
+            return host.endswith(".ts.net") or ".ts.net:" in host or host.endswith(".trycloudflare.com") or ".trycloudflare.com:" in host
+
         def _remote_authorized(self, *, establish_session=False):
             # Desktop localhost remains frictionless. LAN/mobile access requires
             # a secret generated once and protected by the Windows secret store.
-            if _is_loopback(self.client_address[0]):
+            if self._request_is_local():
                 return True
             if not state.allow_remote or not state.access_token:
                 self._send(403, {"error": "mobile access disabled"})
@@ -167,7 +201,8 @@ def _handler(state: _State):
                 self.send_header("Location", clean)
                 self.send_header(
                     "Set-Cookie",
-                    f"jarvis_mobile_session={state.access_token}; Path=/; HttpOnly; SameSite=Strict",
+                    f"jarvis_mobile_session={state.access_token}; Path=/; HttpOnly; SameSite=Strict; Max-Age=2592000"
+                    + ("; Secure" if self._request_is_https() else ""),
                 )
                 self.send_header("Cache-Control", "no-store")
                 self.end_headers()
@@ -188,7 +223,7 @@ def _handler(state: _State):
                     "run_id": state.call_sync(lambda: state.runtime.foundation.run_id),
                 })
             if path == "/api/mobile":
-                local = _is_loopback(self.client_address[0])
+                local = self._request_is_local()
                 payload = {
                     "enabled": state.allow_remote,
                     "lan_ip": state.lan_ip,
@@ -197,6 +232,8 @@ def _handler(state: _State):
                 }
                 if local and state.allow_remote:
                     payload["connect_url"] = f"http://{state.lan_ip}:{state.port}/mobile?token={state.access_token}"
+                    payload["desktop_connect_url"] = f"http://{state.lan_ip}:{state.port}/?token={state.access_token}"
+                    payload["access_token"] = state.access_token
                 return self._send(200, payload)
             if path == "/api/conversations":
                 query=parse_qs(urlparse(self.path).query)

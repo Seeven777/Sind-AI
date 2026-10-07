@@ -6,6 +6,7 @@
 <meta name="theme-color" content="#020509">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="format-detection" content="telephone=no">
 <title>Jarvis Mobile</title>
 <link rel="manifest" href="/mobile.webmanifest">
 <link rel="icon" href="/jarvis-icon.svg" type="image/svg+xml">
@@ -14,45 +15,58 @@
 <body>
 <div id="mobile-app" class="mobile-app">
   <header class="topbar">
-    <button id="menu-btn" class="round-btn" aria-label="Abrir menu">☰</button>
+    <button id="menu-btn" class="round-btn" aria-label="Abrir menu"><span class="menu-lines"><i></i><i></i><i></i></span></button>
     <div class="brand"><b>JARVIS</b><span id="state-label">PRESENTE</span></div>
-    <button id="voice-toggle" class="round-btn active" aria-label="Ativar ou desativar voz">◉</button>
+    <button id="voice-toggle" class="round-btn active" aria-label="Ativar ou desativar voz"><span class="voice-dot"></span></button>
   </header>
 
+  <div id="network-banner" class="network-banner hidden">Sem conexão com o núcleo. Tentando reconectar…</div>
+
   <main class="stage">
-    <section class="core-zone" id="core-zone">
+    <section class="core-zone" id="core-zone" aria-label="Presença Jarvis">
+      <div class="core-halo"></div>
       <canvas id="jarvis-core"></canvas>
-      <div class="core-caption" id="core-caption">presente</div>
+      <div class="core-caption"><span class="pulse-dot"></span><span id="core-caption">presente</span></div>
     </section>
-    <section id="chat" class="transcript" aria-live="polite"></section>
+    <section id="chat" class="transcript" aria-live="polite" aria-label="Conversa"></section>
   </main>
 
   <footer class="composer-wrap">
     <form id="composer" class="composer">
-      <button type="button" id="mic-btn" class="icon-btn" aria-label="Falar">⌁</button>
-      <textarea id="input" rows="1" placeholder="Fale com Jarvis…" autocomplete="off"></textarea>
-      <button type="submit" id="send-btn" class="send-btn" aria-label="Enviar">↗</button>
+      <button type="button" id="mic-btn" class="icon-btn" aria-label="Falar"><span class="mic-shape"></span></button>
+      <textarea id="input" rows="1" placeholder="Fale com Jarvis…" autocomplete="off" enterkeyhint="send" aria-label="Mensagem para Jarvis"></textarea>
+      <button type="submit" id="send-btn" class="send-btn" aria-label="Enviar"><span>↗</span></button>
     </form>
     <div id="composer-status" class="composer-status"></div>
   </footer>
 
   <div id="scrim" class="scrim hidden"></div>
   <aside id="drawer" class="drawer" aria-hidden="true">
-    <div class="drawer-head"><div><b>JARVIS</b><span>MESMO NÚCLEO · MESMA MEMÓRIA</span></div><button id="close-menu" class="round-btn">×</button></div>
+    <div class="drawer-head"><div class="drawer-brand"><span class="mini-core"></span><div><b>JARVIS</b><span>MESMO NÚCLEO · MESMA MEMÓRIA</span></div></div><button id="close-menu" class="round-btn" aria-label="Fechar menu">×</button></div>
     <button id="new-chat" class="primary-action">＋ Nova conversa</button>
-    <div class="section-title">CONVERSAS</div>
+
+    <div class="section-title"><span>CONVERSAS</span><span id="conversation-count">—</span></div>
     <div id="history" class="history"></div>
-    <div class="section-title">ATENÇÃO</div>
+
+    <div class="section-title"><span>ATENÇÃO</span><span id="attention-count">—</span></div>
     <div id="attention" class="attention"></div>
+
+    <div class="section-title"><span>ESPAÇOS</span><span>JARVIS OS</span></div>
     <nav class="mobile-nav">
-      <a href="/hq">Escritório</a><a href="/mission-control">Missões</a><a href="/agents">Agentes</a><a href="/projects">Projetos</a><a href="/memory">Memória</a><a href="/system">Sistema</a>
+      <a href="/hq"><span>◈</span><b>Escritório</b><small>atividade ao vivo</small></a>
+      <a href="/mission-control"><span>◫</span><b>Missões</b><small>pipeline</small></a>
+      <a href="/agents"><span>◇</span><b>Agentes</b><small>equipe</small></a>
+      <a href="/projects"><span>▣</span><b>Projetos</b><small>workspaces</small></a>
+      <a href="/memory"><span>◎</span><b>Memória</b><small>contexto</small></a>
+      <a href="/system"><span>⌘</span><b>Sistema</b><small>diagnóstico</small></a>
     </nav>
+
     <div class="drawer-tools">
       <button id="install-btn" class="secondary-action hidden">Instalar aplicativo</button>
       <button id="test-voice" class="secondary-action">Testar voz</button>
       <button id="refresh-btn" class="secondary-action">Atualizar estado</button>
     </div>
-    <div class="drawer-foot"><span id="connection-state">conectado</span><span id="model-state">AUTO</span></div>
+    <div class="drawer-foot"><span><i class="connection-led"></i><span id="connection-state">conectado</span></span><span id="model-state">AUTO</span></div>
   </aside>
 </div>
 <div id="toasts" class="toasts"></div>

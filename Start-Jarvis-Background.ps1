@@ -15,7 +15,7 @@ function Test-Jarvis {
 }
 
 if (-not (Test-Jarvis)) {
-    Start-Process -FilePath $PythonW -ArgumentList @("-m","jarvis","ui","--no-open") -WorkingDirectory $Project -WindowStyle Hidden
+    Start-Process -FilePath $PythonW -ArgumentList @("-m","jarvis","ui","--no-open","--mobile") -WorkingDirectory $Project -WindowStyle Hidden
     for ($i=0; $i -lt 80; $i++) {
         Start-Sleep -Milliseconds 250
         if (Test-Jarvis) { break }

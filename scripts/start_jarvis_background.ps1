@@ -13,4 +13,4 @@ else {
     $python = $cmd.Source
 }
 
-& $python -m jarvis ui --no-open
+& $python -m jarvis ui --no-open --mobile
