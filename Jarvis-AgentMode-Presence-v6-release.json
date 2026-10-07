@@ -1,0 +1,24 @@
+{
+  "release": "AgentMode-Presence-v6",
+  "version": "1.0.0rc6",
+  "focus": [
+    "voice",
+    "mobile",
+    "secure-remote",
+    "open-source-expansion"
+  ],
+  "default_tts": "edge-tts / pt-BR-AntonioNeural",
+  "optional_tts": [
+    "chatterbox",
+    "elevenlabs",
+    "piper",
+    "windows-sapi"
+  ],
+  "mobile_surface": "/mobile",
+  "secure_mobile": "Tailscale Serve HTTPS",
+  "status": "validated",
+  "tests": "117/117 passed",
+  "release_self_test": "passed",
+  "python_compile": "passed",
+  "javascript_syntax": "passed"
+}

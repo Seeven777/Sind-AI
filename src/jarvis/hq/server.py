@@ -196,7 +196,7 @@ def _handler(state: _State):
                     "url": f"http://{state.lan_ip}:{state.port}/",
                 }
                 if local and state.allow_remote:
-                    payload["connect_url"] = f"http://{state.lan_ip}:{state.port}/?token={state.access_token}"
+                    payload["connect_url"] = f"http://{state.lan_ip}:{state.port}/mobile?token={state.access_token}"
                 return self._send(200, payload)
             if path == "/api/conversations":
                 query=parse_qs(urlparse(self.path).query)
@@ -324,6 +324,8 @@ def _handler(state: _State):
                 return self._send(200, state.call_sync(state.runtime.google_oauth.status))
             if path == "/":
                 target = assets / "companion.html"
+            elif path == "/mobile":
+                target = assets / "mobile.html"
             elif path in {"/hq", "/office"}:
                 target = assets / "index.html"
             elif path == "/hq-classic":

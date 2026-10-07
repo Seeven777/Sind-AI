@@ -1,2 +1,15 @@
-from .base import WhisperCppSTT,PiperTTS,WindowsSapiTTS,VoiceService,VoiceUnavailable
-__all__=['WhisperCppSTT','PiperTTS','WindowsSapiTTS','VoiceService','VoiceUnavailable']
+from .base import (
+    WhisperCppSTT,
+    PiperTTS,
+    WindowsSapiTTS,
+    ElevenLabsTTS,
+    EdgeNeuralTTS,
+    ChatterboxTTS,
+    VoiceService,
+    VoiceUnavailable,
+)
+
+__all__ = [
+    'WhisperCppSTT', 'PiperTTS', 'WindowsSapiTTS', 'ElevenLabsTTS',
+    'EdgeNeuralTTS', 'ChatterboxTTS', 'VoiceService', 'VoiceUnavailable'
+]

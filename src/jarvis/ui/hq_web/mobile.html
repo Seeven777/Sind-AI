@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#020509">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Jarvis Mobile</title>
+<link rel="manifest" href="/mobile.webmanifest">
+<link rel="icon" href="/jarvis-icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/mobile.css">
+</head>
+<body>
+<div id="mobile-app" class="mobile-app">
+  <header class="topbar">
+    <button id="menu-btn" class="round-btn" aria-label="Abrir menu">☰</button>
+    <div class="brand"><b>JARVIS</b><span id="state-label">PRESENTE</span></div>
+    <button id="voice-toggle" class="round-btn active" aria-label="Ativar ou desativar voz">◉</button>
+  </header>
+
+  <main class="stage">
+    <section class="core-zone" id="core-zone">
+      <canvas id="jarvis-core"></canvas>
+      <div class="core-caption" id="core-caption">presente</div>
+    </section>
+    <section id="chat" class="transcript" aria-live="polite"></section>
+  </main>
+
+  <footer class="composer-wrap">
+    <form id="composer" class="composer">
+      <button type="button" id="mic-btn" class="icon-btn" aria-label="Falar">⌁</button>
+      <textarea id="input" rows="1" placeholder="Fale com Jarvis…" autocomplete="off"></textarea>
+      <button type="submit" id="send-btn" class="send-btn" aria-label="Enviar">↗</button>
+    </form>
+    <div id="composer-status" class="composer-status"></div>
+  </footer>
+
+  <div id="scrim" class="scrim hidden"></div>
+  <aside id="drawer" class="drawer" aria-hidden="true">
+    <div class="drawer-head"><div><b>JARVIS</b><span>MESMO NÚCLEO · MESMA MEMÓRIA</span></div><button id="close-menu" class="round-btn">×</button></div>
+    <button id="new-chat" class="primary-action">＋ Nova conversa</button>
+    <div class="section-title">CONVERSAS</div>
+    <div id="history" class="history"></div>
+    <div class="section-title">ATENÇÃO</div>
+    <div id="attention" class="attention"></div>
+    <nav class="mobile-nav">
+      <a href="/hq">Escritório</a><a href="/mission-control">Missões</a><a href="/agents">Agentes</a><a href="/projects">Projetos</a><a href="/memory">Memória</a><a href="/system">Sistema</a>
+    </nav>
+    <div class="drawer-tools">
+      <button id="install-btn" class="secondary-action hidden">Instalar aplicativo</button>
+      <button id="test-voice" class="secondary-action">Testar voz</button>
+      <button id="refresh-btn" class="secondary-action">Atualizar estado</button>
+    </div>
+    <div class="drawer-foot"><span id="connection-state">conectado</span><span id="model-state">AUTO</span></div>
+  </aside>
+</div>
+<div id="toasts" class="toasts"></div>
+<script src="/jarvis-core.js"></script>
+<script src="/mobile.js"></script>
+</body>
+</html>

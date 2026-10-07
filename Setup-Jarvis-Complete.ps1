@@ -5,7 +5,7 @@ param(
 $ErrorActionPreference = "Stop"
 $Project = Split-Path -Parent $MyInvocation.MyCommand.Path
 
-Write-Host "JARVIS NEXT PRESENCE v5 - INSTALACAO COMPLETA" -ForegroundColor Cyan
+Write-Host "JARVIS NEXT PRESENCE v6 - INSTALACAO COMPLETA" -ForegroundColor Cyan
 Write-Host ""
 
 $base = Join-Path $Project "Setup-Jarvis-Base.ps1"
@@ -31,7 +31,7 @@ if (-not $SkipAgentModels -and -not $SkipModelPull) {
 
 Write-Host ""
 Write-Host "Instalação completa concluída." -ForegroundColor Green
-Write-Host "Voz: ElevenLabs/Piper são opcionais; Windows SAPI e Web Speech funcionam como fallback sem configuração."
+Write-Host "Voz: Edge Neural TTS é o padrão gratuito; Chatterbox/ElevenLabs/Piper são opcionais; Windows SAPI e Web Speech ficam como fallback."
 Write-Host "Google está implementado, mas requer google_client.json e sua autorização OAuth."
 Write-Host ""
 Write-Host "Execute Validate-Jarvis-Complete.cmd para validar o ambiente."

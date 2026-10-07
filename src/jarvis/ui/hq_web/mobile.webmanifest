@@ -1,0 +1,12 @@
+{
+  "name":"Jarvis Mobile — Personal Agent OS",
+  "short_name":"Jarvis",
+  "description":"Cliente móvel do mesmo núcleo Jarvis executado no computador.",
+  "start_url":"/mobile",
+  "scope":"/",
+  "display":"standalone",
+  "orientation":"portrait-primary",
+  "background_color":"#020509",
+  "theme_color":"#020509",
+  "icons":[{"src":"/jarvis-icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+}

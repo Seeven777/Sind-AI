@@ -19,11 +19,12 @@ if (-not $info.enabled) {
 }
 
 Write-Host "" 
-Write-Host "JARVIS MOBILE" -ForegroundColor Cyan
+Write-Host "JARVIS MOBILE v6" -ForegroundColor Cyan
 Write-Host "Conecte o celular à mesma rede Wi-Fi deste computador." -ForegroundColor Gray
 Write-Host "Abra este endereço no celular:" -ForegroundColor Gray
 Write-Host $info.connect_url -ForegroundColor Green
 Set-Clipboard -Value $info.connect_url
 Write-Host "" 
 Write-Host "O link também foi copiado para a área de transferência." -ForegroundColor DarkGray
+Write-Host "Para microfone + PWA + acesso HTTPS privado, execute Enable-Jarvis-Mobile-Secure.cmd." -ForegroundColor Cyan
 Write-Host "Na primeira utilização, se o Windows solicitar acesso à rede, permita apenas Redes Privadas." -ForegroundColor DarkGray

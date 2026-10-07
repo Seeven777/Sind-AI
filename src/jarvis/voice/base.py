@@ -6,6 +6,8 @@ import os
 import shutil
 import subprocess
 import tempfile
+import sys
+import importlib.util
 import urllib.error
 import urllib.request
 
@@ -210,6 +212,115 @@ class WindowsSapiTTS:
         return self._run(text, speak=True)
 
 
+class EdgeNeuralTTS:
+    """Free online neural TTS through the public Edge speech endpoint.
+
+    It requires no API key. Jarvis uses a male Brazilian Portuguese voice by
+    default and keeps rate/pitch deliberately restrained to create a calm,
+    slightly synthetic assistant presence instead of the Windows default voice.
+    """
+
+    def __init__(self, voice=None, rate=None, pitch=None, volume=None):
+        self.voice = voice or os.environ.get("JARVIS_EDGE_VOICE", "pt-BR-AntonioNeural")
+        self.rate = rate or os.environ.get("JARVIS_EDGE_RATE", "-6%")
+        self.pitch = pitch or os.environ.get("JARVIS_EDGE_PITCH", "-14Hz")
+        self.volume = volume or os.environ.get("JARVIS_EDGE_VOLUME", "+0%")
+        self._last_error = None
+
+    def health(self):
+        installed = importlib.util.find_spec("edge_tts") is not None
+        return {
+            "status": "healthy" if installed else "unconfigured",
+            "backend": "edge-tts",
+            "voice": self.voice if installed else None,
+            "rate": self.rate if installed else None,
+            "pitch": self.pitch if installed else None,
+            "online": True,
+            "last_error": self._last_error,
+        }
+
+    def synthesize(self, text, output_path=None):
+        if self.health()["status"] != "healthy":
+            raise VoiceUnavailable("Edge Neural TTS não instalado.")
+        output = Path(output_path or tempfile.mktemp(suffix=".mp3")).resolve()
+        source = Path(tempfile.mktemp(suffix=".txt")).resolve()
+        source.write_text(str(text), encoding="utf-8")
+        cmd = [
+            sys.executable, "-m", "edge_tts",
+            "--file", str(source),
+            "--voice", self.voice,
+            f"--rate={self.rate}",
+            f"--pitch={self.pitch}",
+            f"--volume={self.volume}",
+            "--write-media", str(output),
+        ]
+        try:
+            proc = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
+        finally:
+            source.unlink(missing_ok=True)
+        if proc.returncode != 0 or not output.is_file() or output.stat().st_size < 256:
+            detail = (proc.stderr or proc.stdout or "Edge Neural TTS falhou.").strip()[:700]
+            self._last_error = detail
+            output.unlink(missing_ok=True)
+            raise VoiceUnavailable(detail)
+        self._last_error = None
+        return str(output)
+
+
+class ChatterboxTTS:
+    """Optional local Chatterbox/OpenAI-compatible TTS endpoint.
+
+    This adapter keeps the heavy model outside the Jarvis runtime. If a local
+    Chatterbox server is configured, Jarvis can use it without changing the
+    core environment. No endpoint is enabled by default.
+    """
+
+    def __init__(self, base_url=None, voice=None, language=None):
+        self.base_url = (base_url or os.environ.get("JARVIS_CHATTERBOX_URL") or "").rstrip("/")
+        self.voice = voice or os.environ.get("JARVIS_CHATTERBOX_VOICE", "default")
+        self.language = language or os.environ.get("JARVIS_CHATTERBOX_LANGUAGE", "pt")
+        self._last_error = None
+
+    def health(self):
+        return {
+            "status": "healthy" if self.base_url else "unconfigured",
+            "backend": "chatterbox",
+            "url": self.base_url or None,
+            "voice": self.voice if self.base_url else None,
+            "language": self.language if self.base_url else None,
+            "last_error": self._last_error,
+        }
+
+    def synthesize(self, text, output_path=None):
+        if not self.base_url:
+            raise VoiceUnavailable("Chatterbox local não configurado.")
+        output = Path(output_path or tempfile.mktemp(suffix=".mp3")).resolve()
+        body = json.dumps({
+            "input": str(text),
+            "voice": self.voice,
+            "language_id": self.language,
+            "response_format": "mp3",
+        }).encode("utf-8")
+        req = urllib.request.Request(
+            f"{self.base_url}/v1/audio/speech",
+            data=body,
+            method="POST",
+            headers={"Content-Type": "application/json", "Accept": "audio/mpeg"},
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=180) as response:
+                audio = response.read()
+        except Exception as exc:
+            self._last_error = str(exc)[:700]
+            raise VoiceUnavailable(f"Chatterbox indisponível: {exc}") from exc
+        if not audio:
+            self._last_error = "áudio vazio"
+            raise VoiceUnavailable("Chatterbox retornou áudio vazio.")
+        output.write_bytes(audio)
+        self._last_error = None
+        return str(output)
+
+
 class ElevenLabsTTS:
     """Optional high-quality cloud voice.
 
@@ -281,22 +392,33 @@ class VoiceService:
     def __init__(self, stt=None, tts=None):
         self.stt = stt or WhisperCppSTT()
         self._explicit_tts = tts
+        self.chatterbox = ChatterboxTTS()
+        self.edge = EdgeNeuralTTS()
         self.elevenlabs = ElevenLabsTTS()
         self.piper = PiperTTS()
         self.windows = WindowsSapiTTS()
         self.tts = tts or self._select_tts()
 
-    def _select_tts(self):
+    def _candidate_order(self):
         preferred = os.environ.get("JARVIS_TTS_PROVIDER", "auto").strip().lower()
-        candidates = {
+        mapping = {
+            "chatterbox": self.chatterbox,
+            "edge": self.edge,
+            "edge-tts": self.edge,
             "elevenlabs": self.elevenlabs,
             "piper": self.piper,
             "windows": self.windows,
             "windows-sapi": self.windows,
         }
-        if preferred in candidates and candidates[preferred].health()["status"] == "healthy":
-            return candidates[preferred]
-        for candidate in (self.elevenlabs, self.piper, self.windows):
+        # Auto favors a configured local premium voice, then the free neural
+        # online voice, then offline local fallbacks. ElevenLabs remains
+        # supported but is no longer required for a pleasant default voice.
+        default = [self.chatterbox, self.edge, self.elevenlabs, self.piper, self.windows]
+        first = mapping.get(preferred)
+        return ([first] + [x for x in default if x is not first]) if first else default
+
+    def _select_tts(self):
+        for candidate in self._candidate_order():
             if candidate.health()["status"] == "healthy":
                 return candidate
         return self.piper
@@ -307,6 +429,8 @@ class VoiceService:
             "stt": self.stt.health(),
             "tts": active,
             "tts_backends": {
+                "chatterbox": self.chatterbox.health(),
+                "edge_tts": self.edge.health(),
                 "elevenlabs": self.elevenlabs.health(),
                 "piper": self.piper.health(),
                 "windows_sapi": self.windows.health(),
@@ -327,30 +451,30 @@ class VoiceService:
         clean = self._clean(text)
         if self._explicit_tts is not None:
             return self._explicit_tts.synthesize(clean, output_path)
-        preferred = os.environ.get("JARVIS_TTS_PROVIDER", "auto").strip().lower()
-        ordered = [self.elevenlabs, self.piper, self.windows]
-        if preferred == "piper":
-            ordered = [self.piper, self.elevenlabs, self.windows]
-        elif preferred in {"windows", "windows-sapi"}:
-            ordered = [self.windows, self.elevenlabs, self.piper]
         errors = []
-        for backend in ordered:
+        for backend in self._candidate_order():
             if backend.health()["status"] != "healthy":
                 continue
             try:
                 self.tts = backend
                 return backend.synthesize(clean, output_path)
             except VoiceUnavailable as exc:
-                errors.append(str(exc))
+                errors.append(f"{backend.health().get('backend')}: {exc}")
         raise VoiceUnavailable("; ".join(errors) if errors else "Nenhum TTS local/cloud foi configurado.")
 
     def diagnostics(self):
-        health=self.health()
+        health = self.health()
         return {
             **health,
             "preferred": os.environ.get("JARVIS_TTS_PROVIDER", "auto").strip().lower(),
-            "active_backend": health.get("tts",{}).get("backend"),
-            "can_speak_native": health.get("tts_backends",{}).get("windows_sapi",{}).get("status") == "healthy",
+            "active_backend": health.get("tts", {}).get("backend"),
+            "can_speak_native": health.get("tts_backends", {}).get("windows_sapi", {}).get("status") == "healthy",
+            "recommended_profile": {
+                "provider": "edge-tts",
+                "voice": os.environ.get("JARVIS_EDGE_VOICE", "pt-BR-AntonioNeural"),
+                "rate": os.environ.get("JARVIS_EDGE_RATE", "-6%"),
+                "pitch": os.environ.get("JARVIS_EDGE_PITCH", "-14Hz"),
+            },
         }
 
     def speak_native(self, text):
@@ -359,3 +483,4 @@ class VoiceService:
         if self.windows.health()["status"] != "healthy":
             raise VoiceUnavailable("Fallback de voz nativa indisponível.")
         return self.windows.speak(clean)
+

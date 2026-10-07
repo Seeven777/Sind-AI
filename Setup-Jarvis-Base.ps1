@@ -100,7 +100,7 @@ if (-not (Test-Path $Python)) { throw "Não foi possível preparar .venv." }
 & $Python --version
 & $Python -m pip install --upgrade pip
 if ($LASTEXITCODE -ne 0) { throw "Falha ao atualizar pip." }
-& $Python -m pip install -e ".[dev]"
+& $Python -m pip install -e ".[dev,voice]"
 if ($LASTEXITCODE -ne 0) { throw "Falha ao instalar Jarvis Next." }
 
 Section "3/8 - OLLAMA"

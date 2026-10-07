@@ -21,19 +21,22 @@ def test_voice_service_exposes_browser_fallback_when_cloud_and_piper_are_unconfi
     for key in (
         "JARVIS_ELEVENLABS_API_KEY", "JARVIS_ELEVENLABS_VOICE_ID",
         "JARVIS_PIPER", "JARVIS_PIPER_MODEL",
-        "JARVIS_TTS_PROVIDER",
+        "JARVIS_CHATTERBOX_URL", "JARVIS_TTS_PROVIDER",
     ):
         monkeypatch.delenv(key, raising=False)
 
     voice = VoiceService()
     health = voice.health()
 
-    # On Windows, Presence v4 intentionally promotes the native SAPI engine to
-    # the active zero-config backend. On other platforms the active backend may
-    # remain unconfigured and the browser Web Speech fallback is used. Both are
-    # valid states; what must always remain available is a spoken fallback.
+    # Presence v6 adds Edge Neural TTS as the preferred zero-config voice when
+    # installed. Windows SAPI remains the final local fallback; on platforms
+    # without either, browser Web Speech remains available.
+    edge = health["tts_backends"]["edge_tts"]
     windows = health["tts_backends"]["windows_sapi"]
-    if windows["status"] == "healthy":
+    if edge["status"] == "healthy":
+        assert health["tts"]["status"] == "healthy"
+        assert health["tts"]["backend"] == "edge-tts"
+    elif windows["status"] == "healthy":
         assert health["tts"]["status"] == "healthy"
         assert health["tts"]["backend"] == "windows-sapi"
     else:

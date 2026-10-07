@@ -109,7 +109,7 @@ for ($i=0; $i -lt 120; $i++) {
 }
 if (-not $ready) { throw "UI local não iniciou." }
 
-$routes = @("/", "/hq", "/mission-control", "/agents", "/projects", "/memory", "/system")
+$routes = @("/", "/mobile", "/hq", "/mission-control", "/agents", "/projects", "/memory", "/system")
 foreach ($route in $routes) {
     $response = Invoke-WebRequest -UseBasicParsing -Uri ("http://127.0.0.1:4760" + $route) -TimeoutSec 5
     if ($response.StatusCode -ne 200) { throw "Falha na rota UI: $route" }
@@ -132,5 +132,5 @@ Section "11/11 - ENCERRAMENTO LIMPO"
 Start-Sleep -Milliseconds 500
 
 Write-Host ""
-Write-Host "JARVIS NEXT PRESENCE v5 VALIDADO." -ForegroundColor Green
-Write-Host "Recursos externos sem configuração (Google, voz, MCP, A2A) podem aparecer como unconfigured/empty sem falhar o Core."
+Write-Host "JARVIS NEXT PRESENCE v6 VALIDADO." -ForegroundColor Green
+Write-Host "Recursos externos opcionais sem configuração (Google, Chatterbox, ElevenLabs, Piper, MCP, A2A) podem aparecer como unconfigured/empty sem falhar o Core."

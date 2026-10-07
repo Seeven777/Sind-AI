@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "jarvis-next"
-version = "1.0.0rc5.post2"
+version = "1.0.0rc6"
 description = "Jarvis Next Personal Agent Operating System"
 requires-python = ">=3.11"
 dependencies = [
@@ -14,6 +14,9 @@ dependencies = [
 
 
 [project.optional-dependencies]
+voice = [
+  "edge-tts>=7.2.8,<8",
+]
 dev = [
   "pytest>=8.0",
 ]
