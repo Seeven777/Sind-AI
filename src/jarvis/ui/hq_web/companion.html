@@ -2,134 +2,124 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#070a0f">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#03060a">
+<meta name="color-scheme" content="dark">
 <title>Jarvis — Companion</title>
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" href="/jarvis-icon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/companion.css">
 </head>
 <body>
 <div class="app-shell" id="app-shell">
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-brand">
-      <div class="brand-mark"><span></span><span></span><span></span></div>
-      <div><strong>JARVIS</strong><small>PERSONAL AGENT OS</small></div>
-      <button class="icon-btn mobile-only" id="close-sidebar" aria-label="Fechar">×</button>
+  <button class="menu-trigger" id="open-sidebar" aria-label="Abrir menu" aria-expanded="false">
+    <span></span><span></span><span></span><i id="menu-attention"></i>
+  </button>
+
+  <aside class="drawer" id="sidebar" aria-hidden="true">
+    <div class="drawer-head">
+      <div class="drawer-brand"><div class="brand-orb"></div><div><strong>JARVIS</strong><small>PERSONAL AGENT OS</small></div></div>
+      <button class="icon-btn" id="close-sidebar" aria-label="Fechar menu">×</button>
     </div>
 
-    <button class="primary-action" id="new-chat"><span>＋</span><span>Nova conversa</span><kbd>Ctrl⇧N</kbd></button>
+    <button class="new-chat" id="new-chat"><span>＋</span> Nova conversa</button>
 
-    <div class="sidebar-section search-section">
-      <div class="search-box"><span class="search-icon">⌕</span><input id="history-search" placeholder="Buscar conversas" autocomplete="off"><kbd>⌘K</kbd></div>
-    </div>
-
-    <div class="history-toolbar"><span>Conversas</span><div><button id="show-archived">Arquivadas</button><button id="history-refresh" title="Atualizar">↻</button></div></div>
+    <div class="drawer-search"><input id="history-search" placeholder="Buscar conversas" autocomplete="off"><button id="history-refresh" title="Atualizar">↻</button></div>
+    <div class="history-toolbar"><span>Conversas</span><button id="show-archived">Arquivadas</button></div>
     <div id="history" class="history-list"></div>
 
-    <div class="sidebar-bottom">
-      <a href="/hq"><span class="nav-icon">◈</span>Escritório <em id="hq-count">—</em></a>
-      <a href="/mission-control"><span class="nav-icon">◫</span>Missões <em id="mission-count">—</em></a>
-      <a href="/agents"><span class="nav-icon">◇</span>Agentes</a>
-      <a href="/projects"><span class="nav-icon">▣</span>Projetos</a>
-      <a href="/memory"><span class="nav-icon">◎</span>Memória</a>
-      <a href="/system"><span class="nav-icon">⌘</span>Sistema</a>
-      <div class="sidebar-user">
-        <div class="avatar user">M</div><div><strong>Workspace Principal</strong><small>local-first</small></div><button class="icon-btn" id="open-settings">⚙</button>
-      </div>
+    <section class="drawer-attention hidden" id="attention-panel">
+      <div class="drawer-section-title"><span>ATENÇÃO</span><b id="attention-count">0</b></div>
+      <div id="attention" class="attention-list"></div>
+    </section>
+
+    <nav class="drawer-nav">
+      <a href="/hq"><span>◈</span><b>Escritório</b><em id="hq-count">—</em></a>
+      <a href="/mission-control"><span>◫</span><b>Missões</b><em id="mission-count">—</em></a>
+      <a href="/agents"><span>◇</span><b>Agentes</b></a>
+      <a href="/projects"><span>▣</span><b>Projetos</b></a>
+      <a href="/memory"><span>◎</span><b>Memória</b></a>
+      <a href="/system"><span>⌘</span><b>Sistema</b></a>
+    </nav>
+
+    <div class="drawer-runtime">
+      <div><span class="live-dot"></span><span id="system-status">online</span></div>
+      <div><span id="autonomy-status"><i></i>autônomo</span><span id="model-hint">AUTO</span></div>
     </div>
+
+    <div class="drawer-actions">
+      <button id="open-settings">Preferências</button>
+      <button id="rename-chat">Renomear</button>
+      <button id="pin-chat">☆</button>
+      <button id="archive-chat">□</button>
+      <button id="export-chat">⇩</button>
+      <button id="delete-chat" class="danger">⌫</button>
+    </div>
+    <span class="hidden" id="conversation-title">Nova conversa</span>
   </aside>
 
-  <main class="chat-surface">
-    <header class="chat-header">
-      <button class="icon-btn mobile-only" id="open-sidebar">☰</button>
-      <div class="conversation-heading">
-        <span class="live-dot"></span>
-        <div><span class="eyebrow">JARVIS / COMPANION</span><h1 id="conversation-title">Nova conversa</h1></div>
-      </div>
-      <div class="header-controls">
-        <span class="system-status" id="system-status">online</span>
-        <button class="icon-btn" id="export-chat" title="Exportar conversa">⇩</button>
-        <button class="icon-btn" id="rename-chat" title="Renomear">Aa</button>
-        <button class="icon-btn" id="pin-chat" title="Fixar">☆</button>
-        <button class="icon-btn" id="archive-chat" title="Arquivar">□</button>
-        <button class="icon-btn danger" id="delete-chat" title="Excluir">⌫</button>
-      </div>
-    </header>
+  <div class="scrim hidden" id="scrim"></div>
 
-    <section id="chat" class="chat-thread" aria-live="polite"></section>
+  <main class="presence" id="presence">
+    <section class="core-zone" id="core-zone" aria-label="Presença Jarvis">
+      <canvas id="jarvis-core" aria-label="Núcleo visual do Jarvis"></canvas>
+      <div class="core-aura" aria-hidden="true"></div>
+      <span class="sr-only" id="core-state-label">IDLE</span>
+      <span class="sr-only" id="core-activity">presente</span>
+    </section>
+
+    <section id="chat" class="transcript" aria-live="polite" aria-label="Conversa"></section>
 
     <section class="composer-area">
-      <div class="mode-row">
-        <div class="mode-switch" id="mode-switch">
-          <button data-mode="auto" class="active">Auto</button>
-          <button data-mode="fast">Rápido</button>
-          <button data-mode="deep">Deep</button>
-          <button data-mode="hermes">Hermes</button>
-        </div>
-        <div class="composer-tools">
-          <button class="chip-btn" id="focus-hq">Abrir HQ</button>
-          <button class="chip-btn" id="focus-mission">Nova missão</button>
-          <span id="model-hint">roteamento automático</span>
-        </div>
-      </div>
       <div id="attachment-strip" class="attachment-strip hidden"></div>
       <form id="form" class="composer">
         <input type="file" id="file-input" hidden multiple accept=".txt,.md,.csv,.json,.py,.js,.ts,.html,.css,.log">
-        <button type="button" class="composer-icon" id="attach-btn" title="Anexar arquivo">＋</button>
-        <textarea id="input" rows="1" autocomplete="off" placeholder="Converse com Jarvis…"></textarea>
-        <button type="button" class="composer-icon" id="voice-btn" title="Ditado">◉</button>
-        <button type="submit" class="send-btn" id="send"><span>Enviar</span><span class="send-arrow">↗</span></button>
+        <button type="button" class="composer-icon" id="attach-btn" title="Anexar arquivo" aria-label="Anexar arquivo">＋</button>
+        <textarea id="input" rows="1" autocomplete="off" placeholder="Fale com Jarvis…" aria-label="Mensagem para Jarvis"></textarea>
+        <button type="button" class="composer-icon voice" id="voice-btn" title="Falar com Jarvis" aria-label="Falar com Jarvis"><span class="mic-glyph"></span></button>
+        <button type="submit" class="send-btn" id="send" aria-label="Enviar"><span>↗</span></button>
       </form>
-      <div class="composer-note"><span>Enter envia · Shift+Enter quebra linha</span><span><b>LOCAL-FIRST</b> · sem ação física sem verificação</span></div>
+      <div class="composer-status" id="composer-status" aria-live="polite"></div>
     </section>
   </main>
-
-  <aside class="context-panel" id="context-panel">
-    <div class="context-head"><div><span class="eyebrow">CONTEXT</span><h2>Centro de controle</h2></div><button class="icon-btn" id="close-context">×</button></div>
-    <section class="context-card hero-card">
-      <div class="orb-wrap"><div class="orb" id="orb"><i></i></div></div>
-      <div class="hero-copy"><span class="eyebrow">ESTADO</span><strong id="orb-state">Pronto</strong><small id="orb-detail">Jarvis está disponível para conversar.</small></div>
-    </section>
-    <section class="context-card">
-      <div class="card-title"><span>BRIEFING</span><button id="refresh-briefing">Atualizar</button></div>
-      <div id="briefing" class="briefing-text">Carregando…</div>
-    </section>
-    <section class="context-card">
-      <div class="card-title"><span>ATENÇÃO</span><span class="counter" id="attention-count">0</span></div>
-      <div id="attention" class="context-list"><div class="muted">Nada pendente.</div></div>
-    </section>
-    <section class="context-card">
-      <div class="card-title"><span>SISTEMA</span><a href="/system">abrir</a></div>
-      <div id="system-mini" class="system-mini"></div>
-    </section>
-    <section class="context-card shortcut-card">
-      <div class="card-title"><span>ATALHOS</span></div>
-      <div class="shortcut"><kbd>Ctrl K</kbd><span>Focar conversa</span></div>
-      <div class="shortcut"><kbd>Ctrl ⇧ N</kbd><span>Nova conversa</span></div>
-      <div class="shortcut"><kbd>Esc</kbd><span>Fechar painel</span></div>
-    </section>
-  </aside>
 </div>
 
-<div class="scrim hidden" id="scrim"></div>
 <div class="toast-stack" id="toast-stack"></div>
 
 <dialog id="settings-modal" class="modal">
   <form method="dialog" class="modal-inner" id="settings-form">
     <button class="icon-btn close-modal" value="cancel" aria-label="Fechar">×</button>
-    <span class="eyebrow">SYSTEM SETTINGS</span><h2>Preferências do Companion</h2>
+    <span class="eyebrow">JARVIS / PREFERÊNCIAS</span><h2>Comportamento</h2>
     <label>Modo padrão<select id="pref-mode"><option value="auto">Auto</option><option value="fast">Rápido</option><option value="deep">Deep</option><option value="hermes">Hermes</option></select></label>
+    <div class="mode-switch" id="mode-switch" aria-label="Modo de raciocínio"><button type="button" data-mode="auto" class="active">Auto</button><button type="button" data-mode="fast">Rápido</button><button type="button" data-mode="deep">Deep</button><button type="button" data-mode="hermes">Hermes</button></div>
     <label>Atualização do contexto<select id="pref-refresh"><option value="3000">3 segundos</option><option value="5000">5 segundos</option><option value="10000">10 segundos</option></select></label>
-    <label class="check"><input type="checkbox" id="pref-motion"><span>Usar animações avançadas</span></label>
-    <label class="check"><input type="checkbox" id="pref-compact"><span>Modo compacto</span></label>
+    <label class="check"><input type="checkbox" id="pref-motion"><span>Animação do núcleo</span></label>
+    <label class="check"><input type="checkbox" id="pref-compact"><span>Interface compacta</span></label>
+    <div class="settings-divider">VOZ</div>
+    <label class="check"><input type="checkbox" id="pref-voice-replies"><span>Jarvis fala as respostas automaticamente</span></label>
+    <label class="check"><input type="checkbox" id="pref-attention-voice"><span>Jarvis diz “Senhor” ao solicitar atenção</span></label>
+    <label>Velocidade da voz<input id="pref-voice-rate" type="range" min="0.7" max="1.2" step="0.05"></label>
+    <div class="voice-health" id="voice-health">Verificando voz…</div>
+    <div class="settings-divider">AUTONOMIA</div>
+    <label class="check"><input type="checkbox" id="pref-autonomy"><span>Explorar e aprender em segundo plano</span></label>
+    <label>Local do briefing<input id="pref-location" type="text" placeholder="São Paulo, SP"></label>
+    <label class="check"><input type="checkbox" id="pref-notifications"><span>Notificações do sistema quando permitido</span></label>
     <div class="modal-actions"><button value="cancel" class="secondary-btn">Cancelar</button><button value="default" class="primary-btn" id="save-settings">Salvar</button></div>
   </form>
 </dialog>
 
+<!-- Mantido como atalho de produtividade, sem aparecer na Home. -->
 <div class="palette hidden" id="palette">
   <div class="palette-dialog"><input id="palette-input" placeholder="Buscar uma ação…" autocomplete="off"><div id="palette-list"></div><div class="palette-help"><span>↑↓ navegar</span><span>Enter executar</span><span>Esc fechar</span></div></div>
 </div>
 
-<script src="/surface-engine.js"></script>
+<!-- IDs legados preservados para compatibilidade sem reintroduzir painéis visuais. -->
+<div class="compat-layer" aria-hidden="true">
+  <div id="briefing"></div><div id="autonomy-mini"></div><div id="attention-badge">0</div><button id="attention-bell"></button><div id="system-mini"></div><button id="refresh-briefing"></button><button id="autonomy-now"></button><button id="focus-hq"></button><button id="focus-mission"></button>
+</div>
+
+<script src="/jarvis-core.js"></script>
+<script src="/visual-events.js"></script>
 <script src="/companion.js"></script>
 </body>
 </html>

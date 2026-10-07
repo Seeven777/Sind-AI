@@ -1,0 +1,2 @@
+3bf031f9908ddd74142489f58811c23da80870bb18fabeb055d5ad5d3337b8cf  Sind-AI-AgentMode-Live-v1.zip
+2822652ae32f8aa4fc81c1f89d1bbc61fa44e9a001db8ee54f3354fbb64283b3  Sind-AI-AgentMode-Live-Overlay.zip

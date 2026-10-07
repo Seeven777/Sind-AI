@@ -11,9 +11,9 @@ from jarvis.tasks import TaskStatus
 JARVIS_SYSTEM="""Você é Jarvis Next, a inteligência central e orquestradora de um sistema pessoal de agentes.
 Responda em português do Brasil. Seja direto e útil.
 Nunca diga que executou uma ação que não foi realmente executada.
-Research, Analyst, Creator, Developer, Operator, Reviewer e Memory Curator estão operacionais.
-Inbox existe como estrutura, mas ainda não possui conector de e-mail/mensagens.
-Não invente acesso a e-mail, WhatsApp, calendário, internet ou arquivos.
+Research, Analyst, Creator, Developer, Operator, Reviewer, Inbox e Memory Curator são capacidades do sistema.
+Acesso a e-mail, calendário, internet, arquivos e outras fontes depende do estado REAL dos conectores e ferramentas informado no contexto do runtime.
+Nunca diga que uma integração está indisponível quando o contexto do runtime disser que ela está saudável; também nunca invente dados que não estejam sincronizados.
 Quando uma ação real for necessária, use Operator e ferramentas registradas.
 Ações de escrita exigem aprovação conforme política."""
 
@@ -71,7 +71,7 @@ class JarvisOrchestrator:
                 prompt=self._with_history(prompt, conversation_history)
             response=await asyncio.to_thread(
                 provider.chat,[ChatMessage('user',prompt)],model=route.model,
-                system=JARVIS_SYSTEM+'\nVocê está no modo de raciocínio profundo. Entregue somente a resposta final.'
+                system=JARVIS_SYSTEM+self._runtime_context()+'\nVocê está no modo de raciocínio profundo. Entregue somente a resposta final.'
             )
             return {
                 'kind':'deep','agent':route.provider,'content':response.content,
@@ -85,12 +85,15 @@ class JarvisOrchestrator:
         ))
 
         if intent.name=='briefing' and self.briefing:
+            await self._sync_connectors_for_personal_context()
+            snap=self.briefing.snapshot()
             return {
                 'kind':'briefing','agent':'jarvis',
-                'content':self.briefing.text(),
-                'metadata':self.briefing.snapshot()['summary']
+                'content':self.briefing.text(snap),
+                'metadata':snap['summary']
             }
         if intent.name=='inbox':
+            await self._sync_connectors_for_personal_context()
             return await self._delegate_agent(
                 'administration.inbox','Triagem da caixa de entrada',text,min_chars=20,conversation_history=conversation_history
             )
@@ -125,9 +128,46 @@ class JarvisOrchestrator:
             wire.extend(ChatMessage(x['role'],x['content']) for x in conversation_history[-24:])
         wire.append(ChatMessage('user',text))
         response=await asyncio.to_thread(
-            provider.chat,wire,model=route.model,system=JARVIS_SYSTEM+block
+            provider.chat,wire,model=route.model,system=JARVIS_SYSTEM+self._runtime_context()+block
         )
         return {'kind':'chat','content':response.content,'provider':response.provider,'model':response.model,'mode':explicit_mode}
+
+
+    async def _sync_connectors_for_personal_context(self):
+        service=getattr(self.briefing,'connector_service',None) if self.briefing else None
+        if service is None:
+            return []
+        try:
+            return await service.sync_all()
+        except Exception as exc:
+            await self.bus.publish(Event(
+                'connector.sync.personal_context_failed',severity='warning',
+                payload={'error':str(exc)}
+            ))
+            return []
+
+    def _runtime_context(self):
+        if not self.briefing:
+            return ''
+        try:
+            snap=self.briefing.snapshot()
+            sources=snap.get('connectors',{}).get('sources',[])
+            counts=snap.get('connectors',{}).get('counts',{})
+            if not sources:
+                return '\n\nESTADO REAL DE CONECTORES: nenhum connector registrado.'
+            rows=[]
+            for source in sources:
+                rows.append(
+                    f"{source.get('name') or source.get('connector_id')}: "
+                    f"{source.get('status','unknown')}"
+                )
+            return (
+                '\n\nESTADO REAL DE CONECTORES DO RUNTIME:\n- ' + '\n- '.join(rows) +
+                f"\nItens sincronizados: {counts.get('total',0)}; não lidos: {counts.get('unread',0)}; eventos: {counts.get('events',0)}."
+                '\nUse somente dados efetivamente sincronizados ao falar sobre fontes pessoais.'
+            )
+        except Exception:
+            return '\n\nESTADO REAL DE CONECTORES: não foi possível consultar o snapshot agora.'
 
     @staticmethod
     def _with_history(text, history):

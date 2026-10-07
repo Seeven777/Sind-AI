@@ -7,7 +7,7 @@
  */
 (function () {
   const safe = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[char]));
-  const icons = { weather:'☀', agents:'◌', system:'◇', research:'⌕', mission:'◈', approval:'✓' };
+  const icons = { weather:'☀', agents:'◌', system:'◇', research:'⌕', mission:'◈', approval:'✓', briefing:'☼', discovery:'✦', improvement:'↟' };
 
   class UIRegistry {
     constructor() { this.items = new Map(); }
@@ -54,6 +54,18 @@
   registry.register('research', intent => `<div class="surface-status"><b>Research workspace</b><span>Pronto para uma missão</span></div><p>Inicie uma pesquisa pelo Companion. Resultados verificados aparecerão aqui.</p>`);
   registry.register('mission', intent => `<div class="surface-status"><b>${safe(intent.data?.title || 'Nenhuma missão ativa')}</b><span>${safe(intent.data?.status || 'Waiting for runtime')}</span></div>`);
   registry.register('approval', intent => `<div class="surface-status attention"><b>${safe(intent.data?.action || 'Ação requer aprovação')}</b><span>${safe(intent.data?.risk || 'External operation')}</span></div>`);
+  registry.register('briefing', intent => {
+    const d=intent.data||{}, news=(d.news||[]).slice(0,3);
+    return `<div class="surface-status"><b>${safe(d.weather?.summary || 'Briefing diário')}</b><span>${safe(d.location || '')}</span></div>${news.length?`<div class="surface-mini-list">${news.map(x=>`<span>${safe(x.title||x)}</span>`).join('')}</div>`:''}`;
+  });
+  registry.register('discovery', intent => {
+    const d=intent.data||{};
+    return `<div class="surface-status"><b>${safe(d.title || 'Nova descoberta')}</b><span>${safe(d.attention_level || 'ambient')}</span></div><p>${safe(d.summary || d.topic || '')}</p>`;
+  });
+  registry.register('improvement', intent => {
+    const d=intent.data||{};
+    return `<div class="surface-status attention"><b>${safe(d.title || 'Melhoria proposta')}</b><span>${safe(d.risk || 'low')} · ${safe(d.status || 'pending')}</span></div><p>${safe(d.summary || '')}</p>`;
+  });
   for (const type of ['browser','project','files','document','analytics','chart','comparison','verification','terminal','code','media','search_results']) registry.register(type, intent => `<div class="surface-status unavailable"><b>${safe(intent.title || type)}</b><span>Waiting for runtime</span></div><p>Superfície registrada. Será preenchida somente quando a fonte de dados correspondente estiver conectada.</p>`);
 
   window.JarvisUI = { UIRegistry, SurfaceManager, registry, create(root) { return new SurfaceManager(root, registry); } };

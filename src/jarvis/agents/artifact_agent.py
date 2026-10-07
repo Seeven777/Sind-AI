@@ -8,7 +8,14 @@ from jarvis.models import ChatMessage
 
 
 class ArtifactAgent:
-    """Reusable specialist that converts an input brief into one persisted artifact."""
+    """Reusable specialist that converts an input brief into one persisted artifact.
+
+    The runtime deliberately performs one controlled recovery attempt when a
+    local model returns an empty/too-short final answer or has a transient
+    generation failure. This avoids leaving core agents permanently failed for
+    recoverable Ollama hiccups while preserving the real error if both attempts
+    fail.
+    """
 
     card: AgentCard
     system_prompt: str
@@ -27,6 +34,14 @@ class ArtifactAgent:
         self.artifact_store = artifact_store
         self.agent_runs = agent_runs
         self.bus = bus
+
+    async def _generate(self, provider, route, prompt: str):
+        return await asyncio.to_thread(
+            provider.chat,
+            [ChatMessage("user", prompt)],
+            model=route.model,
+            system=self.system_prompt,
+        )
 
     async def run(self, objective: str, *, task_id: str, context: str = "") -> AgentResult:
         route = self.model_router.route(capability=self.card.model_capability, privacy="local")
@@ -56,15 +71,41 @@ class ArtifactAgent:
                 agent_id=self.card.agent_id,
                 payload={"agent_run_id": rid, "progress": 0.35, "activity": "Raciocinando"},
             ))
-            response = await asyncio.to_thread(
-                provider.chat,
-                [ChatMessage("user", prompt)],
-                model=route.model,
-                system=self.system_prompt,
-            )
+
+            first_error = None
+            response = None
+            try:
+                response = await self._generate(provider, route, prompt)
+                if len(response.content.strip()) < 40:
+                    first_error = RuntimeError(f"{self.card.name} produziu uma entrega insuficiente.")
+                    response = None
+            except Exception as exc:
+                first_error = exc
+
+            if response is None:
+                self.agent_runs.update_activity(rid, "Recuperando geração", 0.56)
+                await self.bus.publish(Event(
+                    "agent.progress",
+                    severity="warning",
+                    task_id=task_id,
+                    agent_id=self.card.agent_id,
+                    payload={
+                        "agent_run_id": rid,
+                        "progress": 0.56,
+                        "activity": "Recuperando geração",
+                        "reason": str(first_error)[:500] if first_error else "resposta curta",
+                    },
+                ))
+                retry_prompt = (
+                    prompt +
+                    "\n\nRECOVERY DIRECTIVE: entregue agora uma RESPOSTA FINAL completa, concreta e útil. "
+                    "Não exponha raciocínio interno. Não responda apenas com uma frase curta."
+                )
+                response = await self._generate(provider, route, retry_prompt)
+
             content = response.content.strip()
             if len(content) < 40:
-                raise RuntimeError(f"{self.card.name} produziu uma entrega insuficiente.")
+                raise RuntimeError(f"{self.card.name} produziu uma entrega insuficiente após recuperação.")
 
             self.agent_runs.update_activity(rid, "Salvando artifact", 0.82)
             artifact = self.artifact_store.write_text(
@@ -76,6 +117,7 @@ class ArtifactAgent:
                     "provider": response.provider,
                     "model": response.model,
                     "route_reason": route.reason,
+                    "recovered": bool(first_error),
                 },
             )
             self.agent_runs.finish(rid, artifact_id=artifact["artifact_id"])
@@ -104,7 +146,11 @@ class ArtifactAgent:
                 content,
                 artifact["artifact_id"],
                 artifact["path"],
-                {"model": response.model, "provider": response.provider},
+                {
+                    "model": response.model,
+                    "provider": response.provider,
+                    "recovered": bool(first_error),
+                },
             )
         except Exception as exc:
             self.agent_runs.finish(rid, error=str(exc))

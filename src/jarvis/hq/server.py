@@ -14,6 +14,7 @@ from urllib.parse import urlparse, parse_qs, unquote
 from jarvis import __version__
 
 from jarvis.app.product_runtime import start_product_runtime
+from jarvis.voice import VoiceUnavailable
 
 
 class _State:
@@ -178,6 +179,8 @@ def _handler(state: _State):
                     "watchers": state.runtime.watcher_repository.enabled(),
                     "google": state.runtime.google_oauth.status(),
                 }))
+            if path == "/api/voice/health":
+                return self._send(200, state.call_sync(state.runtime.voice.health))
             if path == "/api/projects":
                 return self._send(200, state.call_sync(state.runtime.projects.list))
             if path == "/api/skills":
@@ -186,6 +189,12 @@ def _handler(state: _State):
                 return self._send(200, state.call_sync(state.runtime.capabilities.inventory))
             if path == "/api/opportunities":
                 return self._send(200, state.call_sync(state.runtime.opportunities.scan))
+            if path == "/api/autonomy":
+                return self._send(200, state.call_sync(state.runtime.autonomy.status))
+            if path == "/api/attention":
+                return self._send(200, state.call_sync(lambda: state.runtime.autonomy_repository.notifications(limit=30)))
+            if path == "/api/improvements":
+                return self._send(200, state.call_sync(lambda: state.runtime.autonomy_repository.proposals(limit=40)))
             if path == "/api/tool-runs":
                 return self._send(200, state.call_sync(state.runtime.tool_runs.recent, 50))
             if path == "/api/events":
@@ -287,6 +296,31 @@ def _handler(state: _State):
                     result = state.call(state.runtime.chat.send(cid, text, mode=mode, attachments=safe_attachments))
                     result["conversation_id"] = cid
                     return self._send(200, result)
+                if path == "/api/voice/synthesize":
+                    text = str(payload.get("text") or "").strip()
+                    if not text:
+                        return self._send(400, {"error": "text obrigatório"})
+                    try:
+                        audio_path = state.call_sync(state.runtime.voice.synthesize, text, timeout=240)
+                        audio_file = Path(audio_path)
+                        audio = audio_file.read_bytes()
+                        content_type = "audio/mpeg" if audio_file.suffix.lower() == ".mp3" else "audio/wav"
+                        try:
+                            audio_file.unlink(missing_ok=True)
+                        except Exception:
+                            pass
+                        return self._send(200, audio, content_type)
+                    except VoiceUnavailable as exc:
+                        return self._send(503, {"error": str(exc), "fallback": "web-speech"})
+                if path == "/api/voice/speak-native":
+                    text = str(payload.get("text") or "").strip()
+                    if not text:
+                        return self._send(400, {"error": "text obrigatório"})
+                    try:
+                        state.call_sync(state.runtime.voice.speak_native, text, timeout=240)
+                        return self._send(200, {"status": "spoken", "backend": "windows-sapi"})
+                    except VoiceUnavailable as exc:
+                        return self._send(503, {"error": str(exc)})
                 if path == "/api/preferences":
                     values=payload.get("preferences") if isinstance(payload.get("preferences"),dict) else payload
                     result=state.call_sync(state.runtime.preferences.update,values)
@@ -333,6 +367,21 @@ def _handler(state: _State):
                 if path == "/api/scheduler/tick":
                     result = state.call(state.runtime.scheduler.run_due())
                     return self._send(200, result)
+                if path == "/api/autonomy/tick":
+                    result = state.call(state.runtime.autonomy.tick(force=bool(payload.get("force", True)), scope=payload.get("scope")), timeout=1200)
+                    return self._send(200, result)
+                if path.startswith("/api/attention/") and path.endswith("/ack"):
+                    notification_id=unquote(path.split("/")[3])
+                    result=state.call_sync(state.runtime.autonomy.acknowledge,notification_id)
+                    return self._send(200,result)
+                if path.startswith("/api/improvements/") and path.endswith("/approve"):
+                    proposal_id=unquote(path.split("/")[3])
+                    result=state.call(state.runtime.autonomy.approve_improvement(proposal_id))
+                    return self._send(200,result)
+                if path.startswith("/api/improvements/") and path.endswith("/reject"):
+                    proposal_id=unquote(path.split("/")[3])
+                    result=state.call(state.runtime.autonomy.reject_improvement(proposal_id))
+                    return self._send(200,result)
                 if path == "/api/project":
                     name = str(payload.get("name") or "").strip()
                     if not name:
@@ -418,9 +467,16 @@ async def serve_hq(
     state = _State(runtime, loop)
 
     async def background_services():
+        # Scheduler and the autonomous life loop share the runtime owner thread,
+        # preserving SQLite affinity while keeping the HTTP UI responsive.
+        await asyncio.sleep(2)
         while True:
             try:
                 await runtime.scheduler.run_due()
+            except Exception:
+                pass
+            try:
+                await runtime.autonomy.tick()
             except Exception:
                 pass
             await asyncio.sleep(30)

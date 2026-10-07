@@ -1,0 +1,10 @@
+{
+  "name":"Jarvis — Personal Agent OS",
+  "short_name":"Jarvis",
+  "description":"Companion local-first do Jarvis / Sind-AI.",
+  "start_url":"/",
+  "display":"standalone",
+  "background_color":"#020509",
+  "theme_color":"#020509",
+  "icons":[{"src":"/jarvis-icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+}

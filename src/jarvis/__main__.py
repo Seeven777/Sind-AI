@@ -9,6 +9,8 @@ from pathlib import Path
 
 from jarvis.app.lifecycle import run_forever,run_once
 from jarvis.app.product_runtime import start_product_runtime
+from jarvis.config import ensure_default_config,load_config
+from jarvis.connectors import GoogleOAuthClient,GoogleTokenStore
 from jarvis.hq.server import serve_hq
 from jarvis.distributed.worker_server import serve_worker
 from jarvis.tasks import TaskStatus
@@ -319,22 +321,45 @@ async def interactive_chat(data_dir):
     finally:await rt.close()
 
 
+def _standalone_google_oauth(data_dir):
+    """Build Google OAuth without starting a second Jarvis runtime.
+
+    OAuth is a configuration operation and must remain usable while the main
+    Jarvis process owns the single-instance lock.
+    """
+    cfg=load_config(data_dir)
+    cfg.data_dir.mkdir(parents=True,exist_ok=True)
+    ensure_default_config(cfg)
+    return GoogleOAuthClient(
+        cfg.data_dir/'config'/'google_client.json',
+        GoogleTokenStore(cfg.data_dir/'secrets'/'google_token.bin'),
+    )
+
+
 async def utility_command(args):
+    c=args.command
+
+    # These two commands intentionally do not start ProductRuntime. The main
+    # desktop/UI process may already be running and legitimately own the
+    # single-instance lock. OAuth only needs config + token storage.
+    if c=='google-auth':
+        oauth=_standalone_google_oauth(args.data_dir)
+        token=await asyncio.to_thread(oauth.authenticate_interactive,True,240)
+        print('Google autorizado.')
+        print(json.dumps({
+            'scope':token.get('scope'),
+            'has_refresh_token':bool(token.get('refresh_token')),
+        },ensure_ascii=False,indent=2))
+        print('O Jarvis em execução reconhecerá o token no próximo sync dos conectores.')
+        return 0
+    if c=='google-disconnect':
+        oauth=_standalone_google_oauth(args.data_dir)
+        oauth.token_store.delete()
+        print('Token Google removido do armazenamento local.')
+        return 0
+
     rt=await start_product_runtime(args.data_dir)
     try:
-        c=args.command
-        if c=='google-auth':
-            token=await asyncio.to_thread(rt.google_oauth.authenticate_interactive,True,240)
-            print('Google autorizado.')
-            print(json.dumps({
-                'scope':token.get('scope'),
-                'has_refresh_token':bool(token.get('refresh_token')),
-            },ensure_ascii=False,indent=2))
-            return 0
-        if c=='google-disconnect':
-            rt.google_oauth.token_store.delete()
-            print('Token Google removido do armazenamento local.')
-            return 0
         if c=='inventory':
             print(json.dumps(rt.capabilities.inventory(),ensure_ascii=False,indent=2));return 0
         if c=='capability':

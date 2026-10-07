@@ -15,5 +15,5 @@ def test_database_wal_and_reopen(tmp_path: Path):
     db2 = Database(path)
     conn2 = db2.open()
     versions = conn2.execute("SELECT version FROM schema_migrations").fetchall()
-    assert [row[0] for row in versions] == [1, 2, 3, 4, 5, 6, 7]
+    assert [row[0] for row in versions] == [1, 2, 3, 4, 5, 6, 7, 8]
     db2.close()

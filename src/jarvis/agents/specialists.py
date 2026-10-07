@@ -51,6 +51,7 @@ Quando código for necessário, entregue código completo ou patch proposto, tes
 Nunca afirme ter modificado arquivos ou executado testes se isso não foi realmente feito por uma ferramenta.
 Nunca altere o core em produção por conta própria.
 Separe claramente: diagnóstico, solução proposta, código, testes e riscos.
+Quando houver uma operação real posterior, inclua ao final um bloco EXECUTION_PLAN com JSON válido no formato {\"actions\":[{\"tool_id\":\"...\",\"payload\":{}}]}. Se não houver ação física necessária, não invente um plano.
 Escreva em português do Brasil."""
 
 
@@ -69,4 +70,5 @@ VERDICT: PASS
 ou
 VERDICT: REVISE
 Use PASS apenas quando a entrega for utilizável e não houver falha material evidente.
+Avalie objetivamente: cobertura do objetivo, completude dos artifacts, evidência de execução quando houver, coerência entre etapas, presença de testes quando código for proposto e ausência de afirmações sem suporte.
 Não finja ter consultado fontes externas. Escreva em português do Brasil."""

@@ -11,6 +11,7 @@ from jarvis.agents import (
     OperatorAgent,ReviewerAgent,MemoryCuratorAgent,InboxAgent,AgentFactory,AgencyAgentCatalog,AgentRouter,builtin_agent_cards
 )
 from jarvis.artifacts import ArtifactStore
+from jarvis.autonomy import AutonomyRepository,AutonomyService
 from jarvis.brain import ChatService,IntentRouter,JarvisOrchestrator,ToolPlanner
 from jarvis.briefing import BriefingService
 from jarvis.browser import PlaywrightBrowserController
@@ -114,6 +115,8 @@ class ProductRuntime:
     agent_router:AgentRouter
     goal_verifier:GoalVerifier
     action_runtime:ObserveActVerifyRuntime
+    autonomy_repository:AutonomyRepository
+    autonomy:AutonomyService
 
     async def close(self):
         try:
@@ -144,6 +147,7 @@ async def start_product_runtime(data_dir:Path|None=None,*,model_provider=None):
         workspace_repo=WorkspaceRepository(conn)
         project_repo=ProjectRepository(conn)
         notes_repo=WorkspaceNoteRepository(conn)
+        autonomy_repo=AutonomyRepository(conn)
         workspace=workspace_repo.get_or_create_default()
 
         secret_store=SecretStore(cfg.data_dir/'secrets')
@@ -436,7 +440,8 @@ async def start_product_runtime(data_dir:Path|None=None,*,model_provider=None):
             missions=mission_repo,model_registry=models,
             connector_repository=connector_repo,
             connector_service=connector_service,
-            watcher_repository=watcher_repo
+            watcher_repository=watcher_repo,
+            autonomy_repository=autonomy_repo
         )
         opportunities=OpportunityEngine(
             briefing=briefing,tasks=foundation.tasks
@@ -453,7 +458,15 @@ async def start_product_runtime(data_dir:Path|None=None,*,model_provider=None):
             agent_runs,foundation.tasks,approvals,foundation.events,
             missions=mission_repo,workspace=workspace,
             connector_repository=connector_repo,
-            watcher_repository=watcher_repo,agent_registry=agents
+            watcher_repository=watcher_repo,agent_registry=agents,
+            autonomy_repository=autonomy_repo
+        )
+        autonomy=AutonomyService(
+            repository=autonomy_repo,preferences=preferences,tool_executor=tool_executor,
+            model_registry=models,model_router=router,memory=memory,bus=foundation.bus,
+            task_service=foundation.task_service,agents=agents,missions=team_missions,
+            foundation=foundation,project_root=Path(__file__).resolve().parents[3],
+            connector_service=connector_service,capabilities=capabilities
         )
 
         return ProductRuntime(
@@ -463,7 +476,8 @@ async def start_product_runtime(data_dir:Path|None=None,*,model_provider=None):
             watcher_repo,watchers,scheduler_repo,scheduler,
             browser,windows,whatsapp,voice,skill_registry,skill_manager,skill_runner,skill_generator,
             capabilities,mcp,a2a,nodes,dispatcher,secret_store,google_oauth,
-            project_repo,notes_repo,opportunities,agent_factory,agency_catalog,agent_router,goal_verifier,action_runtime
+            project_repo,notes_repo,opportunities,agent_factory,agency_catalog,agent_router,goal_verifier,action_runtime,
+            autonomy_repo,autonomy
         )
     except Exception:
         await foundation.close()
