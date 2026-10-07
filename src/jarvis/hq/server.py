@@ -2,12 +2,17 @@ from __future__ import annotations
 
 import asyncio
 import json
+import hmac
+import ipaddress
+import secrets
+import socket
 from concurrent.futures import Future
 import mimetypes
 import threading
 import urllib.error
 import urllib.request
 import webbrowser
+from http.cookies import SimpleCookie
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlparse, parse_qs, unquote
@@ -18,9 +23,13 @@ from jarvis.voice import VoiceUnavailable
 
 
 class _State:
-    def __init__(self, runtime, loop):
+    def __init__(self, runtime, loop, *, allow_remote=False, access_token=None, port=4760):
         self.runtime = runtime
         self.loop = loop
+        self.allow_remote = bool(allow_remote)
+        self.access_token = str(access_token or "")
+        self.port = int(port)
+        self.lan_ip = _lan_ip() if self.allow_remote else "127.0.0.1"
 
     def call(self, coro, timeout=900):
         future = asyncio.run_coroutine_threadsafe(coro, self.loop)
@@ -48,6 +57,46 @@ class _State:
 
         self.loop.call_soon_threadsafe(invoke)
         return future.result(timeout=timeout)
+
+
+
+
+def _is_loopback(address: str) -> bool:
+    try:
+        return ipaddress.ip_address(str(address)).is_loopback
+    except ValueError:
+        return str(address).lower() in {"localhost", "::1"}
+
+
+def _lan_ip() -> str:
+    """Best-effort LAN address without making an HTTP request."""
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        sock.connect(("8.8.8.8", 80))
+        value = str(sock.getsockname()[0])
+        if value and not value.startswith("127."):
+            return value
+    except OSError:
+        pass
+    finally:
+        sock.close()
+    try:
+        for value in socket.gethostbyname_ex(socket.gethostname())[2]:
+            if value and not value.startswith("127."):
+                return value
+    except OSError:
+        pass
+    return "127.0.0.1"
+
+
+def _mobile_access_token(runtime) -> str:
+    key = "mobile_access_token"
+    token = runtime.secret_store.get(key)
+    if token:
+        return str(token)
+    token = secrets.token_urlsafe(32)
+    runtime.secret_store.set(key, token)
+    return token
 
 
 def _assets_root() -> Path:
@@ -92,7 +141,45 @@ def _handler(state: _State):
                 return {}
             return json.loads(self.rfile.read(length).decode("utf-8"))
 
+        def _remote_authorized(self, *, establish_session=False):
+            # Desktop localhost remains frictionless. LAN/mobile access requires
+            # a secret generated once and protected by the Windows secret store.
+            if _is_loopback(self.client_address[0]):
+                return True
+            if not state.allow_remote or not state.access_token:
+                self._send(403, {"error": "mobile access disabled"})
+                return False
+
+            parsed = urlparse(self.path)
+            supplied = str((parse_qs(parsed.query).get("token") or [""])[0])
+            cookie = SimpleCookie(self.headers.get("Cookie", ""))
+            session = cookie.get("jarvis_mobile_session")
+            cookie_value = session.value if session else ""
+            valid_query = bool(supplied) and hmac.compare_digest(supplied, state.access_token)
+            valid_cookie = bool(cookie_value) and hmac.compare_digest(cookie_value, state.access_token)
+            if valid_cookie:
+                return True
+            if valid_query and establish_session:
+                clean = parsed.path or "/"
+                if parsed.fragment:
+                    clean += "#" + parsed.fragment
+                self.send_response(302)
+                self.send_header("Location", clean)
+                self.send_header(
+                    "Set-Cookie",
+                    f"jarvis_mobile_session={state.access_token}; Path=/; HttpOnly; SameSite=Strict",
+                )
+                self.send_header("Cache-Control", "no-store")
+                self.end_headers()
+                return False
+            if valid_query:
+                return True
+            self._send(401, {"error": "mobile authorization required"})
+            return False
+
         def do_GET(self):
+            if not self._remote_authorized(establish_session=True):
+                return
             path = urlparse(self.path).path
             if path == "/api/ping":
                 return self._send(200, {
@@ -100,6 +187,17 @@ def _handler(state: _State):
                     "service": "jarvis-ui",
                     "run_id": state.call_sync(lambda: state.runtime.foundation.run_id),
                 })
+            if path == "/api/mobile":
+                local = _is_loopback(self.client_address[0])
+                payload = {
+                    "enabled": state.allow_remote,
+                    "lan_ip": state.lan_ip,
+                    "port": state.port,
+                    "url": f"http://{state.lan_ip}:{state.port}/",
+                }
+                if local and state.allow_remote:
+                    payload["connect_url"] = f"http://{state.lan_ip}:{state.port}/?token={state.access_token}"
+                return self._send(200, payload)
             if path == "/api/conversations":
                 query=parse_qs(urlparse(self.path).query)
                 search=str((query.get("search") or [""])[0])
@@ -170,6 +268,11 @@ def _handler(state: _State):
                     "browser": state.runtime.browser.health(),
                     "windows": state.runtime.windows.health(),
                     "voice": state.runtime.voice.health(),
+                    "internet": {
+                        "status": "healthy" if {"web.search", "web.fetch"}.issubset(set(state.runtime.tool_registry.list_ids())) else "disabled",
+                        "mode": "read_only",
+                        "tools": [x for x in state.runtime.tool_registry.list_ids() if x.startswith("web.") or x.startswith("browser.")],
+                    },
                     "mcp": state.runtime.mcp.health(),
                     "a2a": state.runtime.a2a.health(),
                     "nodes": state.runtime.nodes.repository.list(),
@@ -181,6 +284,8 @@ def _handler(state: _State):
                 }))
             if path == "/api/voice/health":
                 return self._send(200, state.call_sync(state.runtime.voice.health))
+            if path == "/api/voice/diagnostics":
+                return self._send(200, state.call_sync(state.runtime.voice.diagnostics))
             if path == "/api/projects":
                 return self._send(200, state.call_sync(state.runtime.projects.list))
             if path == "/api/skills":
@@ -244,6 +349,8 @@ def _handler(state: _State):
             return self._send(200, target.read_bytes(), ctype or "application/octet-stream")
 
         def do_POST(self):
+            if not self._remote_authorized():
+                return
             path = urlparse(self.path).path
             try:
                 payload = self._json_body()
@@ -321,6 +428,18 @@ def _handler(state: _State):
                         return self._send(200, {"status": "spoken", "backend": "windows-sapi"})
                     except VoiceUnavailable as exc:
                         return self._send(503, {"error": str(exc)})
+                if path == "/api/voice/test":
+                    text = str(payload.get("text") or "Estou ouvindo, senhor.").strip()
+                    try:
+                        state.call_sync(state.runtime.voice.speak_native, text, timeout=240)
+                        return self._send(200, {
+                            "status": "spoken", "backend": "windows-sapi",
+                            "diagnostics": state.call_sync(state.runtime.voice.diagnostics)
+                        })
+                    except VoiceUnavailable as exc:
+                        return self._send(503, {
+                            "error": str(exc), "diagnostics": state.call_sync(state.runtime.voice.diagnostics)
+                        })
                 if path == "/api/preferences":
                     values=payload.get("preferences") if isinstance(payload.get("preferences"),dict) else payload
                     result=state.call_sync(state.runtime.preferences.update,values)
@@ -424,6 +543,8 @@ def _handler(state: _State):
                 return self._send(500, {"error": str(exc)})
 
         def do_DELETE(self):
+            if not self._remote_authorized():
+                return
             path=urlparse(self.path).path
             try:
                 if path.startswith("/api/memory/"):
@@ -451,20 +572,23 @@ async def serve_hq(
     port=4760,
     open_browser=True,
     start_page="/",
+    allow_remote=False,
 ):
-    url = f"http://{host}:{port}{start_page}"
+    bind_host = "0.0.0.0" if allow_remote else host
+    local_url = f"http://127.0.0.1:{port}{start_page}"
 
     # A second launcher must reuse the existing Jarvis process instead of
     # creating a competing ProductRuntime and tripping the single-instance lock.
-    if ui_server_alive(host, port):
-        print(f"Jarvis já está ativo. Reutilizando: {url}")
+    if ui_server_alive("127.0.0.1", port):
+        print(f"Jarvis já está ativo. Reutilizando: {local_url}")
         if open_browser:
-            webbrowser.open(url)
+            webbrowser.open(local_url)
         return
 
     runtime = await start_product_runtime(data_dir)
     loop = asyncio.get_running_loop()
-    state = _State(runtime, loop)
+    access_token = _mobile_access_token(runtime) if allow_remote else None
+    state = _State(runtime, loop, allow_remote=allow_remote, access_token=access_token, port=port)
 
     async def background_services():
         # Scheduler and the autonomous life loop share the runtime owner thread,
@@ -485,24 +609,26 @@ async def serve_hq(
         background_services(),
         name="jarvis-background-services",
     )
-    server = ThreadingHTTPServer((host, port), _handler(state))
+    server = ThreadingHTTPServer((bind_host, port), _handler(state))
     thread = threading.Thread(
         target=server.serve_forever,
         name="jarvis-local-ui",
         daemon=True,
     )
     thread.start()
-    print(f"Jarvis local UI: {url}")
-    print(f"Companion: http://{host}:{port}/")
-    print(f"HQ:        http://{host}:{port}/hq")
-    print(f"Missões:   http://{host}:{port}/mission-control")
-    print(f"Projetos:  http://{host}:{port}/projects")
-    print(f"Agentes:   http://{host}:{port}/agents")
-    print(f"Memória:   http://{host}:{port}/memory")
-    print(f"Sistema:   http://{host}:{port}/system")
+    print(f"Jarvis local UI: {local_url}")
+    print(f"Companion: http://127.0.0.1:{port}/")
+    print(f"HQ:        http://127.0.0.1:{port}/hq")
+    print(f"Missões:   http://127.0.0.1:{port}/mission-control")
+    print(f"Projetos:  http://127.0.0.1:{port}/projects")
+    print(f"Agentes:   http://127.0.0.1:{port}/agents")
+    print(f"Memória:   http://127.0.0.1:{port}/memory")
+    print(f"Sistema:   http://127.0.0.1:{port}/system")
+    if allow_remote:
+        print(f"Mobile:    http://{state.lan_ip}:{port}/?token={access_token}")
     print("Ctrl+C para fechar.")
     if open_browser:
-        webbrowser.open(url)
+        webbrowser.open(local_url)
     try:
         while True:
             await asyncio.sleep(1)

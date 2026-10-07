@@ -15,6 +15,13 @@ class IntentRouter:
         'crie um projeto','trabalhem nisso','delegue'
     )
     RESEARCH_TERMS = ('pesquise','pesquisa','investigue','investigar','levante','estude','research')
+    WEB_TERMS = (
+        'pesquise na internet','pesquise na web','busque na internet','busque na web',
+        'acesse a internet','acesso à internet','acesso a internet','últimas notícias','ultimas noticias',
+        'notícias de hoje','noticias de hoje','previsão do tempo','previsao do tempo',
+        'clima hoje','tempo hoje','cotação atual','cotacao atual','preço atual','preco atual',
+        'informações em tempo real','informacoes em tempo real','dados em tempo real'
+    )
     DEVELOPER_TERMS = (
         'crie código','crie um código','escreva código','programe','implemente',
         'corrija o código','corrija este código','desenvolva software','desenvolva um script',
@@ -89,6 +96,8 @@ class IntentRouter:
             return Intent('operator_write', .98, 'workspace write request')
         if any(term in lowered for term in self.TEAM_TERMS):
             return Intent('team_mission', .95, 'team mission keyword')
+        if any(term in lowered for term in self.WEB_TERMS):
+            return Intent('research', .98, 'live web information keyword')
         if any(term in lowered for term in self.RESEARCH_TERMS):
             return Intent('research', .92, 'research keyword')
         return Intent('chat', .70, 'default conversational route')

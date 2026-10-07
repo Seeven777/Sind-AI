@@ -63,6 +63,57 @@ def _load_json(path:Path,default):
     return default
 
 
+def _normalize_ollama_name(value:str)->str:
+    value=str(value or '').strip()
+    return value[:-7] if value.endswith(':latest') else value
+
+
+def _choose_installed_model(installed, *candidates):
+    exact={str(x):str(x) for x in installed}
+    normalized={_normalize_ollama_name(x):str(x) for x in installed}
+    for candidate in candidates:
+        if not candidate:
+            continue
+        candidate=str(candidate).strip()
+        if candidate in exact:
+            return exact[candidate]
+        base=_normalize_ollama_name(candidate)
+        if base in normalized:
+            return normalized[base]
+    return str(candidates[-1]) if candidates else ''
+
+
+def _local_model_profile(provider, default_model):
+    """Assign lightweight free Ollama models by role when present.
+
+    The profile never makes startup depend on optional downloads: if a role
+    model is absent, that role transparently falls back to the configured
+    default. This gives every agent a truthful model assignment while keeping
+    the user's machine stable.
+    """
+    installed=[]
+    try:
+        installed=provider.list_models() if getattr(provider,'provider_id','')=='ollama' else []
+    except Exception:
+        installed=[]
+    general=_choose_installed_model(
+        installed, os.environ.get('JARVIS_MODEL_GENERAL'), default_model
+    )
+    fast=_choose_installed_model(
+        installed, os.environ.get('JARVIS_MODEL_FAST'), 'llama3.2:1b', general
+    )
+    coding=_choose_installed_model(
+        installed, os.environ.get('JARVIS_MODEL_CODING'), 'qwen2.5-coder:3b', general
+    )
+    creative=_choose_installed_model(
+        installed, os.environ.get('JARVIS_MODEL_CREATIVE'), general
+    )
+    return {
+        'chat':general,'general':general,'reasoning':general,
+        'creative':creative,'coding':coding,'tool_use':general,'fast':fast,
+    }
+
+
 @dataclass(slots=True)
 class ProductRuntime:
     foundation:Runtime
@@ -225,12 +276,16 @@ async def start_product_runtime(data_dir:Path|None=None,*,model_provider=None):
             )
 
         premium_provider='nvidia_nemotron' if nvidia_key and not cfg.local_only and cfg.ai.nvidia_enabled else None
+        local_models=_local_model_profile(
+            provider,getattr(provider,'default_model',cfg.models.default_model)
+        )
         router=ModelRouter(
             provider.provider_id,
             getattr(provider,'default_model',cfg.models.default_model),
             registry=models,
             premium_provider=premium_provider,
             privacy_mode=cfg.privacy.mode,
+            local_models=local_models,
         )
 
         policy=PolicyEngine()
@@ -390,15 +445,18 @@ async def start_product_runtime(data_dir:Path|None=None,*,model_provider=None):
         agents.register_runtime('review.verifier',ReviewerAgent(**llm_kwargs))
         agents.register_runtime('operations.operator',OperatorAgent(
             tool_executor=tool_executor,agent_runs=agent_runs,bus=foundation.bus,
-            task_service=foundation.task_service,goal_verifier=goal_verifier
+            task_service=foundation.task_service,goal_verifier=goal_verifier,
+            model_router=router
         ))
         agents.register_runtime('memory.curator',MemoryCuratorAgent(
             memory_repository=memory_repo,artifact_store=artifact_store,
-            agent_runs=agent_runs,bus=foundation.bus
+            agent_runs=agent_runs,bus=foundation.bus,
+            model_registry=models,model_router=router
         ))
         agents.register_runtime('administration.inbox',InboxAgent(
             connector_repository=connector_repo,artifact_store=artifact_store,
-            agent_runs=agent_runs,bus=foundation.bus
+            agent_runs=agent_runs,bus=foundation.bus,
+            model_registry=models,model_router=router
         ))
         agent_factory=AgentFactory(
             path=cfg.data_dir/'agents'/'custom_agents.json',
@@ -459,7 +517,7 @@ async def start_product_runtime(data_dir:Path|None=None,*,model_provider=None):
             missions=mission_repo,workspace=workspace,
             connector_repository=connector_repo,
             watcher_repository=watcher_repo,agent_registry=agents,
-            autonomy_repository=autonomy_repo
+            autonomy_repository=autonomy_repo,model_router=router
         )
         autonomy=AutonomyService(
             repository=autonomy_repo,preferences=preferences,tool_executor=tool_executor,

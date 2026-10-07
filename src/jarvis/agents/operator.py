@@ -19,22 +19,24 @@ class OperatorAgent:
         'tool_use',True,
     )
 
-    def __init__(self,*,tool_executor,agent_runs,bus,task_service,goal_verifier=None):
+    def __init__(self,*,tool_executor,agent_runs,bus,task_service,goal_verifier=None,model_router=None):
         self.tool_executor=tool_executor
         self.agent_runs=agent_runs
         self.bus=bus
         self.task_service=task_service
         self.goal_verifier=goal_verifier
+        self.model_router=model_router
 
     async def execute(self,tool_id,payload,*,task_id):
+        assigned=self.model_router.local_model(self.card.model_capability) if self.model_router else None
         rid=self.agent_runs.start(
-            self.card.agent_id,task_id,None,
+            self.card.agent_id,task_id,assigned,
             {'tool_id':tool_id,'payload':payload}
         )
         self.agent_runs.update_activity(rid,f'Executando {tool_id}',0.25)
         await self.bus.publish(Event(
             'agent.started',task_id=task_id,agent_id=self.card.agent_id,
-            payload={'agent_run_id':rid,'activity':f'Executando {tool_id}'}
+            payload={'agent_run_id':rid,'activity':f'Executando {tool_id}','model':assigned}
         ))
         result=await self.tool_executor.execute(tool_id,payload,task_id=task_id)
 

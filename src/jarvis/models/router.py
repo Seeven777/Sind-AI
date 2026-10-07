@@ -9,12 +9,27 @@ class ModelRoute:
 
 
 class ModelRouter:
-    def __init__(self,default_provider,default_model,registry=None,*,premium_provider=None,privacy_mode='hybrid'):
+    def __init__(
+        self,default_provider,default_model,registry=None,*,premium_provider=None,
+        privacy_mode='hybrid',local_models=None
+    ):
         self.default_provider=default_provider
         self.default_model=default_model
         self.registry=registry
         self.premium_provider=premium_provider
         self.privacy_mode=privacy_mode
+        self.local_models={str(k):str(v) for k,v in (local_models or {}).items() if v}
+
+    def local_model(self,capability='chat'):
+        return (
+            self.local_models.get(capability)
+            or self.local_models.get('general')
+            or self.default_model
+        )
+
+    def model_profile(self):
+        keys=('chat','fast','reasoning','creative','coding','tool_use','general')
+        return {key:self.local_model(key) for key in keys}
 
     def _healthy_external(self,*,capability,budget):
         if self.registry is None:
@@ -38,12 +53,13 @@ class ModelRouter:
         return None
 
     def route(self,*,capability='chat',privacy='local',budget='free'):
+        local_model=self.local_model(capability)
         # Explicit local privacy always wins. No cloud provider can leak into a
         # local-only request, even when a premium provider is configured.
         if privacy=='local' or self.registry is None:
             return ModelRoute(
-                self.default_provider,self.default_model,
-                f'local default for {capability}; privacy={privacy}; budget={budget}'
+                self.default_provider,local_model,
+                f'local role model for {capability}; privacy={privacy}; budget={budget}'
             )
 
         provider=self._healthy_external(capability=capability,budget=budget)
@@ -53,6 +69,6 @@ class ModelRouter:
                 f'external route for {capability}; privacy={privacy}; budget={budget}'
             )
         return ModelRoute(
-            self.default_provider,self.default_model,
-            f'fallback local for {capability}; privacy={privacy}; budget={budget}'
+            self.default_provider,local_model,
+            f'fallback local role model for {capability}; privacy={privacy}; budget={budget}'
         )

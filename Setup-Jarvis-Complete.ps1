@@ -1,10 +1,11 @@
 param(
-    [switch]$SkipModelPull
+    [switch]$SkipModelPull,
+    [switch]$SkipAgentModels
 )
 $ErrorActionPreference = "Stop"
 $Project = Split-Path -Parent $MyInvocation.MyCommand.Path
 
-Write-Host "JARVIS NEXT 1.0 RC2 - INSTALACAO COMPLETA" -ForegroundColor Cyan
+Write-Host "JARVIS NEXT PRESENCE v5 - INSTALACAO COMPLETA" -ForegroundColor Cyan
 Write-Host ""
 
 $base = Join-Path $Project "Setup-Jarvis-Base.ps1"
@@ -20,9 +21,17 @@ if ($LASTEXITCODE -ne 0) { throw "Instalação base falhou." }
 & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $extras
 if ($LASTEXITCODE -ne 0) { throw "Instalação de Computer Use falhou." }
 
+if (-not $SkipAgentModels -and -not $SkipModelPull) {
+    $agentModels = Join-Path $Project "Install-Jarvis-Agent-Models.ps1"
+    if (Test-Path $agentModels) {
+        & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $agentModels
+        if ($LASTEXITCODE -ne 0) { throw "Instalação dos modelos especializados falhou." }
+    }
+}
+
 Write-Host ""
 Write-Host "Instalação completa concluída." -ForegroundColor Green
-Write-Host "Voz local está implementada, mas requer binários/modelos Piper e whisper.cpp configurados."
+Write-Host "Voz: ElevenLabs/Piper são opcionais; Windows SAPI e Web Speech funcionam como fallback sem configuração."
 Write-Host "Google está implementado, mas requer google_client.json e sua autorização OAuth."
 Write-Host ""
 Write-Host "Execute Validate-Jarvis-Complete.cmd para validar o ambiente."

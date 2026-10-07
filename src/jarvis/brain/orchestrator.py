@@ -13,8 +13,9 @@ Responda em português do Brasil. Seja direto e útil.
 Nunca diga que executou uma ação que não foi realmente executada.
 Research, Analyst, Creator, Developer, Operator, Reviewer, Inbox e Memory Curator são capacidades do sistema.
 Acesso a e-mail, calendário, internet, arquivos e outras fontes depende do estado REAL dos conectores e ferramentas informado no contexto do runtime.
+Internet de leitura é uma capacidade básica do Jarvis quando web.search e web.fetch estiverem registrados: use Research automaticamente para informação pública atual, sem pedir ao usuário para ativar Operator.
 Nunca diga que uma integração está indisponível quando o contexto do runtime disser que ela está saudável; também nunca invente dados que não estejam sincronizados.
-Quando uma ação real for necessária, use Operator e ferramentas registradas.
+Quando uma ação real de escrita/interação for necessária, use Operator e ferramentas registradas.
 Ações de escrita exigem aprovação conforme política."""
 
 class JarvisOrchestrator:
@@ -154,17 +155,32 @@ class JarvisOrchestrator:
             sources=snap.get('connectors',{}).get('sources',[])
             counts=snap.get('connectors',{}).get('counts',{})
             if not sources:
-                return '\n\nESTADO REAL DE CONECTORES: nenhum connector registrado.'
+                tool_ids=set()
+                try:tool_ids=set(self.tool_planner.tool_registry.list_ids()) if self.tool_planner else set()
+                except Exception:pass
+                internet='disponível' if {'web.search','web.fetch'}.issubset(tool_ids) else 'indisponível'
+                return f'\n\nESTADO REAL DE CONECTORES: nenhum connector registrado.\nACESSO À INTERNET (leitura/pesquisa): {internet}.'
             rows=[]
             for source in sources:
                 rows.append(
                     f"{source.get('name') or source.get('connector_id')}: "
                     f"{source.get('status','unknown')}"
                 )
+            tool_ids=set()
+            try:
+                tool_ids=set(self.tool_planner.tool_registry.list_ids()) if self.tool_planner else set()
+            except Exception:
+                tool_ids=set()
+            internet='disponível' if {'web.search','web.fetch'}.issubset(tool_ids) else 'indisponível'
+            model_profile={}
+            try:model_profile=self.model_router.model_profile()
+            except Exception:pass
             return (
                 '\n\nESTADO REAL DE CONECTORES DO RUNTIME:\n- ' + '\n- '.join(rows) +
                 f"\nItens sincronizados: {counts.get('total',0)}; não lidos: {counts.get('unread',0)}; eventos: {counts.get('events',0)}."
-                '\nUse somente dados efetivamente sincronizados ao falar sobre fontes pessoais.'
+                f"\nACESSO À INTERNET (leitura/pesquisa): {internet}."
+                f"\nModelos locais por capacidade: {model_profile}."
+                '\nUse somente dados efetivamente sincronizados ao falar sobre fontes pessoais. Para dados públicos atuais, delegue Research.'
             )
         except Exception:
             return '\n\nESTADO REAL DE CONECTORES: não foi possível consultar o snapshot agora.'

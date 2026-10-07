@@ -72,7 +72,7 @@ $StdoutLog = Join-Path $StartupLogDir "startup-$Stamp.out.log"
 $StderrLog = Join-Path $StartupLogDir "startup-$Stamp.err.log"
 
 Write-Host "Iniciando instância unificada do Jarvis..." -ForegroundColor Cyan
-$proc = Start-Process -FilePath $Python -ArgumentList @("-m", "jarvis", "ui", "--no-open") -WorkingDirectory $Project -RedirectStandardOutput $StdoutLog -RedirectStandardError $StderrLog -WindowStyle Hidden -PassThru
+$proc = Start-Process -FilePath $Python -ArgumentList @("-m", "jarvis", "ui", "--no-open", "--mobile") -WorkingDirectory $Project -RedirectStandardOutput $StdoutLog -RedirectStandardError $StderrLog -WindowStyle Hidden -PassThru
 
 $ready = $false
 for ($i=0; $i -lt 240; $i++) {

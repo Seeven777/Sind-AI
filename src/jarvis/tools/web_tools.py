@@ -7,6 +7,7 @@ import re
 import socket
 import urllib.parse
 import urllib.request
+import xml.etree.ElementTree as ET
 from html.parser import HTMLParser
 
 from .base import RiskLevel, ToolResult
@@ -54,26 +55,51 @@ class _BingParser(HTMLParser):
     def __init__(self):
         super().__init__()
         self.results=[]
-        self._in_link=False
+        self._algo_depth=0
+        self._capture=False
         self._href=''
         self._text=[]
+
     def handle_starttag(self,tag,attrs):
         attrs=dict(attrs)
-        if tag=='a' and 'b_algo' in attrs.get('class',''):
-            self._in_link=True
-            self._href=attrs.get('href','')
-            self._text=[]
+        classes=str(attrs.get("class", "")).split()
+        if tag=="li" and "b_algo" in classes:
+            self._algo_depth=1
+            return
+        if self._algo_depth:
+            if tag=="li": self._algo_depth+=1
+            if tag=="a" and not self._capture:
+                href=str(attrs.get("href") or "")
+                if href.startswith(("http://","https://")):
+                    self._capture=True;self._href=href;self._text=[]
+
     def handle_data(self,data):
-        if self._in_link:self._text.append(data)
+        if self._capture:self._text.append(data)
+
     def handle_endtag(self,tag):
-        if tag=='a' and self._in_link:
-            title=html.unescape(''.join(self._text)).strip()
-            href=self._href.strip()
-            if title and href.startswith(('http://','https://')):
-                self.results.append({'title':title,'url':href})
-            self._in_link=False
-            self._href=''
-            self._text=[]
+        if tag=="a" and self._capture:
+            title=html.unescape("".join(self._text)).strip()
+            if title and self._href:
+                self.results.append({"title":title,"url":self._href})
+            self._capture=False;self._href='';self._text=[]
+        if tag=="li" and self._algo_depth:
+            self._algo_depth-=1
+
+
+def _bing_rss_results(body,limit):
+    try:
+        root=ET.fromstring(body)
+    except ET.ParseError:
+        return []
+    out=[]
+    for item in root.findall('.//item'):
+        title=(item.findtext('title') or '').strip()
+        link=(item.findtext('link') or '').strip()
+        if title and link.startswith(('http://','https://')):
+            out.append({'title':title,'url':link})
+        if len(out)>=limit:break
+    return out
+
 
 class _TextParser(HTMLParser):
     SKIP={"script","style","noscript","svg"}
@@ -160,6 +186,22 @@ class WebSearchTool:
             parser=_DDGParser();parser.feed(body);results=parser.results[:limit]
         except Exception as exc:
             last_error=exc
+
+        # Bing RSS is intentionally the first fallback: unlike fragile HTML
+        # selectors it exposes a small, structured public result feed and does
+        # not require an API key.
+        if not results:
+            bing_rss='https://www.bing.com/search?' + urllib.parse.urlencode({
+                'q':query,'format':'rss','setlang':'pt-BR'
+            })
+            try:
+                body=self._request_html(bing_rss)
+                results=_bing_rss_results(body,limit)
+                if results:
+                    engine='bing_rss';request_url=bing_rss;last_error=None
+            except Exception as exc:
+                last_error=exc
+
         if not results:
             bing_url='https://www.bing.com/search?' + urllib.parse.urlencode({'q':query,'setlang':'pt-BR'})
             try:

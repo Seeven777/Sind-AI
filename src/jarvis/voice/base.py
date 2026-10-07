@@ -83,53 +83,111 @@ class PiperTTS:
 
 
 class WindowsSapiTTS:
-    """Zero-config Windows speech fallback.
+    """Zero-config Windows speech fallback with two native engines.
 
-    This intentionally uses the system speech engine only when Jarvis is running
-    on Windows. It gives the Companion a dependable spoken fallback even when
-    ElevenLabs/Piper are not configured and browser speech is unavailable.
+    System.Speech is preferred because it can synthesize WAV files for the web
+    Companion. SAPI.SpVoice is kept as a second direct-speaker fallback because
+    it is present on Windows installations where System.Speech voice discovery
+    can be incomplete.
     """
 
     def __init__(self, executable=None, voice=None):
         self.executable = executable or shutil.which("powershell.exe") or shutil.which("powershell")
         self.voice = voice or os.environ.get("JARVIS_WINDOWS_VOICE")
+        self._health_cache = None
 
     def health(self):
+        if self._health_cache is not None:
+            return dict(self._health_cache)
         ok = os.name == "nt" and bool(self.executable)
-        return {
+        error = None
+        engine = None
+        installed = []
+        if ok:
+            script = (
+                "$ErrorActionPreference='Stop';"
+                "$result=@{systemSpeech=$false;com=$false;voices=@()};"
+                "try{Add-Type -AssemblyName System.Speech;"
+                "$s=New-Object System.Speech.Synthesis.SpeechSynthesizer;"
+                "$result.systemSpeech=$true;"
+                "$result.voices=@($s.GetInstalledVoices()|ForEach-Object{$_.VoiceInfo.Name});"
+                "$s.Dispose()}catch{};"
+                "try{$v=New-Object -ComObject SAPI.SpVoice;"
+                "$result.com=$true;"
+                "if(-not $result.voices.Count){$result.voices=@($v.GetVoices()|ForEach-Object{$_.GetDescription()})}}catch{};"
+                "$result|ConvertTo-Json -Compress"
+            )
+            try:
+                probe = subprocess.run(
+                    [self.executable, "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-Command", script],
+                    capture_output=True, text=True, timeout=15,
+                )
+                data = json.loads((probe.stdout or "{}").strip() or "{}") if probe.returncode == 0 else {}
+                if data.get("systemSpeech"):
+                    engine = "system-speech"
+                elif data.get("com"):
+                    engine = "sapi-com"
+                installed = list(data.get("voices") or [])[:20]
+                ok = bool(engine)
+                if not ok:
+                    error = (probe.stderr or probe.stdout or "Nenhum motor SAPI disponível").strip()[:500]
+            except Exception as exc:
+                ok = False
+                error = str(exc)[:500]
+        self._health_cache = {
             "status": "healthy" if ok else "unavailable",
             "backend": "windows-sapi",
+            "engine": engine,
             "voice": self.voice,
+            "installed_voices": installed,
             "executable": self.executable,
+            "error": error,
         }
+        return dict(self._health_cache)
 
     @staticmethod
     def _ps_quote(value):
         return str(value).replace("'", "''")
 
     def _run(self, text, output_path=None, *, speak=False):
-        if self.health()["status"] != "healthy":
+        health = self.health()
+        if health["status"] != "healthy":
             raise VoiceUnavailable("Voz nativa do Windows indisponível.")
         temp_text = Path(tempfile.mktemp(suffix=".txt")).resolve()
         temp_text.write_text(str(text), encoding="utf-8")
         output = Path(output_path or tempfile.mktemp(suffix=".wav")).resolve() if not speak else None
         text_path = self._ps_quote(temp_text)
         voice = self._ps_quote(self.voice) if self.voice else ""
-        select = (
-            f"try{{$s.SelectVoice('{voice}')}}catch{{}};" if voice else
-            "try{$s.SelectVoiceByHints([System.Speech.Synthesis.VoiceGender]::Male,[System.Speech.Synthesis.VoiceAge]::Adult,0,[System.Globalization.CultureInfo]::GetCultureInfo('pt-BR'))}catch{};"
-        )
-        if speak:
-            action = "$s.Speak($t);"
+
+        if speak and health.get("engine") == "sapi-com":
+            select = (
+                f"$wanted='{voice}';$v.GetVoices()|Where-Object{{$_.GetDescription() -like ('*'+$wanted+'*')}}|Select-Object -First 1|ForEach-Object{{$v.Voice=$_}};"
+                if voice else ""
+            )
+            script = (
+                f"$t=[System.IO.File]::ReadAllText('{text_path}',[System.Text.Encoding]::UTF8);"
+                "$v=New-Object -ComObject SAPI.SpVoice;"
+                + select + "$null=$v.Speak($t);"
+            )
         else:
-            out_path = self._ps_quote(output)
-            action = f"$s.SetOutputToWaveFile('{out_path}');$s.Speak($t);$s.SetOutputToDefaultAudioDevice();"
-        script = (
-            "Add-Type -AssemblyName System.Speech;"
-            f"$t=[System.IO.File]::ReadAllText('{text_path}',[System.Text.Encoding]::UTF8);"
-            "$s=New-Object System.Speech.Synthesis.SpeechSynthesizer;"
-            + select + action + "$s.Dispose();"
-        )
+            if health.get("engine") != "system-speech":
+                temp_text.unlink(missing_ok=True)
+                raise VoiceUnavailable("System.Speech indisponível para gerar arquivo de áudio.")
+            select = (
+                f"try{{$s.SelectVoice('{voice}')}}catch{{}};" if voice else
+                "try{$s.SelectVoiceByHints([System.Speech.Synthesis.VoiceGender]::Male,[System.Speech.Synthesis.VoiceAge]::Adult,0,[System.Globalization.CultureInfo]::GetCultureInfo('pt-BR'))}catch{};"
+            )
+            if speak:
+                action = "$s.Speak($t);"
+            else:
+                out_path = self._ps_quote(output)
+                action = f"$s.SetOutputToWaveFile('{out_path}');$s.Speak($t);$s.SetOutputToDefaultAudioDevice();"
+            script = (
+                "Add-Type -AssemblyName System.Speech;"
+                f"$t=[System.IO.File]::ReadAllText('{text_path}',[System.Text.Encoding]::UTF8);"
+                "$s=New-Object System.Speech.Synthesis.SpeechSynthesizer;"
+                + select + action + "$s.Dispose();"
+            )
         try:
             proc = subprocess.run(
                 [self.executable, "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-Command", script],
@@ -285,6 +343,15 @@ class VoiceService:
             except VoiceUnavailable as exc:
                 errors.append(str(exc))
         raise VoiceUnavailable("; ".join(errors) if errors else "Nenhum TTS local/cloud foi configurado.")
+
+    def diagnostics(self):
+        health=self.health()
+        return {
+            **health,
+            "preferred": os.environ.get("JARVIS_TTS_PROVIDER", "auto").strip().lower(),
+            "active_backend": health.get("tts",{}).get("backend"),
+            "can_speak_native": health.get("tts_backends",{}).get("windows_sapi",{}).get("status") == "healthy",
+        }
 
     def speak_native(self, text):
         """Speak directly through Windows when browser audio cannot play."""

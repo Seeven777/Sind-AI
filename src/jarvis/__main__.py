@@ -31,8 +31,16 @@ def parser():
     ):
         sub.add_parser(name)
 
-    u=sub.add_parser('ui');u.add_argument('--no-open',action='store_true')
-    h=sub.add_parser('hq-web');h.add_argument('--no-open',action='store_true')
+    u=sub.add_parser('ui')
+    u.add_argument('--no-open',action='store_true')
+    u.add_argument('--host',default='127.0.0.1')
+    u.add_argument('--port',type=int,default=4760)
+    u.add_argument('--mobile',action='store_true',help='expõe a UI na rede local com token seguro')
+    h=sub.add_parser('hq-web')
+    h.add_argument('--no-open',action='store_true')
+    h.add_argument('--host',default='127.0.0.1')
+    h.add_argument('--port',type=int,default=4760)
+    h.add_argument('--mobile',action='store_true',help='expõe a UI na rede local com token seguro')
 
     d=sub.add_parser('demo-agent')
     d.add_argument('--prompt',default='Pesquise como tornar agentes confiáveis.')
@@ -558,7 +566,8 @@ async def amain(args):
     if c in {'ui','hq-web'}:
         await serve_hq(
             args.data_dir,start_page='/' if c=='ui' else '/hq',
-            open_browser=not args.no_open
+            open_browser=not args.no_open,host=args.host,port=args.port,
+            allow_remote=bool(args.mobile)
         );return 0
     if c=='worker':
         await serve_worker(args.data_dir,args.host,args.port);return 0

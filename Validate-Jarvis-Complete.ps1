@@ -97,7 +97,7 @@ if ($SkipComputerUse) {
 }
 
 Section "9/11 - UI LOCAL"
-$proc = Start-Process -FilePath $Python -ArgumentList @("-m","jarvis","ui","--no-open") -WorkingDirectory $Project -PassThru
+$proc = Start-Process -FilePath $Python -ArgumentList @("-m","jarvis","ui","--no-open","--mobile") -WorkingDirectory $Project -PassThru
 $ready = $false
 for ($i=0; $i -lt 120; $i++) {
     Start-Sleep -Milliseconds 250
@@ -117,17 +117,20 @@ foreach ($route in $routes) {
 }
 
 Section "10/11 - APIS"
-$apis = @("/api/hq","/api/briefing","/api/system","/api/ai-mesh","/api/projects","/api/agents","/api/agency","/api/memory","/api/capabilities")
+$apis = @("/api/hq","/api/briefing","/api/system","/api/ai-mesh","/api/projects","/api/agents","/api/agency","/api/memory","/api/capabilities","/api/mobile","/api/voice/diagnostics")
 foreach ($route in $apis) {
     $response = Invoke-WebRequest -UseBasicParsing -Uri ("http://127.0.0.1:4760" + $route) -TimeoutSec 5
     if ($response.StatusCode -ne 200) { throw "Falha na API: $route" }
     Write-Host "$route PASS" -ForegroundColor Green
 }
+$mobile = Invoke-RestMethod -Uri "http://127.0.0.1:4760/api/mobile" -TimeoutSec 5
+if (-not $mobile.enabled -or -not $mobile.connect_url) { throw "Acesso mobile protegido não foi ativado." }
+Write-Host "Mobile protegido: PASS" -ForegroundColor Green
 
 Section "11/11 - ENCERRAMENTO LIMPO"
 & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $StopScript
 Start-Sleep -Milliseconds 500
 
 Write-Host ""
-Write-Host "JARVIS NEXT 1.0 RC2 VALIDADO." -ForegroundColor Green
+Write-Host "JARVIS NEXT PRESENCE v5 VALIDADO." -ForegroundColor Green
 Write-Host "Recursos externos sem configuração (Google, voz, MCP, A2A) podem aparecer como unconfigured/empty sem falhar o Core."

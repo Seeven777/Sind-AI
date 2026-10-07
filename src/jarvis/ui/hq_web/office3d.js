@@ -44,7 +44,7 @@ function roomForAgent(id){return agentById(id)?.department || 'Command';}
 
 function makeScreen(parent,x,y,z,w=.86,h=.5,color=PALETTE.screen){
   const frame=box(w+.1,h+.1,.06,0x0d141b,.36,.5); frame.position.set(x,y,z); parent.add(frame);
-  const screen=box(w,h,.022,color,.25,.3,1.2); screen.position.set(x,y,z-.043); parent.add(screen);
+  const screen=box(w,h,.022,color,.25,.3,1.2); screen.position.set(x,y,z+.043); parent.add(screen);
   animations.push({type:'screen',obj:screen,phase:Math.random()*7});
 }
 function makeDesk(parent,x,z,accent=PALETTE.screen){

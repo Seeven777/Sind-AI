@@ -1,0 +1,21 @@
+{
+  "release": "AgentMode Presence v5",
+  "version": "1.0.0rc5.post2",
+  "validation": {
+    "pytest": "108 passed",
+    "python_compileall": "PASS",
+    "javascript_syntax": "PASS",
+    "release_self_test": "PASS",
+    "mobile_runtime_smoke": "PASS",
+    "mobile_remote_auth": "PASS"
+  },
+  "capabilities": [
+    "autonomous read-only public web research",
+    "role-based local model routing with safe fallback",
+    "dual-engine Windows voice plus browser fallback",
+    "corrected Agent Office monitor orientation",
+    "same-runtime protected LAN mobile client",
+    "Google connectors preserved",
+    "autonomous multi-agent life cycle preserved"
+  ]
+}

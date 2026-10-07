@@ -23,7 +23,8 @@ def _parse_time(value):
 class HQService:
     def __init__(
         self,agent_runs,tasks,approvals,events,*,missions=None,workspace=None,
-        connector_repository=None,watcher_repository=None,agent_registry=None,autonomy_repository=None
+        connector_repository=None,watcher_repository=None,agent_registry=None,autonomy_repository=None,
+        model_router=None
     ):
         self.agent_runs=agent_runs; self.tasks=tasks; self.approvals=approvals
         self.events=events; self.missions=missions; self.workspace=workspace or {}
@@ -31,6 +32,7 @@ class HQService:
         self.watcher_repository=watcher_repository
         self.agent_registry=agent_registry
         self.autonomy_repository=autonomy_repository
+        self.model_router=model_router
 
     @staticmethod
     def _visual_status(run,active):
@@ -71,12 +73,18 @@ class HQService:
                 activity='Disponível · última atividade concluída'
             else:
                 activity='Disponível' if active else 'Planejado'
+            assigned_model=(
+                self.model_router.local_model(card.model_capability)
+                if self.model_router is not None else None
+            )
             agents.append({
                 'id':card.agent_id,'name':card.name,'department':card.department,
                 'available':active,'status':status,'health':health,'last_status':backend_status,
                 'task_id':run.get('task_id') if status=='working' and run else None,
                 'last_task_id':run.get('task_id') if run else None,
-                'model':run.get('model') if run else None,
+                'model':(run.get('model') if run and run.get('model') else assigned_model),
+                'assigned_model':assigned_model,
+                'model_capability':card.model_capability,
                 'activity':activity,
                 'progress':progress,
                 'last_progress':float(run.get('progress') or 0.0) if run else None,
