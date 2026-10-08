@@ -1,0 +1,11 @@
+{
+  "version": "12.1",
+  "name": "Interactive Briefing Hotfix",
+  "base": "12.0",
+  "features": [
+    "deterministic morning-sequence intent",
+    "live connector refresh on manual replay",
+    "desktop/mobile UI action routing without prose fallback"
+  ],
+  "validation": {"tests": 145, "status": "passed"}
+}

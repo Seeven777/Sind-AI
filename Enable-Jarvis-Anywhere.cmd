@@ -1,9 +1,9 @@
 @echo off
-setlocal
+chcp 65001 >nul
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0Enable-Jarvis-Anywhere.ps1"
 if errorlevel 1 (
   echo.
-  echo Nao foi possivel ativar o acesso remoto do Jarvis.
+  echo Jarvis Anywhere nao foi ativado. Leia somente a mensagem acima.
   pause
   exit /b 1
 )

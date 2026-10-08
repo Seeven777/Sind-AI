@@ -10,7 +10,8 @@
 <title>Jarvis Mobile</title>
 <link rel="manifest" href="/mobile.webmanifest">
 <link rel="icon" href="/jarvis-icon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="/mobile.css">
+<link rel="stylesheet" href="/mobile.css?v=12.2">
+<link rel="stylesheet" href="/morning-sequence.css?v=12.2">
 </head>
 <body>
 <div id="mobile-app" class="mobile-app">
@@ -28,6 +29,7 @@
       <canvas id="jarvis-core"></canvas>
       <div class="core-caption"><span class="pulse-dot"></span><span id="core-caption">presente</span></div>
     </section>
+    <section id="surface-layer" class="surface-layer" aria-live="polite" aria-label="Superfícies contextuais do Jarvis"></section>
     <section id="chat" class="transcript" aria-live="polite" aria-label="Conversa"></section>
   </main>
 
@@ -63,6 +65,7 @@
 
     <div class="drawer-tools">
       <button id="install-btn" class="secondary-action hidden">Instalar aplicativo</button>
+      <button id="replay-morning" class="secondary-action">Briefing do dia</button>
       <button id="test-voice" class="secondary-action">Testar voz</button>
       <button id="refresh-btn" class="secondary-action">Atualizar estado</button>
     </div>
@@ -70,7 +73,9 @@
   </aside>
 </div>
 <div id="toasts" class="toasts"></div>
-<script src="/jarvis-core.js"></script>
-<script src="/mobile.js"></script>
+<script src="/jarvis-core.js?v=12.2"></script>
+<script src="/surface-engine.js?v=12.2"></script>
+<script src="/morning-sequence.js?v=12.2"></script>
+<script src="/mobile.js?v=12.2"></script>
 </body>
 </html>

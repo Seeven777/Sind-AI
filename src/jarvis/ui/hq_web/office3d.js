@@ -22,7 +22,7 @@ const PALETTE = {
 const AGENT_COLORS = [0x607b8f,0x5f6f87,0x735f78,0x58766c,0x756b58,0x63708a,0x58777b,0x6b657d];
 
 let renderer, scene, camera, controls, raycaster, pointer;
-let state = null, selected = null, autoRotate = true, lastFrame = performance.now();
+let state = null, selected = null, autoRotate = true, lastFrame = performance.now(), lastPresented = 0;
 let lastTimelineKey = '', coreMode = 'IDLE';
 const roomMap = new Map(), agentObjects = new Map(), dataFlows = new Map();
 const clickables = [], animations = [], transient = [];
@@ -308,6 +308,11 @@ function bind(){
 }
 
 function animate(now=performance.now()){
+  if(document.hidden){lastFrame=now;requestAnimationFrame(animate);return;}
+  const active=!!((state?.metrics?.agents_working||0)+(state?.metrics?.missions_active||0));
+  const minFrameMs=active?16.5:24;
+  if(now-lastPresented<minFrameMs){requestAnimationFrame(animate);return;}
+  lastPresented=now;
   const dt=Math.min(.05,(now-lastFrame)/1000);lastFrame=now;
   if(autoRotate&&!userInteracting){camera.position.applyAxisAngle(new THREE.Vector3(0,1,0),dt*.022);}
   if(core){
@@ -321,7 +326,9 @@ function animate(now=performance.now()){
 }
 
 try{
-  renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:false,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.75));renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+  renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:false,powerPreference:'high-performance'});const memory=Number(navigator.deviceMemory||16),cores=Number(navigator.hardwareConcurrency||8);const pixelCap=(memory<=8||cores<=4)?1.1:1.4;renderer.setPixelRatio(Math.min(devicePixelRatio||1,pixelCap));renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.shadowMap.enabled=memory>4&&cores>4;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
   scene=new THREE.Scene();camera=new THREE.PerspectiveCamera(42,1,.1,170);controls=new OrbitControls(camera,canvas);controls.enableDamping=true;controls.dampingFactor=.055;controls.addEventListener('start',()=>userInteracting=true);controls.addEventListener('end',()=>userInteracting=false);controls.minDistance=12;controls.maxDistance=72;controls.maxPolarAngle=Math.PI/2.03;controls.target.set(0,2,7);raycaster=new THREE.Raycaster();pointer=new THREE.Vector2();
-  buildScene();addLabels();bind();setCamera([29,25,34],[0,2,7]);const savedInspector=localStorage.getItem('jarvis.hq.inspector');if(innerWidth<820||savedInspector==='0')$('#hq-layout').classList.add('inspector-collapsed');resize();selectCommand();load();setInterval(load,2200);requestAnimationFrame(animate);
+  buildScene();addLabels();bind();setCamera([29,25,34],[0,2,7]);const savedInspector=localStorage.getItem('jarvis.hq.inspector');if(innerWidth<820||savedInspector==='0')$('#hq-layout').classList.add('inspector-collapsed');resize();selectCommand();awaitLoadLoop();requestAnimationFrame(animate);
+  function awaitLoadLoop(){load().finally(()=>{const active=!!((state?.metrics?.agents_working||0)+(state?.metrics?.missions_active||0));setTimeout(awaitLoadLoop,document.hidden?12000:(active?1600:3800));});}
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)load();});
 }catch(err){console.error('Jarvis Office renderer failed',err);fallback.classList.remove('hidden');}

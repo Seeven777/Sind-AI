@@ -1,0 +1,17 @@
+{
+  "release": "AgentMode-Presence-v8",
+  "version": "1.0.0rc6",
+  "focus": [
+    "simple-anywhere",
+    "ngrok-public-bridge",
+    "browser-only-client",
+    "verified-remote-access"
+  ],
+  "public_provider": "ngrok",
+  "visitor_install_required": false,
+  "mobile_surface": "/mobile",
+  "status": "validated",
+  "tests": "126/126 passed",
+  "python_compile": "passed",
+  "javascript_syntax": "passed"
+}

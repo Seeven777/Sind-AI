@@ -19,7 +19,9 @@ class IntentRouter:
         'pesquise na internet','pesquise na web','busque na internet','busque na web',
         'acesse a internet','acesso à internet','acesso a internet','últimas notícias','ultimas noticias',
         'notícias de hoje','noticias de hoje','previsão do tempo','previsao do tempo',
-        'clima hoje','tempo hoje','cotação atual','cotacao atual','preço atual','preco atual',
+        'previsão do clima','previsao do clima','clima para hoje','clima de hoje','clima atual',
+        'clima hoje','tempo hoje','tempo agora','meteorologia hoje','temperatura agora',
+        'cotação atual','cotacao atual','preço atual','preco atual',
         'informações em tempo real','informacoes em tempo real','dados em tempo real'
     )
     DEVELOPER_TERMS = (
@@ -43,6 +45,8 @@ class IntentRouter:
     )
     BRIEFING_TERMS = (
         'me dê meu briefing','me de meu briefing','briefing do dia','briefing de hoje',
+        'briefing completo','briefing completo do dia','briefing completo de hoje','meu briefing completo',
+        'faça meu briefing','faca meu briefing','refaça meu briefing','refaca meu briefing','inicie meu briefing','iniciar meu briefing',
         'resumo do meu dia','o que merece atenção hoje','o que merece atencao hoje',
         'o que merece minha atenção hoje','o que merece minha atencao hoje',
         'prioridades de hoje','minhas prioridades hoje'
@@ -58,11 +62,40 @@ class IntentRouter:
         'use a ferramenta ','execute a ferramenta '
     )
 
+
+    @staticmethod
+    def _looks_like_morning_sequence(lowered):
+        # Natural commands that mean "run the interactive morning ritual", not
+        # "write me a prose summary". Keep this deterministic so the UI never
+        # depends on an LLM guessing whether it should materialize the briefing.
+        if 'briefing' not in lowered:
+            return False
+        action_words = (
+            'faça','faca','refaça','refaca','inicie','iniciar','execute','executar','rode','rodar',
+            'mostre','mostrar','abra','abrir','completo','completa','manhã','manha'
+        )
+        return any(x in lowered for x in action_words)
+
+    @staticmethod
+    def _looks_like_live_weather(lowered):
+        weather_words = ('clima','tempo','temperatura','chuva','meteorologia','previsão','previsao')
+        live_words = ('hoje','amanhã','amanha','agora','atual','previsão','previsao','gadget')
+        return any(x in lowered for x in weather_words) and any(x in lowered for x in live_words)
+
+    @staticmethod
+    def _looks_like_live_news(lowered):
+        news_words = ('notícia','noticia','notícias','noticias','manchete','manchetes','news')
+        live_words = ('última','ultima','últimas','ultimas','hoje','agora','recentes','gadget')
+        return any(x in lowered for x in news_words) and any(x in lowered for x in live_words)
+
     def classify(self, text):
         lowered = text.lower().strip()
         has_inbox = any(term in lowered for term in self.INBOX_TERMS)
         has_calendar = any(term in lowered for term in self.CALENDAR_TERMS)
         has_briefing = any(term in lowered for term in self.BRIEFING_TERMS)
+
+        if self._looks_like_morning_sequence(lowered):
+            return Intent('morning_sequence', .999, 'interactive morning briefing request')
 
         # Requests that combine personal sources should always use the live
         # briefing path so Jarvis synchronizes connectors before answering.
@@ -94,6 +127,14 @@ class IntentRouter:
             return Intent('operator_read', .99, 'file read request')
         if lowered.startswith(('crie arquivo ','crie o arquivo ','escreva arquivo ','escreva o arquivo ')):
             return Intent('operator_write', .98, 'workspace write request')
+        # Live information is a first-class read capability. This semantic guard
+        # catches natural variants such as "previsão do clima para hoje" and
+        # "abra o gadget do clima" instead of letting a generic chat model
+        # incorrectly claim that Jarvis has no internet or cannot materialize UI.
+        if self._looks_like_live_weather(lowered):
+            return Intent('research', .995, 'live weather request')
+        if self._looks_like_live_news(lowered):
+            return Intent('research', .995, 'live news request')
         if any(term in lowered for term in self.TEAM_TERMS):
             return Intent('team_mission', .95, 'team mission keyword')
         if any(term in lowered for term in self.WEB_TERMS):

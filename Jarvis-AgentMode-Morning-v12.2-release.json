@@ -1,0 +1,18 @@
+{
+  "version": "12.2",
+  "name": "Interactive Morning Runtime Fix",
+  "base": "12.1",
+  "features": [
+    "cache-safe critical UI assets",
+    "immediate morning preparation surface",
+    "parallel connector synchronization",
+    "ephemeral cinematic UI actions without placeholder prose"
+  ],
+  "validation": {
+    "tests": 148,
+    "status": "passed",
+    "release_self_test": "passed",
+    "javascript": "passed",
+    "python_compile": "passed"
+  }
+}

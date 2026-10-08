@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import asyncio
+import gzip
 import json
 import hmac
+import queue
 import ipaddress
 import secrets
 import socket
@@ -118,12 +120,13 @@ def ui_server_alive(host: str = "127.0.0.1", port: int = 4760, timeout: float = 
 
 def _handler(state: _State):
     assets = _assets_root()
+    static_cache = {}
 
     class Handler(BaseHTTPRequestHandler):
         def log_message(self, format, *args):
             return
 
-        def _send(self, status, body, content_type="application/json; charset=utf-8"):
+        def _send(self, status, body, content_type="application/json; charset=utf-8", *, cache_control="no-store", extra_headers=None):
             if isinstance(body, (dict, list)):
                 body = json.dumps(body, ensure_ascii=False).encode("utf-8")
             elif isinstance(body, str):
@@ -131,9 +134,41 @@ def _handler(state: _State):
             self.send_response(status)
             self.send_header("Content-Type", content_type)
             self.send_header("Content-Length", str(len(body)))
-            self.send_header("Cache-Control", "no-store")
+            self.send_header("Cache-Control", cache_control)
+            for key,value in (extra_headers or {}).items():
+                self.send_header(str(key),str(value))
             self.end_headers()
             self.wfile.write(body)
+
+        def _send_static(self, target: Path, content_type: str):
+            stat=target.stat()
+            etag=f'"{stat.st_mtime_ns:x}-{stat.st_size:x}"'
+            is_html=target.suffix.lower() in {'.html','.webmanifest'} or target.name=='sw.js'
+            critical_shell=target.name in {
+                'companion.js','mobile.js','jarvis-core.js','surface-engine.js','morning-sequence.js',
+                'companion.css','mobile.css','morning-sequence.css'
+            }
+            cache_control='no-cache' if (is_html or critical_shell) else 'public, max-age=86400, stale-while-revalidate=604800'
+            if self.headers.get('If-None-Match')==etag:
+                self.send_response(304)
+                self.send_header('ETag',etag)
+                self.send_header('Cache-Control',cache_control)
+                self.end_headers()
+                return
+            can_gzip=('gzip' in str(self.headers.get('Accept-Encoding') or '').lower() and
+                      (content_type.startswith('text/') or 'javascript' in content_type or 'json' in content_type or 'svg' in content_type))
+            key=(str(target),stat.st_mtime_ns,can_gzip)
+            body=static_cache.get(key)
+            if body is None:
+                raw=target.read_bytes()
+                body=gzip.compress(raw,compresslevel=5) if can_gzip and len(raw)>1024 else raw
+                static_cache[key]=body
+                if len(static_cache)>96:
+                    static_cache.pop(next(iter(static_cache)))
+            headers={'ETag':etag,'Vary':'Accept-Encoding'}
+            if can_gzip and len(body)!=stat.st_size:
+                headers['Content-Encoding']='gzip'
+            return self._send(200,body,content_type,cache_control=cache_control,extra_headers=headers)
 
         def _json_body(self):
             length = int(self.headers.get("Content-Length", "0"))
@@ -213,9 +248,13 @@ def _handler(state: _State):
             return False
 
         def do_GET(self):
-            if not self._remote_authorized(establish_session=True):
-                return
             path = urlparse(self.path).path
+            # API calls carrying a valid token should return the API response
+            # directly. Browser page navigation still exchanges the token for
+            # an HttpOnly session cookie and removes it from the visible URL.
+            establish_session = not path.startswith("/api/")
+            if not self._remote_authorized(establish_session=establish_session):
+                return
             if path == "/api/ping":
                 return self._send(200, {
                     "ok": True,
@@ -266,6 +305,8 @@ def _handler(state: _State):
                 return self._send(200, state.call_sync(state.runtime.hq.snapshot))
             if path == "/api/briefing":
                 return self._send(200, state.call_sync(state.runtime.briefing.snapshot))
+            if path == "/api/morning":
+                return self._send(200, state.call_sync(state.runtime.briefing.morning_sequence))
             if path == "/api/meta":
                 return self._send(200, state.call_sync(lambda: {
                     "name": "Jarvis", "version": __version__,
@@ -275,6 +316,8 @@ def _handler(state: _State):
                     "premium_provider": state.runtime.model_router.premium_provider,
                     "ai_mesh": state.runtime.ai_mesh.health(),
                 }))
+            if path == "/api/performance":
+                return self._send(200, state.call_sync(state.runtime.performance.snapshot))
             if path == "/api/preferences":
                 return self._send(200, state.call_sync(state.runtime.preferences.all))
             if path == "/api/models":
@@ -318,6 +361,7 @@ def _handler(state: _State):
                     "scheduler": state.runtime.scheduler_repository.all(),
                     "watchers": state.runtime.watcher_repository.enabled(),
                     "google": state.runtime.google_oauth.status(),
+                    "performance": state.runtime.performance.snapshot(),
                 }))
             if path == "/api/voice/health":
                 return self._send(200, state.call_sync(state.runtime.voice.health))
@@ -337,6 +381,9 @@ def _handler(state: _State):
                 return self._send(200, state.call_sync(lambda: state.runtime.autonomy_repository.notifications(limit=30)))
             if path == "/api/improvements":
                 return self._send(200, state.call_sync(lambda: state.runtime.autonomy_repository.proposals(limit=40)))
+            if path.startswith("/api/improvements/") and path.endswith("/candidate"):
+                proposal_id=unquote(path.split("/")[3])
+                return self._send(200, state.call_sync(state.runtime.autonomy.candidate_review, proposal_id))
             if path == "/api/tool-runs":
                 return self._send(200, state.call_sync(state.runtime.tool_runs.recent, 50))
             if path == "/api/events":
@@ -385,7 +432,7 @@ def _handler(state: _State):
             if not target.exists() or not target.is_file():
                 return self._send(404, b"not found", "text/plain")
             ctype, _ = mimetypes.guess_type(target.name)
-            return self._send(200, target.read_bytes(), ctype or "application/octet-stream")
+            return self._send_static(target, ctype or "application/octet-stream")
 
         def do_POST(self):
             if not self._remote_authorized():
@@ -393,6 +440,27 @@ def _handler(state: _State):
             path = urlparse(self.path).path
             try:
                 payload = self._json_body()
+                if path == "/api/morning/prepare":
+                    async def prepare_morning():
+                        async def sync_connector(connector_id):
+                            try:
+                                return await asyncio.wait_for(state.runtime.connectors.sync_one(connector_id),timeout=25)
+                            except KeyError:
+                                return {'connector_id':connector_id,'status':'unavailable'}
+                            except asyncio.TimeoutError:
+                                return {'connector_id':connector_id,'status':'timeout','error':'sync timeout'}
+                            except Exception as exc:
+                                return {'connector_id':connector_id,'status':'failed','error':str(exc)}
+                        sync=list(await asyncio.gather(*(sync_connector(x) for x in ('google.gmail','google.calendar','marketing.tasks'))))
+                        daily=state.runtime.autonomy.repository.get_state('daily_briefing',{}) or {}
+                        today=__import__('datetime').datetime.now().astimezone().strftime('%Y-%m-%d')
+                        if bool(payload.get('force')) or daily.get('date')!=today:
+                            try:
+                                await state.runtime.autonomy.refresh_daily_briefing(force=True)
+                            except Exception:
+                                pass
+                        return {'sync':sync,'sequence':state.runtime.briefing.morning_sequence()}
+                    return self._send(200,state.call(prepare_morning(),timeout=240))
                 if path == "/api/conversations":
                     title=str(payload.get("title") or "Nova conversa")
                     cid=state.call_sync(state.runtime.chat.new_conversation,title)
@@ -417,6 +485,62 @@ def _handler(state: _State):
                         result["conversation_id"]=cid
                         return self._send(200,result)
                     return self._send(400,{"error":"ação de conversa desconhecida"})
+                if path == "/api/chat/stream":
+                    cid=payload.get("conversation_id")
+                    if not cid:
+                        cid=state.call_sync(state.runtime.chat.new_conversation)
+                    text=str(payload.get("text") or "").strip()
+                    if not text:
+                        return self._send(400,{"error":"text obrigatório"})
+                    mode=str(payload.get("mode") or "auto").lower().strip()
+                    if mode not in {"auto","fast","deep","hermes"}:
+                        return self._send(400,{"error":"mode inválido"})
+                    attachments=payload.get("attachments") or []
+                    if not isinstance(attachments,list) or len(attachments)>3:
+                        return self._send(400,{"error":"máximo de 3 anexos"})
+                    safe_attachments=[]
+                    for item in attachments:
+                        if not isinstance(item,dict):
+                            return self._send(400,{"error":"anexo inválido"})
+                        name=str(item.get("name") or "arquivo")[:160]
+                        content=str(item.get("content") or "")
+                        if len(content)>800_000:
+                            return self._send(413,{"error":f"anexo excede o limite: {name}"})
+                        safe_attachments.append({"name":name,"content":content})
+                    out=queue.Queue()
+                    future=asyncio.run_coroutine_threadsafe(
+                        state.runtime.chat.send_stream_to_queue(
+                            cid,text,out,mode=mode,attachments=safe_attachments
+                        ),state.loop
+                    )
+                    self.send_response(200)
+                    self.send_header("Content-Type","application/x-ndjson; charset=utf-8")
+                    self.send_header("Cache-Control","no-store")
+                    self.send_header("X-Accel-Buffering","no")
+                    self.send_header("Connection","close")
+                    self.end_headers()
+                    self.close_connection=True
+                    try:
+                        while True:
+                            event=out.get(timeout=900)
+                            event.setdefault("conversation_id",cid)
+                            wire=(json.dumps(event,ensure_ascii=False)+"\n").encode("utf-8")
+                            self.wfile.write(wire)
+                            self.wfile.flush()
+                            if event.get("type") in {"done","error"}:
+                                break
+                    except (BrokenPipeError,ConnectionResetError):
+                        return
+                    except queue.Empty:
+                        try:
+                            self.wfile.write((json.dumps({"type":"error","error":"stream timeout"})+"\n").encode("utf-8"));self.wfile.flush()
+                        except Exception:
+                            pass
+                    finally:
+                        if future.done():
+                            try:future.result()
+                            except Exception:pass
+                    return
                 if path == "/api/chat":
                     cid = payload.get("conversation_id")
                     if not cid:
@@ -439,7 +563,11 @@ def _handler(state: _State):
                         if len(content) > 800_000:
                             return self._send(413,{"error":f"anexo excede o limite: {name}"})
                         safe_attachments.append({"name":name,"content":content})
-                    result = state.call(state.runtime.chat.send(cid, text, mode=mode, attachments=safe_attachments))
+                    state.runtime.performance.begin_interactive()
+                    try:
+                        result = state.call(state.runtime.chat.send(cid, text, mode=mode, attachments=safe_attachments))
+                    finally:
+                        state.runtime.performance.end_interactive()
                     result["conversation_id"] = cid
                     return self._send(200, result)
                 if path == "/api/voice/synthesize":
@@ -540,6 +668,14 @@ def _handler(state: _State):
                     proposal_id=unquote(path.split("/")[3])
                     result=state.call(state.runtime.autonomy.reject_improvement(proposal_id))
                     return self._send(200,result)
+                if path.startswith("/api/improvements/") and path.endswith("/promote"):
+                    proposal_id=unquote(path.split("/")[3])
+                    result=state.call(state.runtime.autonomy.promote_improvement(proposal_id), timeout=900)
+                    return self._send(200,result)
+                if path.startswith("/api/improvements/") and path.endswith("/rollback"):
+                    proposal_id=unquote(path.split("/")[3])
+                    result=state.call(state.runtime.autonomy.rollback_improvement(proposal_id), timeout=900)
+                    return self._send(200,result)
                 if path == "/api/project":
                     name = str(payload.get("name") or "").strip()
                     if not name:
@@ -639,7 +775,10 @@ async def serve_hq(
             except Exception:
                 pass
             try:
-                await runtime.autonomy.tick()
+                # User-facing latency wins over autonomous curiosity/self-work.
+                # The background loop simply retries on the next tick.
+                if not runtime.performance.interactive_busy(grace_seconds=4.0):
+                    await runtime.autonomy.tick()
             except Exception:
                 pass
             await asyncio.sleep(30)

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
+import asyncio
 import json
 import os
 
@@ -19,7 +20,7 @@ from jarvis.capabilities.resolver import CapabilityResolver
 from jarvis.connectors import (
     ConnectorRegistry,ConnectorRepository,ConnectorService,
     LocalInboxConnector,ICSCalendarConnector,
-    GoogleOAuthClient,GoogleTokenStore,GmailConnector,GoogleCalendarConnector
+    GoogleOAuthClient,GoogleTokenStore,GmailConnector,GoogleCalendarConnector,MarketingTasksConnector
 )
 from jarvis.distributed import NodeRepository,NodeRegistry,DistributedDispatcher
 from jarvis.hq import HQService
@@ -27,12 +28,14 @@ from jarvis.mcp import MCPRegistry,MCPServer
 from jarvis.memory import MemoryService
 from jarvis.missions import TeamMissionService,MissionPlanner
 from jarvis.proactivity import OpportunityEngine
+from jarvis.performance import PerformanceMonitor
 from jarvis.models import (
     ModelRegistry,ModelRouter,OllamaProvider,OpenAICompatibleProvider,NvidiaNemotronProvider
 )
 from jarvis.runtime import GoalVerifier,ObserveActVerifyRuntime
 from jarvis.integrations import AIMesh,CreativeStudioClient,HermesAgentBridge,WhatsAppGatewayClient
 from jarvis.scheduler import SchedulerRepository,Scheduler
+from jarvis.surfaces import GenerativeSurfaceService
 from jarvis.security import PolicyEngine,SecretStore
 from jarvis.skills import SkillRegistry,SkillRepository,SkillManager,SkillRunner,SkillGenerationService
 from jarvis.storage.repositories.preferences import PreferenceRepository
@@ -43,7 +46,7 @@ from jarvis.storage.repositories.product import (
 )
 from jarvis.tools import (
     ListDirectoryTool,ReadTextFileTool,SystemTimeTool,ToolExecutor,ToolRegistry,
-    WriteWorkspaceTextTool,WriteWorkspacePdfTool,WebSearchTool,WebFetchTool,
+    WriteWorkspaceTextTool,WriteWorkspacePdfTool,WebSearchTool,WebFetchTool,WeatherForecastTool,
     BrowserOpenTool,BrowserSnapshotTool,BrowserFillTool,BrowserClickTool,
     WindowsListTool,WindowsInspectTool,WindowsActivateTool,WindowsSetTextTool,
     WindowsClickTool,WhatsAppSendMessageTool,MCPToolAdapter
@@ -168,6 +171,7 @@ class ProductRuntime:
     action_runtime:ObserveActVerifyRuntime
     autonomy_repository:AutonomyRepository
     autonomy:AutonomyService
+    performance:PerformanceMonitor
 
     async def close(self):
         try:
@@ -303,6 +307,7 @@ async def start_product_runtime(data_dir:Path|None=None,*,model_provider=None):
         if not cfg.local_only:
             tools.register(WebSearchTool())
             tools.register(WebFetchTool())
+            tools.register(WeatherForecastTool())
             tools.register(BrowserOpenTool(browser))
             tools.register(BrowserSnapshotTool(browser))
             tools.register(BrowserFillTool(browser))
@@ -353,6 +358,15 @@ async def start_product_runtime(data_dir:Path|None=None,*,model_provider=None):
                 GoogleCalendarConnector(google_oauth),
                 config={'mode':'read_only','oauth':'google'}
             )
+            marketing_tasks=MarketingTasksConnector(
+                app_url='https://mkl-sind-petshop-sp.vercel.app',
+                state_path=cfg.data_dir/'secrets'/'marketing_tasks_state.json',
+                secret_store=secret_store,
+            )
+            connector_service.register(
+                marketing_tasks,
+                config={'mode':'read_only','auth':'browser_session','url':marketing_tasks.app_url}
+            )
 
         watcher_repo=WatcherRepository(conn)
         watchers=WatcherService(
@@ -369,8 +383,11 @@ async def start_product_runtime(data_dir:Path|None=None,*,model_provider=None):
         )
         scheduler.ensure_defaults()
 
-        # Optional external connectors cannot break startup.
-        await connector_service.sync_all()
+        # Local sources are disk-only and cheap, so keep them ready at boot.
+        # Network connectors are deferred below so Gmail/Calendar latency never
+        # blocks the Companion from opening.
+        await connector_service.sync_one('local.inbox')
+        await connector_service.sync_one('local.calendar')
         await watchers.check_all()
 
         # Skills/capabilities.
@@ -504,14 +521,16 @@ async def start_product_runtime(data_dir:Path|None=None,*,model_provider=None):
         opportunities=OpportunityEngine(
             briefing=briefing,tasks=foundation.tasks
         )
+        performance=PerformanceMonitor()
         orchestrator=JarvisOrchestrator(
             intent_router=IntentRouter(),model_registry=models,model_router=router,
             ai_mesh=ai_mesh,
             agent_registry=agents,task_service=foundation.task_service,
             memory=memory,bus=foundation.bus,team_missions=team_missions,
-            briefing=briefing,tool_planner=tool_planner
+            briefing=briefing,tool_planner=tool_planner,performance=performance,preferences=preferences
         )
-        chat=ChatService(conversations,orchestrator)
+        surface_service=GenerativeSurfaceService()
+        chat=ChatService(conversations,orchestrator,performance,surface_service)
         hq=HQService(
             agent_runs,foundation.tasks,approvals,foundation.events,
             missions=mission_repo,workspace=workspace,
@@ -527,7 +546,7 @@ async def start_product_runtime(data_dir:Path|None=None,*,model_provider=None):
             connector_service=connector_service,capabilities=capabilities
         )
 
-        return ProductRuntime(
+        runtime=ProductRuntime(
             foundation,models,router,ai_mesh,agents,tools,tool_executor,memory,chat,conversations,preferences,
             orchestrator,tool_planner,hq,policy,team_missions,briefing,workspace,approvals,tool_runs,
             connector_registry,connector_repo,connector_service,
@@ -535,8 +554,32 @@ async def start_product_runtime(data_dir:Path|None=None,*,model_provider=None):
             browser,windows,whatsapp,voice,skill_registry,skill_manager,skill_runner,skill_generator,
             capabilities,mcp,a2a,nodes,dispatcher,secret_store,google_oauth,
             project_repo,notes_repo,opportunities,agent_factory,agency_catalog,agent_router,goal_verifier,action_runtime,
-            autonomy_repo,autonomy
+            autonomy_repo,autonomy,performance
         )
+        # Warm only the primary conversational model and do it after startup so
+        # UI boot is never blocked. Ollama keeps it resident for subsequent turns.
+        warm=getattr(provider,'warm',None)
+        if model_provider is None and callable(warm):
+            async def _warm_primary():
+                try:
+                    await asyncio.to_thread(warm,router.local_model('chat'))
+                except Exception:
+                    pass
+            asyncio.create_task(_warm_primary())
+        async def _initial_connector_refresh():
+            await asyncio.sleep(.25)
+            if not cfg.local_only:
+                for connector_id in ('google.gmail','google.calendar','marketing.tasks'):
+                    try:
+                        await connector_service.sync_one(connector_id)
+                    except Exception:
+                        pass
+            try:
+                await watchers.check_all()
+            except Exception:
+                pass
+        asyncio.create_task(_initial_connector_refresh())
+        return runtime
     except Exception:
         await foundation.close()
         raise

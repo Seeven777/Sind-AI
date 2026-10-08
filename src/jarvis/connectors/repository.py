@@ -110,6 +110,15 @@ class ConnectorRepository:
             'SELECT * FROM connector_items ORDER BY received_at DESC LIMIT ?',(limit,)
         ).fetchall()]
 
+    def by_connector(self,connector_id,limit=50,item_type=None):
+        sql='SELECT * FROM connector_items WHERE connector_id=?'
+        params=[connector_id]
+        if item_type:
+            sql+=' AND item_type=?';params.append(item_type)
+        sql+=' ORDER BY priority DESC, COALESCE(occurred_at,received_at) ASC LIMIT ?'
+        params.append(limit)
+        return [self._item(r) for r in self.conn.execute(sql,params).fetchall()]
+
     def mark_read(self,item_id):
         self.conn.execute('UPDATE connector_items SET is_read=1 WHERE item_id=?',(item_id,))
         self.conn.commit()

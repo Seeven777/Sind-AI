@@ -1,9 +1,14 @@
 from __future__ import annotations
 
 import asyncio
+import difflib
 import json
+import os
 import random
 import re
+import shutil
+import subprocess
+import sys
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
@@ -68,8 +73,9 @@ class AutonomyService:
 
     The loop may explore the public web and learn without an explicit user order.
     It may propose self-improvements, but core changes are never silently applied.
-    Approved proposals are turned into a normal Jarvis mission for implementation
-    planning/review, preserving the project's observe/act/verify boundaries.
+    Approved proposals are prepared inside an isolated candidate workspace. The
+    candidate must pass validation before it can be promoted with a second explicit
+    human approval, preserving the project's observe/act/verify boundaries.
     """
 
     def __init__(
@@ -513,54 +519,113 @@ class AutonomyService:
     async def refresh_daily_briefing(self, *, force=False):
         location = str(self._pref("location", "São Paulo, SP"))
         today = datetime.now().astimezone().strftime("%Y-%m-%d")
-        weather_sources, weather_context = await self._web_bundle(
-            f"previsão do tempo hoje {location} {today}", fetch_limit=2
-        )
-        news_sources, news_context = await self._web_bundle(
-            f"principais notícias Brasil mundo hoje {today}", fetch_limit=3
-        )
+
+        # Weather is a first-class structured read. The morning experience must
+        # never depend on an LLM guessing numbers from search snippets.
+        weather_data = None
+        weather_sources = []
         weather_summary = "Previsão indisponível no momento."
+        try:
+            weather = await self.tool_executor.execute("weather.forecast", {"location": location})
+            if weather.success:
+                weather_data = weather.output
+                current = weather_data.get("current") or {}
+                daily = weather_data.get("today") or {}
+                units = weather_data.get("units") or {}
+                temp = current.get("temperature")
+                cond = current.get("condition") or "condição variável"
+                hi = daily.get("temperature_max")
+                lo = daily.get("temperature_min")
+                rain = daily.get("precipitation_probability_max")
+                bits=[]
+                if temp is not None: bits.append(f"Agora {round(float(temp))} graus")
+                bits.append(str(cond))
+                if hi is not None and lo is not None:
+                    bits.append(f"máxima de {round(float(hi))} e mínima de {round(float(lo))} graus")
+                if rain is not None:
+                    bits.append(f"chance de chuva de até {round(float(rain))}{units.get('probability','%')}")
+                weather_summary = ", ".join(bits).strip().capitalize()+"."
+                weather_sources=[{"title":"Open-Meteo","url":weather_data.get("source") or "https://open-meteo.com/"}]
+        except Exception:
+            weather_data = None
+
+        if weather_data is None:
+            try:
+                weather_sources, weather_context = await self._web_bundle(
+                    f"previsão do tempo hoje {location} {today}", fetch_limit=2
+                )
+                text, _ = await self._model_text(
+                    f"LOCAL: {location}\nDATA: {today}\n\nFONTES:\n{weather_context}",
+                    system=(
+                        "Extraia uma previsão do tempo curta e conservadora usando apenas as fontes. "
+                        "Não invente temperatura. Responda em uma única frase em português."
+                    ),
+                    capability="fast",
+                )
+                if text:
+                    weather_summary = " ".join(text.split())[:320]
+            except Exception:
+                if weather_sources:
+                    weather_summary = weather_sources[0].get("title") or weather_summary
+
+        # News keeps source identity in every item so the UI can materialise
+        # clickable cards instead of detached prose.
+        news_sources, news_context = await self._web_bundle(
+            f"principais notícias Brasil mundo hoje {today}", fetch_limit=6
+        )
         news_summary = []
         try:
-            text, _ = await self._model_text(
-                f"LOCAL: {location}\nDATA: {today}\n\nFONTES:\n{weather_context}",
-                system=(
-                    "Extraia uma previsão do tempo curta e conservadora usando apenas as fontes. "
-                    "Não invente temperatura. Responda em uma única frase em português."
-                ),
-                capability="fast",
+            indexed = "\n\n".join(
+                f"FONTE {i+1}: {x.get('page_title') or x.get('title')}\nURL: {x.get('url')}\n{x.get('content','')[:2600]}"
+                for i,x in enumerate(news_sources[:7])
             )
-            if text:
-                weather_summary = " ".join(text.split())[:320]
-        except Exception:
-            if weather_sources:
-                weather_summary = weather_sources[0].get("title") or weather_summary
-        try:
             text, _ = await self._model_text(
-                f"DATA: {today}\n\nFONTES:\n{news_context}",
+                f"DATA: {today}\n\nFONTES INDEXADAS:\n{indexed or news_context}",
                 system=(
-                    "Escolha até 5 notícias diferentes e relevantes usando apenas as fontes fornecidas. "
-                    "Responda SOMENTE JSON no formato {\"items\":[{\"title\":\"...\",\"summary\":\"...\"}]}"
+                    "Escolha até 7 notícias diferentes e relevantes usando somente as fontes fornecidas. "
+                    "Responda SOMENTE JSON no formato "
+                    '{"items":[{"source":1,"title":"...","summary":"..."}]}. '
+                    "source é o número da FONTE usada; não invente fatos nem fontes."
                 ),
                 capability="fast",
             )
             data = _extract_json(text)
-            news_summary = [
-                {"title": str(x.get("title") or "")[:220], "summary": str(x.get("summary") or "")[:420]}
-                for x in (data.get("items") or [])[:5] if isinstance(x, dict) and x.get("title")
-            ]
+            for x in (data.get("items") or [])[:7]:
+                if not isinstance(x,dict) or not x.get("title"):
+                    continue
+                try: idx=max(0,int(x.get("source") or 1)-1)
+                except Exception: idx=0
+                source=news_sources[idx] if idx < len(news_sources) else {}
+                news_summary.append({
+                    "title":str(x.get("title") or "")[:220],
+                    "summary":str(x.get("summary") or "")[:420],
+                    "url":source.get("url"),
+                    "source":str(source.get("page_title") or source.get("title") or "Fonte")[:160],
+                })
         except Exception:
+            news_summary=[]
+        if not news_summary:
             news_summary = [
-                {"title": str(x.get("title") or x.get("page_title") or "Notícia")[:220], "summary": ""}
-                for x in news_sources[:5]
+                {
+                    "title":str(x.get("page_title") or x.get("title") or "Notícia")[:220],
+                    "summary":self._short(x.get("content") or "",260),
+                    "url":x.get("url"),
+                    "source":str(x.get("page_title") or x.get("title") or "Fonte")[:160],
+                }
+                for x in news_sources[:7]
             ]
+
         improvements = self.repository.proposals("pending", 5)
         discoveries = self.repository.recent_discoveries(5)
         daily = {
             "date": today,
             "generated_at": _utcnow().isoformat(),
             "location": location,
-            "weather": {"summary": weather_summary, "sources": self._source_links(weather_sources)},
+            "weather": {
+                "summary": weather_summary,
+                "structured": weather_data,
+                "sources": self._source_links(weather_sources),
+            },
             "news": news_summary,
             "news_sources": self._source_links(news_sources),
             "discoveries": discoveries,
@@ -626,17 +691,21 @@ class AutonomyService:
             raise
 
     def _source_manifest(self):
-        src = self.project_root / "src" / "jarvis"
-        if not src.exists():
-            return "Código-fonte não localizado nesta instalação."
+        roots = [self.project_root / "src" / "jarvis", self.project_root / "tests"]
         rows = []
-        for path in sorted(src.rglob("*.py"))[:180]:
-            try:
-                text = path.read_text(encoding="utf-8", errors="replace")
-            except Exception:
+        allowed = {".py", ".js", ".css", ".html", ".json", ".md"}
+        for root in roots:
+            if not root.exists():
                 continue
-            rows.append(f"{path.relative_to(self.project_root)} — {len(text.splitlines())} linhas")
-        return "\n".join(rows)
+            for path in sorted(x for x in root.rglob("*") if x.is_file() and x.suffix.lower() in allowed):
+                try:
+                    text = path.read_text(encoding="utf-8", errors="replace")
+                except Exception:
+                    continue
+                rows.append(f"{path.relative_to(self.project_root)} — {len(text.splitlines())} linhas")
+                if len(rows) >= 240:
+                    return "\n".join(rows)
+        return "\n".join(rows) if rows else "Código-fonte não localizado nesta instalação."
 
     @staticmethod
     def _parse_proposal_headers(content):
@@ -662,6 +731,7 @@ class AutonomyService:
         if proposal["status"] not in {"pending", "failed"}:
             return proposal
         updated = self.repository.set_proposal_status(proposal_id, "approved")
+        self.repository.acknowledge_ref("improvement", proposal_id)
         await self._event("autonomy.improvement.approved", proposal_id=proposal_id, title=proposal["title"])
         return updated
 
@@ -670,6 +740,7 @@ class AutonomyService:
         if proposal is None:
             raise KeyError(proposal_id)
         updated = self.repository.set_proposal_status(proposal_id, "rejected")
+        self.repository.acknowledge_ref("improvement", proposal_id)
         await self._event("autonomy.improvement.rejected", proposal_id=proposal_id, title=proposal["title"])
         return updated
 
@@ -682,26 +753,321 @@ class AutonomyService:
         self.repository.set_proposal_status(pid, "implementing")
         await self._event("autonomy.implementation.started", proposal_id=pid, title=proposal["title"])
         try:
-            objective = (
-                "Prepare a implementação desta melhoria do próprio Jarvis como uma missão supervisionada. "
-                "Não declare mudanças que não tenham sido realmente feitas. Como o core não pode ser alterado silenciosamente, "
-                "a saída deve ser uma implementação/patch plenamente especificado, testes e validação para aplicação humana posterior.\n\n"
-                f"PROPOSTA:\n{proposal['title']}\n{proposal['rationale']}"
-            )
-            result = await self.missions.run(objective, title=f"Auto-melhoria: {proposal['title']}")
-            updated = self.repository.set_proposal_status(
-                pid, "prepared", {"mission_result": self._compact_mission_result(result)}
-            )
+            candidate = await self._prepare_candidate(proposal)
+            updated = self.repository.set_proposal_status(pid, "prepared", candidate)
             self.repository.add_notification(
-                kind="improvement_ready", level="important", title="Melhoria preparada para aplicação",
-                message=f"{proposal['title']} terminou a missão de implementação e revisão.", ref_type="improvement", ref_id=pid,
+                kind="improvement_ready", level="important", title="Atualização candidata pronta",
+                message=f"{proposal['title']} foi implementada em sandbox e validada. Aguarda sua aprovação final.",
+                ref_type="improvement", ref_id=pid,
             )
-            await self._event("autonomy.implementation.prepared", proposal_id=pid, title=proposal["title"])
+            await self._event(
+                "autonomy.implementation.prepared", proposal_id=pid, title=proposal["title"],
+                changed_files=candidate.get("changed_files", []), tests_passed=candidate.get("tests_passed", False),
+            )
             return {"status": "prepared", "proposal": updated}
         except Exception as exc:
             self.repository.set_proposal_status(pid, "failed", {"implementation_error": str(exc)})
             await self._event("autonomy.implementation.failed", "error", proposal_id=pid, error=str(exc))
             return {"status": "failed", "proposal_id": pid, "error": str(exc)}
+
+    def _evolution_root(self):
+        root = Path(self.foundation.config.data_dir) / "evolution"
+        root.mkdir(parents=True, exist_ok=True)
+        return root
+
+    @staticmethod
+    def _safe_candidate_path(value):
+        raw = str(value or "").replace("\\", "/").strip()
+        if not raw or raw.startswith("/") or raw.startswith("./") or ".." in Path(raw).parts:
+            return None
+        allowed_prefixes = ("src/jarvis/", "tests/")
+        allowed_suffixes = (".py", ".js", ".css", ".html", ".json", ".md")
+        if not raw.startswith(allowed_prefixes) or not raw.lower().endswith(allowed_suffixes):
+            return None
+        return raw
+
+    def _proposal_targets(self, proposal, limit=3):
+        text = "\n".join([
+            str(proposal.get("title") or ""), str(proposal.get("summary") or ""),
+            str(proposal.get("rationale") or ""), json.dumps(proposal.get("plan") or [], ensure_ascii=False),
+        ])
+        matches = re.findall(
+            r"(?:(?:src[\\/]+jarvis|tests)[\\/][A-Za-z0-9_.\\/-]+\.(?:py|js|css|html|json|md))",
+            text, flags=re.I,
+        )
+        out = []
+        for item in matches:
+            safe = self._safe_candidate_path(item)
+            if safe and safe not in out and (self.project_root / safe).is_file():
+                out.append(safe)
+            if len(out) >= limit:
+                break
+        return out
+
+    async def _choose_candidate_targets(self, proposal):
+        targets = self._proposal_targets(proposal)
+        if targets:
+            return targets
+        manifest = self._source_manifest()[:9500]
+        prompt = (
+            "Escolha de 1 a 3 arquivos existentes para implementar ESTA melhoria do Jarvis com a menor mudança segura possível. "
+            "Use apenas arquivos dentro de src/jarvis/ ou tests/. Não crie arquivos ainda. "
+            "Responda SOMENTE JSON: {\"files\":[\"src/jarvis/...\"]}.\n\n"
+            f"PROPOSTA:\n{proposal.get('title')}\n{proposal.get('rationale')}\n\nARQUIVOS DISPONÍVEIS:\n{manifest}"
+        )
+        text, _ = await self._model_text(
+            prompt, system="Você seleciona o menor conjunto de arquivos necessário para uma alteração segura e testável.", capability="coding"
+        )
+        data = _extract_json(text)
+        out = []
+        for item in data.get("files") or []:
+            safe = self._safe_candidate_path(item)
+            if safe and safe not in out and (self.project_root / safe).is_file():
+                out.append(safe)
+            if len(out) >= 3:
+                break
+        if not out:
+            raise RuntimeError("Não foi possível selecionar arquivos seguros para esta melhoria.")
+        return out
+
+    @staticmethod
+    def _copy_project_for_candidate(source: Path, target: Path):
+        if target.exists():
+            shutil.rmtree(target, ignore_errors=True)
+        ignore = shutil.ignore_patterns(
+            ".git", ".venv", "venv", "node_modules", "__pycache__", ".pytest_cache", ".mypy_cache",
+            "*.zip", "*.pyc", "artifacts", "dist", "build"
+        )
+        shutil.copytree(source, target, ignore=ignore)
+
+    def _candidate_context(self, root: Path, targets):
+        blocks = []
+        for rel in targets:
+            path = root / rel
+            text = path.read_text(encoding="utf-8", errors="replace")
+            if len(text) > 24000:
+                text = text[:24000] + "\n# ...conteúdo truncado para o modelo..."
+            blocks.append(f"FILE: {rel}\n```\n{text}\n```")
+        return "\n\n".join(blocks)
+
+    async def _generate_candidate_changes(self, proposal, candidate_root: Path, targets, failure_context=""):
+        developer = self.agents.runtime("engineering.developer")
+        objective = (
+            "Implemente uma melhoria do próprio Jarvis DENTRO DE UM SANDBOX. Você não está alterando produção. "
+            "Faça a menor mudança possível, preserve compatibilidade e não invente APIs inexistentes. "
+            "Retorne SOMENTE JSON válido, sem markdown, no formato: "
+            '{"summary":"...","changes":[{"path":"src/jarvis/...","replacements":[{"old":"TRECHO EXATO EXISTENTE","new":"NOVO TRECHO"}],"reason":"..."}]}. '
+            "Só altere os arquivos fornecidos. Cada old deve existir EXATAMENTE uma vez no arquivo atual. "
+            "Prefira blocos pequenos e específicos em vez de reescrever arquivos inteiros.\n\n"
+            f"PROPOSTA:\n{proposal.get('title')}\n{proposal.get('summary')}\n{proposal.get('rationale')}\n\n"
+            f"ARQUIVOS:\n{self._candidate_context(candidate_root, targets)}"
+        )
+        if failure_context:
+            objective += (
+                "\n\nA PRIMEIRA TENTATIVA FALHOU NOS TESTES. Corrija somente o necessário. "
+                "Use o estado atual dos arquivos acima e considere este diagnóstico:\n" + failure_context[-7000:]
+            )
+        result = await developer.run(
+            objective, task_id=str((proposal.get("metadata") or {}).get("task_id") or proposal["proposal_id"]),
+            context="Laboratório de autoevolução: toda mudança fica isolada até aprovação humana final.",
+        )
+        data = _extract_json(result.content)
+        changes = data.get("changes") or []
+        if not isinstance(changes, list) or not changes:
+            raise RuntimeError("Developer não produziu mudanças estruturadas para o sandbox.")
+        target_set = set(targets)
+        normalized = []
+        for item in changes[:3]:
+            if not isinstance(item, dict):
+                continue
+            rel = self._safe_candidate_path(item.get("path"))
+            replacements = item.get("replacements")
+            if not rel or rel not in target_set or not isinstance(replacements, list):
+                continue
+            clean = []
+            for repl in replacements[:8]:
+                if not isinstance(repl, dict):
+                    continue
+                old_text, new_text = repl.get("old"), repl.get("new")
+                if not isinstance(old_text, str) or not isinstance(new_text, str) or not old_text:
+                    continue
+                if len(old_text) + len(new_text) > 50000:
+                    raise RuntimeError(f"Patch grande demais para promoção automática: {rel}")
+                clean.append({"old": old_text, "new": new_text})
+            if clean:
+                normalized.append({"path": rel, "replacements": clean, "reason": str(item.get("reason") or "")[:1000]})
+        if not normalized:
+            raise RuntimeError("Nenhuma mudança segura foi produzida para os arquivos selecionados.")
+        return {"summary": str(data.get("summary") or proposal.get("summary") or "")[:2000], "changes": normalized}
+
+    @staticmethod
+    def _apply_candidate_changes(root: Path, changes):
+        changed = []
+        for item in changes:
+            rel = item["path"]
+            target = root / rel
+            if not target.is_file():
+                raise RuntimeError(f"Arquivo do patch não existe: {rel}")
+            text = target.read_text(encoding="utf-8")
+            for repl in item.get("replacements") or []:
+                old_text, new_text = repl["old"], repl["new"]
+                count = text.count(old_text)
+                if count != 1:
+                    raise RuntimeError(f"Patch ambíguo em {rel}: trecho esperado {count} vez(es), deveria ser 1.")
+                text = text.replace(old_text, new_text, 1)
+            target.write_text(text, encoding="utf-8")
+            if rel not in changed:
+                changed.append(rel)
+        return changed
+
+    @staticmethod
+    def _run_validation(root: Path, timeout=240):
+        commands = [
+            [sys.executable, "-m", "compileall", "-q", "src/jarvis"],
+            [sys.executable, "-m", "pytest", "-q"],
+        ]
+        logs = []
+        for cmd in commands:
+            try:
+                cp = subprocess.run(
+                    cmd, cwd=str(root), capture_output=True, text=True, timeout=timeout,
+                    env={**os.environ, "PYTHONUTF8": "1"},
+                )
+            except subprocess.TimeoutExpired as exc:
+                logs.append(f"$ {' '.join(cmd)}\nTIMEOUT após {timeout}s\n{exc.stdout or ''}\n{exc.stderr or ''}")
+                return False, "\n\n".join(logs)[-16000:]
+            logs.append(f"$ {' '.join(cmd)}\nexit={cp.returncode}\n{cp.stdout}\n{cp.stderr}")
+            if cp.returncode != 0:
+                return False, "\n\n".join(logs)[-16000:]
+        return True, "\n\n".join(logs)[-16000:]
+
+    def _candidate_diff(self, candidate_root: Path, changed_files):
+        chunks = []
+        for rel in changed_files:
+            old = (self.project_root / rel).read_text(encoding="utf-8", errors="replace").splitlines(True)
+            new = (candidate_root / rel).read_text(encoding="utf-8", errors="replace").splitlines(True)
+            chunks.extend(difflib.unified_diff(old, new, fromfile=f"a/{rel}", tofile=f"b/{rel}"))
+        return "".join(chunks)
+
+    async def _prepare_candidate(self, proposal):
+        pid = proposal["proposal_id"]
+        lab = self._evolution_root() / pid
+        candidate_root = lab / "candidate"
+        lab.mkdir(parents=True, exist_ok=True)
+        targets = await self._choose_candidate_targets(proposal)
+        self._copy_project_for_candidate(self.project_root, candidate_root)
+        generated = await self._generate_candidate_changes(proposal, candidate_root, targets)
+        changed_files = self._apply_candidate_changes(candidate_root, generated["changes"])
+        passed, output = await asyncio.to_thread(self._run_validation, candidate_root)
+        repaired = False
+        if not passed:
+            repaired = True
+            generated = await self._generate_candidate_changes(proposal, candidate_root, targets, output)
+            changed_files = self._apply_candidate_changes(candidate_root, generated["changes"])
+            passed, output = await asyncio.to_thread(self._run_validation, candidate_root)
+        if not passed:
+            raise RuntimeError("A melhoria candidata não passou na validação isolada.\n" + output[-5000:])
+        diff = self._candidate_diff(candidate_root, changed_files)
+        if not diff.strip():
+            raise RuntimeError("O sandbox terminou sem diferença real em relação ao projeto atual.")
+        diff_path = lab / "candidate.diff"
+        diff_path.write_text(diff, encoding="utf-8")
+        return {
+            "candidate_dir": str(candidate_root), "candidate_diff": str(diff_path),
+            "candidate_summary": generated.get("summary", ""), "changed_files": changed_files,
+            "tests_passed": True, "validation_output": output[-12000:],
+            "repair_attempted": repaired, "prepared_at": _utcnow().isoformat(),
+        }
+
+    def candidate_review(self, proposal_id):
+        proposal = self.repository.get_proposal(proposal_id)
+        if proposal is None:
+            raise KeyError(proposal_id)
+        meta = proposal.get("metadata") or {}
+        diff = ""
+        path = Path(meta.get("candidate_diff") or "")
+        if path.is_file():
+            diff = path.read_text(encoding="utf-8", errors="replace")
+        return {
+            "proposal_id": proposal_id, "title": proposal.get("title"), "status": proposal.get("status"),
+            "risk": proposal.get("risk"), "summary": proposal.get("summary"),
+            "candidate_summary": meta.get("candidate_summary"), "changed_files": meta.get("changed_files") or [],
+            "tests_passed": bool(meta.get("tests_passed")), "repair_attempted": bool(meta.get("repair_attempted")),
+            "validation_output": str(meta.get("validation_output") or "")[-5000:], "diff": diff[:50000],
+        }
+
+    async def promote_improvement(self, proposal_id):
+        proposal = self.repository.get_proposal(proposal_id)
+        if proposal is None:
+            raise KeyError(proposal_id)
+        if proposal.get("status") != "prepared":
+            raise RuntimeError("A melhoria precisa estar preparada e validada antes da promoção.")
+        meta = proposal.get("metadata") or {}
+        if not meta.get("tests_passed"):
+            raise RuntimeError("A candidata não possui validação verde.")
+        candidate_root = Path(meta.get("candidate_dir") or "")
+        changed_files = [self._safe_candidate_path(x) for x in (meta.get("changed_files") or [])]
+        changed_files = [x for x in changed_files if x]
+        if not candidate_root.is_dir() or not changed_files:
+            raise RuntimeError("Sandbox da melhoria não está disponível.")
+        backup_root = self._evolution_root() / "backups" / proposal_id
+        backup_root.mkdir(parents=True, exist_ok=True)
+        copied = []
+        try:
+            for rel in changed_files:
+                src = candidate_root / rel
+                dst = self.project_root / rel
+                if not src.is_file() or not dst.is_file():
+                    raise RuntimeError(f"Arquivo candidato inválido: {rel}")
+                backup = backup_root / rel
+                backup.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(dst, backup)
+                shutil.copy2(src, dst)
+                copied.append(rel)
+            passed, output = await asyncio.to_thread(self._run_validation, self.project_root)
+            if not passed:
+                raise RuntimeError("Validação pós-promoção falhou.\n" + output[-5000:])
+            updated = self.repository.set_proposal_status(
+                proposal_id, "promoted", {
+                    "promoted_at": _utcnow().isoformat(), "backup_dir": str(backup_root),
+                    "post_promotion_validation": output[-8000:], "restart_required": True,
+                },
+            )
+            self.repository.acknowledge_ref("improvement", proposal_id)
+            self.repository.add_notification(
+                kind="improvement_promoted", level="important", title="Jarvis evoluiu",
+                message=f"{proposal.get('title')} foi instalada e validada. Reinicie o Jarvis para ativar o novo código.",
+                ref_type="improvement", ref_id=proposal_id,
+            )
+            await self._event("autonomy.improvement.promoted", proposal_id=proposal_id, changed_files=copied)
+            return updated
+        except Exception:
+            for rel in copied:
+                backup = backup_root / rel
+                if backup.is_file():
+                    shutil.copy2(backup, self.project_root / rel)
+            raise
+
+    async def rollback_improvement(self, proposal_id):
+        proposal = self.repository.get_proposal(proposal_id)
+        if proposal is None:
+            raise KeyError(proposal_id)
+        meta = proposal.get("metadata") or {}
+        backup_root = Path(meta.get("backup_dir") or "")
+        changed_files = [self._safe_candidate_path(x) for x in (meta.get("changed_files") or [])]
+        changed_files = [x for x in changed_files if x]
+        if proposal.get("status") != "promoted" or not backup_root.is_dir():
+            raise RuntimeError("Não há uma promoção ativa com backup disponível para rollback.")
+        for rel in changed_files:
+            backup = backup_root / rel
+            if backup.is_file():
+                shutil.copy2(backup, self.project_root / rel)
+        passed, output = await asyncio.to_thread(self._run_validation, self.project_root)
+        updated = self.repository.set_proposal_status(
+            proposal_id, "rolled_back", {"rolled_back_at": _utcnow().isoformat(), "rollback_validation": output[-8000:], "rollback_valid": passed}
+        )
+        await self._event("autonomy.improvement.rolled_back", "warning", proposal_id=proposal_id, validation=passed)
+        return updated
 
     @staticmethod
     def _compact_mission_result(result):

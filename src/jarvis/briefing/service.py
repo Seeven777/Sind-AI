@@ -32,6 +32,7 @@ class BriefingService:
 
         unread=[]
         upcoming=[]
+        marketing_tasks=[]
         connector_counts={'total':0,'unread':0,'events':0}
         sources=[]
         if self.connector_repository:
@@ -40,6 +41,10 @@ class BriefingService:
             upcoming=self.connector_repository.upcoming_events(
                 datetime.now(timezone.utc).isoformat(),limit=8
             )
+            try:
+                marketing_tasks=self.connector_repository.by_connector('marketing.tasks',limit=20,item_type='work_task')
+            except Exception:
+                marketing_tasks=[]
             sources=self.connector_repository.sources()
 
         priorities=[]
@@ -89,11 +94,13 @@ class BriefingService:
                 'inbox_unread':connector_counts['unread'],
                 'upcoming_events':len(upcoming),
                 'connector_sources':len(sources),
+                'marketing_tasks':len(marketing_tasks),
             },
             'priorities':priorities[:7],
             'upcoming_events':upcoming[:5],
             'recent_inbox':unread[:8],
             'recent_missions':missions,
+            'marketing_tasks':marketing_tasks[:12],
             'connectors':{
                 'health':self.connector_service.health() if self.connector_service else {},
                 'sources':sources,
@@ -102,6 +109,56 @@ class BriefingService:
             'watchers':self.watcher_repository.enabled() if self.watcher_repository else [],
             'models':self.model_registry.health(),
             'autonomy':autonomy,
+        }
+
+    def morning_sequence(self):
+        snap=self.snapshot()
+        daily=(snap.get('autonomy') or {}).get('daily') or {}
+        weather=daily.get('weather') or {}
+        structured=weather.get('structured') or {}
+        current=structured.get('current') or {}
+        today=structured.get('today') or {}
+        units=structured.get('units') or {}
+        hourly=structured.get('hourly') or []
+        weather_payload={
+            'location':structured.get('location') or daily.get('location') or 'Local configurado',
+            'summary':weather.get('summary') or 'Previsão indisponível.',
+            'current':current,'today':today,'hourly':hourly[:8],'units':units,
+            'sources':weather.get('sources') or [],
+        }
+        news=[]
+        for i,item in enumerate((daily.get('news') or [])[:8]):
+            if not isinstance(item,dict):continue
+            news.append({
+                'id':f'news-{i+1}',
+                'title':str(item.get('title') or 'Notícia')[:220],
+                'summary':str(item.get('summary') or '')[:520],
+                'url':item.get('url'),
+                'source':item.get('source') or '',
+            })
+        tasks=[]
+        for i,item in enumerate((snap.get('marketing_tasks') or [])[:10]):
+            meta=item.get('metadata') or {}
+            tasks.append({
+                'id':item.get('item_id') or f'task-{i+1}',
+                'title':item.get('title') or 'Tarefa',
+                'detail':item.get('content') or '',
+                'status':meta.get('status') or '',
+                'due_at':meta.get('due_at') or item.get('occurred_at'),
+                'priority':item.get('priority') or 50,
+                'url':meta.get('app_url') or item.get('source_uri'),
+            })
+        improvements=(snap.get('autonomy') or {}).get('improvements') or []
+        return {
+            'schema':'jarvis.morning.v1',
+            'generated_at':datetime.now(timezone.utc).isoformat(),
+            'greeting':'Bom dia, senhor.',
+            'weather':weather_payload,
+            'news':news,
+            'tasks':tasks,
+            'improvements_pending':len([x for x in improvements if x.get('status')=='pending']),
+            'closing':'O que faremos hoje?',
+            'sources':snap.get('connectors',{}).get('sources',[]),
         }
 
     def text(self, snap=None):

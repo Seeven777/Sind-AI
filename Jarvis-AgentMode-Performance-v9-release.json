@@ -1,0 +1,18 @@
+{
+  "release": "AgentMode-Performance-v9",
+  "version": "1.0.0rc8",
+  "focus": [
+    "true-response-streaming",
+    "ollama-warm-keepalive",
+    "interactive-priority",
+    "adaptive-ui-rendering",
+    "http-cache-compression",
+    "latency-observability"
+  ],
+  "remote_access": "ngrok-v8-preserved",
+  "status": "validated",
+  "tests": "130/130 passed",
+  "python_compile": "passed",
+  "javascript_syntax": "passed",
+  "release_self_test": "passed"
+}

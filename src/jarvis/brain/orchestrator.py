@@ -21,7 +21,7 @@ Ações de escrita exigem aprovação conforme política."""
 class JarvisOrchestrator:
     def __init__(
         self,*,intent_router,model_registry,model_router,agent_registry,task_service,
-        memory,bus,team_missions=None,briefing=None,tool_planner=None,ai_mesh=None
+        memory,bus,team_missions=None,briefing=None,tool_planner=None,ai_mesh=None,performance=None,preferences=None
     ):
         self.intent_router=intent_router
         self.model_registry=model_registry
@@ -34,6 +34,8 @@ class JarvisOrchestrator:
         self.briefing=briefing
         self.tool_planner=tool_planner
         self.ai_mesh=ai_mesh
+        self.performance=performance
+        self.preferences=preferences
 
     async def handle(self,text,*,conversation_history=None,mode='auto'):
         stripped=text.strip()
@@ -85,6 +87,16 @@ class JarvisOrchestrator:
             payload={'intent':intent.name,'confidence':intent.confidence,'reason':intent.reason}
         ))
 
+        if intent.name=='morning_sequence' and self.briefing:
+            # The browser/mobile client owns the cinematic sequence. Returning a
+            # deterministic UI action prevents the chat model from hallucinating
+            # a textual "briefing" instead of materializing weather/news/tasks.
+            return {
+                'kind':'morning_sequence','agent':'jarvis',
+                'content':'Briefing interativo do dia.',
+                'ui_action':'morning_sequence',
+                'metadata':{'force':True},
+            }
         if intent.name=='briefing' and self.briefing:
             await self._sync_connectors_for_personal_context()
             snap=self.briefing.snapshot()
@@ -104,8 +116,9 @@ class JarvisOrchestrator:
             objective=self._with_history(text, conversation_history or []) if conversation_history else text
             return await self.team_missions.run(objective,title='Missão delegada pelo Jarvis')
         if intent.name=='research':
+            objective=self._live_research_objective(text)
             return await self._delegate_agent(
-                'research.general','Missão de pesquisa',text,min_chars=40,conversation_history=conversation_history
+                'research.general','Missão de pesquisa',objective,min_chars=40,conversation_history=conversation_history
             )
         if intent.name=='developer':
             return await self._delegate_agent(
@@ -118,9 +131,10 @@ class JarvisOrchestrator:
         if intent.name.startswith('operator_'):
             return await self._delegate_operator(intent.name,text)
 
-        route=self.model_router.route(capability='chat',privacy='local')
+        chat_capability=self._chat_capability(text, explicit_mode)
+        route=self.model_router.route(capability=chat_capability,privacy='local')
         provider=self.model_registry.get(route.provider)
-        memories=self.memory.context(text,limit=4)
+        memories=self.memory.context(text,limit=3)
         block=''
         if memories:
             block='\n\nContexto persistente disponível:\n'+'\n'.join(f"- {x['content']}" for x in memories)
@@ -133,6 +147,104 @@ class JarvisOrchestrator:
         )
         return {'kind':'chat','content':response.content,'provider':response.provider,'model':response.model,'mode':explicit_mode}
 
+
+    @staticmethod
+    def _chat_capability(text, mode='auto'):
+        """Conservative fast-path selection.
+
+        AUTO keeps the capable model for substantive work and only uses the
+        lightweight role model for conversational acknowledgements/greetings.
+        The user can always force the fast model with mode=fast.
+        """
+        mode=str(mode or 'auto').lower().strip()
+        if mode=='fast':
+            return 'fast'
+        lowered=' '.join(str(text or '').lower().split())
+        quick=(
+            'oi','olá','ola','bom dia','boa tarde','boa noite','obrigado','obrigada',
+            'valeu','tudo bem','como você está','como voce esta','quem é você','quem e voce'
+        )
+        if len(lowered)<=96 and any(lowered==x or lowered.startswith(x+' ') for x in quick):
+            return 'fast'
+        return 'chat'
+
+    async def handle_stream(self,text,*,conversation_history=None,mode='auto',on_delta=None,on_status=None):
+        """Streaming path for direct chat, transparent fallback for missions/tools."""
+        stripped=str(text or '').strip()
+        explicit_mode=str(mode or 'auto').lower().strip()
+        lowered=stripped.lower()
+        if lowered.startswith('/hermes') or lowered.startswith('/deep') or explicit_mode in {'hermes','deep'}:
+            if on_status:on_status('reasoning')
+            result=await self.handle(text,conversation_history=conversation_history,mode=mode)
+            if on_delta:on_delta(result.get('content') or '')
+            return result
+
+        intent=self.intent_router.classify(text)
+        if intent.name!='chat':
+            if on_status:on_status('briefing' if intent.name=='morning_sequence' else intent.name)
+            result=await self.handle(text,conversation_history=conversation_history,mode=mode)
+            # Interactive UI actions must not flash a prose answer before the
+            # surface sequence starts. Normal non-chat routes still stream text.
+            if on_delta and intent.name!='morning_sequence':
+                on_delta(result.get('content') or '')
+            return result
+
+        await self.bus.publish(Event(
+            'jarvis.intent',payload={'intent':intent.name,'confidence':intent.confidence,'reason':intent.reason}
+        ))
+        capability=self._chat_capability(text,explicit_mode)
+        route=self.model_router.route(capability=capability,privacy='local')
+        provider=self.model_registry.get(route.provider)
+        memories=self.memory.context(text,limit=3)
+        block=''
+        if memories:
+            block='\n\nContexto persistente disponível:\n'+'\n'.join(f"- {x['content']}" for x in memories)
+        wire=[]
+        if conversation_history:
+            wire.extend(ChatMessage(x['role'],x['content']) for x in conversation_history[-16:])
+        wire.append(ChatMessage('user',text))
+        system=JARVIS_SYSTEM+self._runtime_context()+block
+        if on_status:on_status('generating')
+        stream_method=getattr(provider,'chat_stream',None)
+        if callable(stream_method):
+            response=await asyncio.to_thread(
+                stream_method,wire,model=route.model,system=system,on_chunk=on_delta
+            )
+        else:
+            response=await asyncio.to_thread(provider.chat,wire,model=route.model,system=system)
+            if on_delta:on_delta(response.content)
+        return {
+            'kind':'chat','content':response.content,'provider':response.provider,
+            'model':response.model,'mode':explicit_mode,
+            'metadata':{**(response.metadata or {}),'route_reason':route.reason,'capability':capability},
+        }
+
+    def _live_research_objective(self, text):
+        raw=str(text or '').strip()
+        lowered=raw.lower()
+        weather = any(x in lowered for x in ('clima','tempo','temperatura','chuva','meteorologia'))
+        news = any(x in lowered for x in ('notícia','noticia','notícias','noticias','manchete','manchetes','news'))
+        if weather:
+            location='São Paulo, SP'
+            try:
+                if self.preferences is not None:
+                    location=str(self.preferences.get('autonomy.location', location) or location).strip()
+            except Exception:
+                pass
+            return (
+                f"Obtenha a previsão meteorológica atual e de hoje. LOCAL PADRÃO: {location}. "
+                "Se o usuário tiver indicado outro local na solicitação, priorize o local indicado por ele. "
+                "Use pesquisa web real; extraia temperatura, chance/volume de chuva quando houver, umidade e vento. "
+                "Não explique limitações se web.search/web.fetch estiverem disponíveis. Entregue dados objetivos e fontes. "
+                f"SOLICITAÇÃO ORIGINAL: {raw}"
+            )
+        if news:
+            return (
+                "Pesquise na web as notícias mais recentes relevantes para a solicitação. "
+                "Use fontes reais, informe títulos e URLs, diferencie fatos de inferências e não use conhecimento desatualizado como notícia atual. "
+                f"SOLICITAÇÃO ORIGINAL: {raw}"
+            )
+        return raw
 
     async def _sync_connectors_for_personal_context(self):
         service=getattr(self.briefing,'connector_service',None) if self.briefing else None
@@ -147,9 +259,24 @@ class JarvisOrchestrator:
             ))
             return []
 
+    def _performance_context(self):
+        if self.performance is None:
+            return ''
+        try:
+            chat=self.performance.snapshot(limit=40).get('chat',{})
+            if not chat.get('samples'):
+                return ''
+            return (
+                f"\nDESEMPENHO RECENTE: TTFT mediano={chat.get('median_ttft_ms')} ms; "
+                f"tempo total mediano={chat.get('median_total_ms')} ms; amostras={chat.get('samples')}."
+                " Use isso somente para autoavaliação de latência, não como prova de qualidade."
+            )
+        except Exception:
+            return ''
+
     def _runtime_context(self):
         if not self.briefing:
-            return ''
+            return self._performance_context()
         try:
             snap=self.briefing.snapshot()
             sources=snap.get('connectors',{}).get('sources',[])
@@ -159,7 +286,7 @@ class JarvisOrchestrator:
                 try:tool_ids=set(self.tool_planner.tool_registry.list_ids()) if self.tool_planner else set()
                 except Exception:pass
                 internet='disponível' if {'web.search','web.fetch'}.issubset(tool_ids) else 'indisponível'
-                return f'\n\nESTADO REAL DE CONECTORES: nenhum connector registrado.\nACESSO À INTERNET (leitura/pesquisa): {internet}.'
+                return f'\n\nESTADO REAL DE CONECTORES: nenhum connector registrado.\nACESSO À INTERNET (leitura/pesquisa): {internet}.' + self._performance_context()
             rows=[]
             for source in sources:
                 rows.append(
@@ -181,9 +308,10 @@ class JarvisOrchestrator:
                 f"\nACESSO À INTERNET (leitura/pesquisa): {internet}."
                 f"\nModelos locais por capacidade: {model_profile}."
                 '\nUse somente dados efetivamente sincronizados ao falar sobre fontes pessoais. Para dados públicos atuais, delegue Research.'
+                + self._performance_context()
             )
         except Exception:
-            return '\n\nESTADO REAL DE CONECTORES: não foi possível consultar o snapshot agora.'
+            return '\n\nESTADO REAL DE CONECTORES: não foi possível consultar o snapshot agora.' + self._performance_context()
 
     @staticmethod
     def _with_history(text, history):

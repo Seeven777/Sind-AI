@@ -7,9 +7,10 @@ from .ics_calendar import ICSCalendarConnector
 __all__=[
     'Connector','ConnectorItem','ConnectorRegistry','SyncResult',
     'ConnectorRepository','ConnectorService','LocalInboxConnector','ICSCalendarConnector'
-    ,'GoogleOAuthClient','GoogleTokenStore','GoogleAuthError','GmailConnector','GoogleCalendarConnector'
+    ,'GoogleOAuthClient','GoogleTokenStore','GoogleAuthError','GmailConnector','GoogleCalendarConnector','MarketingTasksConnector'
 ]
 
 from .google_oauth import GoogleOAuthClient,GoogleTokenStore,GoogleAuthError
 from .gmail import GmailConnector
 from .google_calendar import GoogleCalendarConnector
+from .marketing_tasks import MarketingTasksConnector

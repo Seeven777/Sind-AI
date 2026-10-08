@@ -11,6 +11,6 @@ def test_default_workspace_and_briefing(tmp_path:Path):
             b=rt.briefing.snapshot()
             assert b["schema"]=="jarvis.briefing.v2"
             assert b["connectors"]["counts"]["total"]==0
-            assert len(b["connectors"]["sources"])==4
+            assert len(b["connectors"]["sources"])==5
         finally: await rt.close()
     asyncio.run(run())

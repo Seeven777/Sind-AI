@@ -19,12 +19,14 @@ class OllamaProvider:
         timeout_seconds=180,
         context_tokens=8192,
         temperature=.25,
+        keep_alive="30m",
     ):
         self.base_url = base_url.rstrip("/")
         self.default_model = default_model
         self.timeout_seconds = timeout_seconds
         self.context_tokens = context_tokens
         self.temperature = temperature
+        self.keep_alive = keep_alive
         self._show_cache: dict[str, dict] = {}
 
     def _request(self, path, payload=None):
@@ -104,6 +106,7 @@ class OllamaProvider:
             "model": selected,
             "messages": wire,
             "stream": False,
+            "keep_alive": self.keep_alive,
             "options": {
                 "num_ctx": self.context_tokens,
                 "temperature": self.temperature,
@@ -201,6 +204,83 @@ class OllamaProvider:
             self.provider_id,
             metadata,
         )
+
+
+    def warm(self, model: str | None = None) -> dict:
+        """Load a model in Ollama without generating user-visible text."""
+        selected = model or self.default_model
+        payload = {
+            "model": selected,
+            "prompt": "",
+            "stream": False,
+            "keep_alive": self.keep_alive,
+        }
+        raw = self._request("/api/generate", payload)
+        return {"status": "warm", "model": selected, "done": bool(raw.get("done", True))}
+
+    def chat_stream(self, messages: Sequence[ChatMessage], *, model=None, system=None, on_chunk=None):
+        """Stream Ollama NDJSON while preserving the same safety contract as chat().
+
+        ``on_chunk`` receives only final-answer text deltas. Thinking/reasoning
+        fields are never surfaced.
+        """
+        selected = model or self.default_model
+        wire = []
+        if system:
+            wire.append({"role": "system", "content": system})
+        wire += [{"role": m.role, "content": m.content} for m in messages]
+        disable_thinking = self._should_disable_thinking(selected)
+        payload = {
+            "model": selected,
+            "messages": wire,
+            "stream": True,
+            "keep_alive": self.keep_alive,
+            "options": {
+                "num_ctx": self.context_tokens,
+                "temperature": self.temperature,
+                "num_predict": 1024,
+            },
+        }
+        if disable_thinking:
+            payload["think"] = False
+        data = json.dumps(payload).encode("utf-8")
+        req = urllib.request.Request(
+            self.base_url + "/api/chat", data=data,
+            headers={"Content-Type": "application/json"},
+        )
+        parts=[]
+        final_raw={}
+        try:
+            with urllib.request.urlopen(req, timeout=self.timeout_seconds) as response:
+                for raw_line in response:
+                    line=raw_line.decode("utf-8", errors="replace").strip()
+                    if not line:
+                        continue
+                    item=json.loads(line)
+                    final_raw=item
+                    message=item.get("message") or {}
+                    delta=str(message.get("content") or "")
+                    if delta:
+                        parts.append(delta)
+                        if on_chunk is not None:
+                            on_chunk(delta)
+        except urllib.error.HTTPError as exc:
+            detail=exc.read().decode("utf-8", errors="replace")
+            raise ModelUnavailableError(f"Ollama respondeu HTTP {exc.code} em /api/chat: {detail}") from exc
+        except (urllib.error.URLError, TimeoutError, OSError, json.JSONDecodeError) as exc:
+            raise ModelUnavailableError(f"Ollama indisponível em {self.base_url}: {exc}") from exc
+        content=''.join(parts).strip()
+        if not content:
+            # Keep the existing controlled recovery semantics.
+            return self.chat(messages, model=selected, system=system)
+        metadata={
+            key: final_raw.get(key) for key in (
+                "done_reason", "total_duration", "load_duration",
+                "prompt_eval_count", "eval_count"
+            )
+        }
+        metadata.update({"streamed": True, "think_disabled": disable_thinking})
+        return ModelResponse(content, str(final_raw.get("model") or selected), self.provider_id, metadata)
 
     def probe(self, model: str | None = None) -> dict:
         selected = model or self.default_model

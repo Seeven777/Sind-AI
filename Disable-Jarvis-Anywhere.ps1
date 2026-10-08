@@ -1,16 +1,14 @@
-$ErrorActionPreference = 'Stop'
-function Find-Tailscale {
-    $cmd = Get-Command tailscale.exe -ErrorAction SilentlyContinue
-    if ($cmd) { return $cmd.Source }
-    foreach ($candidate in @("$env:ProgramFiles\Tailscale\tailscale.exe", "$env:LOCALAPPDATA\Tailscale\tailscale.exe")) {
-        if (Test-Path $candidate) { return $candidate }
-    }
-    return $null
+﻿$ErrorActionPreference = 'SilentlyContinue'
+[Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false)
+$path = Join-Path $env:LOCALAPPDATA 'JarvisNext\remote\public-access.json'
+if (Test-Path $path) {
+    try {
+        $x = Get-Content $path -Raw | ConvertFrom-Json
+        if ($x.process_id) {
+            $p = Get-Process -Id ([int]$x.process_id) -ErrorAction SilentlyContinue
+            if ($p) { Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue }
+        }
+    } catch {}
 }
-$tailscale = Find-Tailscale
-if ($tailscale) {
-    & $tailscale funnel reset | Out-Host
-}
-$info = Join-Path $env:LOCALAPPDATA 'JarvisNext\remote\public-access.json'
-Remove-Item $info -Force -ErrorAction SilentlyContinue
-Write-Host 'Acesso público do Jarvis desativado.' -ForegroundColor Green
+Remove-Item $path -Force -ErrorAction SilentlyContinue
+Write-Host 'Jarvis Anywhere desativado.' -ForegroundColor Green

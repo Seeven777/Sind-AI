@@ -8,7 +8,8 @@
 <title>Jarvis — Companion</title>
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/jarvis-icon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="/companion.css">
+<link rel="stylesheet" href="/companion.css?v=12.2">
+<link rel="stylesheet" href="/morning-sequence.css?v=12.2">
 </head>
 <body>
 <div class="app-shell" id="app-shell">
@@ -48,6 +49,7 @@
     </div>
 
     <div class="drawer-actions">
+      <button id="replay-morning">Briefing do dia</button>
       <button id="open-settings">Preferências</button>
       <button id="rename-chat">Renomear</button>
       <button id="pin-chat">☆</button>
@@ -67,6 +69,8 @@
       <span class="sr-only" id="core-state-label">IDLE</span>
       <span class="sr-only" id="core-activity">presente</span>
     </section>
+
+    <section id="surface-layer" class="surface-layer" aria-live="polite" aria-label="Superfícies contextuais do Jarvis"></section>
 
     <section id="chat" class="transcript" aria-live="polite" aria-label="Conversa"></section>
 
@@ -122,8 +126,10 @@
   <div id="briefing"></div><div id="autonomy-mini"></div><div id="attention-badge">0</div><button id="attention-bell"></button><div id="system-mini"></div><button id="refresh-briefing"></button><button id="autonomy-now"></button><button id="focus-hq"></button><button id="focus-mission"></button>
 </div>
 
-<script src="/jarvis-core.js"></script>
-<script src="/visual-events.js"></script>
-<script src="/companion.js"></script>
+<script src="/jarvis-core.js?v=12.2"></script>
+<script src="/visual-events.js?v=12.2"></script>
+<script src="/surface-engine.js?v=12.2"></script>
+<script src="/morning-sequence.js?v=12.2"></script>
+<script src="/companion.js?v=12.2"></script>
 </body>
 </html>

@@ -15,7 +15,7 @@ def test_briefing_uses_connector_data(tmp_path:Path):
         try:
             snap=rt.briefing.snapshot()
             assert snap['summary']['inbox_unread']==1
-            assert snap['summary']['connector_sources']==4
+            assert snap['summary']['connector_sources']==5
             assert any(x['kind']=='inbox' for x in snap['priorities'])
             result=await rt.orchestrator.handle('Me dê meu briefing do dia')
             assert result['kind']=='briefing'

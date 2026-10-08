@@ -1,4 +1,4 @@
-param(
+﻿param(
     [ValidateSet("companion", "hq")]
     [string]$Page = "companion"
 )
@@ -9,7 +9,7 @@ $Python = Join-Path $Project ".venv\Scripts\python.exe"
 $DataDir = Join-Path $env:LOCALAPPDATA "JarvisNext"
 $LockFile = Join-Path $DataDir "runtime\instance.lock"
 $BaseUrl = "http://127.0.0.1:4760"
-$TargetUrl = if ($Page -eq "hq") { "$BaseUrl/hq" } else { "$BaseUrl/" }
+$TargetUrl = if ($Page -eq "hq") { "$BaseUrl/hq?build=12.2" } else { "$BaseUrl/?build=12.2" }
 
 if (-not (Test-Path $Python)) {
     throw ".venv não encontrado. Execute Setup-Jarvis-Base.cmd primeiro."

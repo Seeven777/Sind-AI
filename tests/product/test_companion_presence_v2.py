@@ -12,7 +12,8 @@ def test_companion_v2_is_minimal_presence():
     assert 'id="input"' in html
     assert 'class="drawer"' in html
     assert 'context-panel' not in html
-    assert '/surface-engine.js' not in html
+    assert '/surface-engine.js' in html
+    assert 'id="surface-layer"' in html
     assert "'voice.replies':true" in js
     assert "/api/voice/synthesize" in js
 

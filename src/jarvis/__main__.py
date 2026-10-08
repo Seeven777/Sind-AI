@@ -10,10 +10,11 @@ from pathlib import Path
 from jarvis.app.lifecycle import run_forever,run_once
 from jarvis.app.product_runtime import start_product_runtime
 from jarvis.config import ensure_default_config,load_config
-from jarvis.connectors import GoogleOAuthClient,GoogleTokenStore
+from jarvis.connectors import GoogleOAuthClient,GoogleTokenStore,MarketingTasksConnector
 from jarvis.hq.server import serve_hq
 from jarvis.distributed.worker_server import serve_worker
 from jarvis.tasks import TaskStatus
+from jarvis.security import SecretStore
 
 
 def parser():
@@ -27,7 +28,7 @@ def parser():
         'system-status','google-auth','google-disconnect','inventory',
         'skills','projects','browser-doctor','windows-doctor','voice-doctor',
         'agency-status','agency-runbooks','ai-status',
-        'creative-doctor','wa-doctor',
+        'creative-doctor','wa-doctor','marketing-auth','marketing-disconnect',
     ):
         sub.add_parser(name)
 
@@ -329,6 +330,18 @@ async def interactive_chat(data_dir):
     finally:await rt.close()
 
 
+def _standalone_marketing_connector(data_dir):
+    cfg=load_config(data_dir)
+    cfg.data_dir.mkdir(parents=True,exist_ok=True)
+    ensure_default_config(cfg)
+    secrets=SecretStore(cfg.data_dir/'secrets')
+    return MarketingTasksConnector(
+        app_url='https://mkl-sind-petshop-sp.vercel.app',
+        state_path=cfg.data_dir/'secrets'/'marketing_tasks_state.json',
+        secret_store=secrets,
+    )
+
+
 def _standalone_google_oauth(data_dir):
     """Build Google OAuth without starting a second Jarvis runtime.
 
@@ -364,6 +377,24 @@ async def utility_command(args):
         oauth=_standalone_google_oauth(args.data_dir)
         oauth.token_store.delete()
         print('Token Google removido do armazenamento local.')
+        return 0
+
+    if c=='marketing-auth':
+        connector=_standalone_marketing_connector(args.data_dir)
+        print('Conectando ao organizador de tarefas do marketing...')
+        email=input('E-mail: ').strip()
+        password=getpass.getpass('Senha: ')
+        if not email or not password:
+            raise RuntimeError('E-mail e senha são obrigatórios.')
+        result=await asyncio.to_thread(connector.connect_interactive,email,password)
+        print('Organizador de tarefas autorizado.')
+        print(json.dumps({k:v for k,v in result.items() if k!='state_path'},ensure_ascii=False,indent=2))
+        print('As credenciais ficam protegidas localmente pelo Windows DPAPI; nada foi gravado no código do Jarvis.')
+        return 0
+    if c=='marketing-disconnect':
+        connector=_standalone_marketing_connector(args.data_dir)
+        connector.disconnect()
+        print('Sessão do organizador de tarefas removida.')
         return 0
 
     rt=await start_product_runtime(args.data_dir)

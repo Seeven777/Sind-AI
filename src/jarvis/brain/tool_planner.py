@@ -36,6 +36,10 @@ _TOOL_SPECS={
         'description':'Ler conteúdo público de uma URL http/https.',
         'payload':{'url':'https://...'},
     },
+    'weather.forecast':{
+        'description':'Obter previsão meteorológica estruturada e atual para uma localidade usando fonte pública.',
+        'payload':{'location':'cidade, estado ou país'},
+    },
     'browser.open':{
         'description':'Abrir uma URL no navegador controlado pelo Jarvis.',
         'payload':{'url':'https://...'},

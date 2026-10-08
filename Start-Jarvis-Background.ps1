@@ -1,4 +1,4 @@
-﻿$ErrorActionPreference = "Stop"
+$ErrorActionPreference = "Stop"
 $Project = Split-Path -Parent $MyInvocation.MyCommand.Path
 $PythonW = Join-Path $Project ".venv\Scripts\pythonw.exe"
 $Python = Join-Path $Project ".venv\Scripts\python.exe"
@@ -23,6 +23,20 @@ if (-not (Test-Jarvis)) {
 }
 
 if (-not (Test-Jarvis)) { throw "Jarvis não iniciou." }
+
+# Restore public access automatically if the owner enabled Jarvis Anywhere before.
+try {
+    $remoteInfoPath = Join-Path $env:LOCALAPPDATA 'JarvisNext\remote\public-access.json'
+    if (Test-Path $remoteInfoPath) {
+        $remoteInfo = Get-Content $remoteInfoPath -Raw | ConvertFrom-Json
+        if ($remoteInfo.auto_start -eq $true) {
+            Start-Process powershell.exe -ArgumentList @(
+                '-NoProfile','-WindowStyle','Hidden','-ExecutionPolicy','Bypass','-File',
+                (Join-Path $Project 'Enable-Jarvis-Anywhere.ps1'),'-Auto'
+            ) -WindowStyle Hidden
+        }
+    }
+} catch {}
 
 # Briefing notification. Failure here never kills Jarvis.
 try {

@@ -129,7 +129,7 @@ class AutonomyRepository:
         return [self._proposal(row) for row in rows]
 
     def set_proposal_status(self, proposal_id: str, status: str, metadata=None):
-        allowed = {"pending", "approved", "rejected", "implementing", "prepared", "failed"}
+        allowed = {"pending", "approved", "rejected", "implementing", "prepared", "promoted", "rolled_back", "failed"}
         if status not in allowed:
             raise ValueError(status)
         current = self.get_proposal(proposal_id)
@@ -197,6 +197,15 @@ class AutonomyRepository:
             ).fetchall()
         return [self._notification(row) for row in rows]
 
+    def acknowledge_ref(self, ref_type: str, ref_id: str):
+        ts = now()
+        self.conn.execute(
+            "UPDATE attention_notifications SET status='acknowledged',acknowledged_at=? "
+            "WHERE status='unread' AND ref_type=? AND ref_id=?",
+            (ts, str(ref_type), str(ref_id)),
+        )
+        self.conn.commit()
+
     def acknowledge(self, notification_id: str):
         self.conn.execute(
             "UPDATE attention_notifications SET status='acknowledged',acknowledged_at=? WHERE notification_id=?",
@@ -219,6 +228,6 @@ class AutonomyRepository:
         return {
             "discoveries": n("SELECT COUNT(*) n FROM autonomy_discoveries"),
             "pending_improvements": n("SELECT COUNT(*) n FROM improvement_proposals WHERE status='pending'"),
-            "approved_improvements": n("SELECT COUNT(*) n FROM improvement_proposals WHERE status IN ('approved','implementing')"),
+            "approved_improvements": n("SELECT COUNT(*) n FROM improvement_proposals WHERE status IN ('approved','implementing','prepared')"),
             "unread_attention": n("SELECT COUNT(*) n FROM attention_notifications WHERE status='unread'"),
         }

@@ -1,0 +1,18 @@
+{
+  "release": "AgentMode-Morning-v12",
+  "focus": [
+    "cinematic-boot",
+    "living-core-wake-sequence",
+    "weather-morning-gadget",
+    "clickable-news-constellation",
+    "marketing-task-connector",
+    "desktop-mobile-morning-continuity"
+  ],
+  "remote_access": "ngrok-v8-preserved",
+  "self_evolution": "v10-evolution-lab-preserved",
+  "surfaces": "v11.1-preserved-and-extended",
+  "status": "validated",
+  "tests": "143/143 passed",
+  "python_compile": "passed",
+  "javascript_syntax": "passed"
+}
